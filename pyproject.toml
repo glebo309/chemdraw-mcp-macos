@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chemdraw-mcp-macos"
-version = "0.9.0"
+version = "0.9.1"
 description = "Native ChemDraw automation for macOS over MCP"
 requires-python = ">=3.11"
 dependencies = ["mcp>=1.27.1,<2", "defusedxml>=0.7.1", "resvg-py==0.5.0"]

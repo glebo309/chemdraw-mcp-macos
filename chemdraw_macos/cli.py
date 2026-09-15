@@ -127,6 +127,8 @@ def main(argv=None):
     route.add_argument('--candidate',required=True);route.add_argument('--output',required=True)
     commands.add_parser('serve',help='Run the MCP stdio server')
     args=parser.parse_args(argv)
+    from contextlib import ExitStack, nullcontext
+    transactions=ExitStack()
     try:
         if args.command=='make-lab-style':
             sections=json.loads(args.settings.read_text()) if args.settings else {}
@@ -173,6 +175,7 @@ def main(argv=None):
             from .server import main as serve
             serve();return 0
         bridge=Bridge()
+        transactions.enter_context(getattr(bridge,'lock',nullcontext()))
         if args.command=='scope-job':result=build_scope_job(bridge,json.loads(args.manifest.read_text()),args.output)
         elif args.command=='reaction-series':
             options=json.loads(args.manifest.read_text())
@@ -275,6 +278,7 @@ def main(argv=None):
         print(json.dumps(result,indent=2,ensure_ascii=False));return 0
     except Exception as exc:
         print(json.dumps({'status':'error','error':str(exc)}),file=sys.stderr);return 1
+    finally:transactions.close()
 
 
 if __name__=='__main__':raise SystemExit(main())

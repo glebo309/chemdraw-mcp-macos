@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "charge_style": "circled",
+  "columns": 2,
+  "structures": [
+    {"compound_id": "1", "label": "Glycine zwitterion", "smiles": "[NH3+]CC(=O)[O-]"},
+    {"compound_id": "2", "label": "Benzoate", "smiles": "O=C([O-])c1ccccc1"}
+  ]
+}

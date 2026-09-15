@@ -16,6 +16,10 @@ Opt-in native tests exercise the stdio MCP bridge, bounded native polish, analog
 
 ## Supported operations
 
+Updated native workflows use a per-user cooperative process lock across CLI/MCP instances and scratch workspaces. Competing calls fail busy after a bounded wait without dispatching their native command. Manual edits and uncooperative/older clients remain outside its scope. See [coordination](NATIVE_COORDINATION.md).
+
+The draw workflow optionally runs a circled-charge finishing pass for supported +1/-1 charged atoms. Saved chemistry and associations must survive native rendering; dense owner regions can be rejected even when plain-charge drawing works. This does not enable general organometallic structures or arbitrary graphics inside the grid workflow. See [symbols](SYMBOLS.md).
+
 Optional scope decorations form a separate supported finishing pass: native rounded shadow frames, actual dotted separators and explicit headings for existing nonoverlapping bands. Molecules and captions stay fixed. The fourteen-candidate example was visually checked in native SVG and corrected transparent PNG. General graphics, automatic category inference and reordered groups are not implied. See [scope decoration](SCOPE_DECORATION.md).
 
 - Native list/inspect, current document IDs, document settings and 1-based molecule indices.

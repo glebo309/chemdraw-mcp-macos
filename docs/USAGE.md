@@ -138,7 +138,9 @@ uv run --extra chemistry chemdraw-mac draw \
   --output /absolute/existing/parent/structures-review
 ```
 
-MCP `chemdraw_draw_structures(structures, output_dir, preset='house', columns=None, pixels=3200, scaffold_smiles=None)` calls the same workflow. CLI `schema_version` must be `1` when supplied. Unknown manifest/record fields are rejected; the output directory must be new and absolute with an existing parent.
+MCP `chemdraw_draw_structures(structures, output_dir, preset='house', columns=None, pixels=3200, scaffold_smiles=None, layout=None, charge_style='plain')` calls the same workflow. CLI `schema_version` must be `1` when supplied. Unknown manifest/record fields are rejected; the output directory must be new and absolute with an existing parent.
+
+Optional `charge_style: "circled"` adds native symbols for existing +1/-1 atom charges after the measured grid. At most 50 charge symbols are accepted. Geometry, charge ownership and chemistry are verified after native saving; crowded arrangements fail without silently changing charge style or molecular scale. [Ionic example](../examples/ions-circled.json), [placement limits](SYMBOLS.md). `styled-job` draw recipes accept the same option. Follow returned `artifacts.cdxml`, `artifacts.svg` and `artifacts.png` paths: plain outputs live under `figure/`, while a successful added-charge pass lives under `charged/`. The `grid_audit` describes the pre-charge layout, not a current atom-ID inventory; inspect the final document for current IDs.
 
 | Input | Limit |
 |---|---|
@@ -645,4 +647,4 @@ The output contains before/after CDXML/SVG/PNG, recipe, audit and HTML review. F
 
 Existing outputs are refused. Imports are private copies because ChemDraw can autosave opened files. Draw creates private structures; polish, edits, grids, annotations and batch export preserve the original. Low-level cleanup explicitly edits its target after backup, while `draw` cleans only its own private imports. Only documents opened by the current bridge session can be managed-closed, and another CLI process does not inherit that registry.
 
-Do not edit the same drawing concurrently by hand or another process. The server lock coordinates only its own process. A timeout is not an automatic retry invitation: an AppleEvent write may have completed without returning its result. Inspect the application and refresh document state first.
+Updated clients share a per-user process lock across workspaces. A competing call waits at most two seconds, then returns busy without dispatching its native command. Do not edit concurrently by hand or through older/uncooperative clients. A native timeout is different from lock contention: an AppleEvent write may have completed without returning its result. Inspect the application and refresh document state first. See [coordination](NATIVE_COORDINATION.md).

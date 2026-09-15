@@ -6,11 +6,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-import threading
 import time
 import uuid
 import xml.etree.ElementTree as ET
 from defusedxml import ElementTree as SafeET
+from .native_lock import shared_native_lock
 
 FORMATS={'svg':'Scalable Vector Graphics (SVG)','pdf':'PDF','cdxml':'ChemDraw XML','cdx':'ChemDraw'}
 PRESETS={
@@ -89,7 +89,7 @@ class Bridge:
     def __init__(self,app_path:Path|None=None,workspace:Path|None=None,timeout:float=25):
         self.app=app_path or app_location()
         self.workspace=workspace or Path(os.environ.get('CHEMDRAW_MCP_WORKSPACE',str(Path.home()/'ChemDraw-MCP-Output')))
-        self.timeout=timeout;self.lock=threading.RLock();self.managed=set()
+        self.timeout=timeout;self.lock=shared_native_lock();self.managed=set()
 
     def _run(self,operation,*args):
         if not self.app.is_dir():raise RuntimeError(f'ChemDraw not found: {self.app}')
@@ -131,13 +131,16 @@ class Bridge:
         if source.suffix.lower() not in ('.cdxml','.cdx','.mol','.sdf'):raise ValueError('Supported imports: .cdxml, .cdx, .mol, .sdf')
         if source.stat().st_size>10_000_000:raise ValueError('Import exceeds 10 MB limit')
         if source.suffix.lower()=='.cdxml':validate_cdxml(source.read_text())
-        copy=self._new_path(source.suffix);shutil.copyfile(source,copy)
-        result=self._open_working(copy);self.managed.add(result['document_id'])
+        with self.lock:
+            copy=self._new_path(source.suffix);shutil.copyfile(source,copy)
+            result=self._open_working(copy);self.managed.add(result['document_id'])
         return {'document':result,'source_untouched':str(source),'working_copy':str(copy)}
 
     def create(self,cdxml):
-        validate_cdxml(cdxml);path=self._new_path('.cdxml');path.write_text(cdxml)
-        result=self._open_working(path);self.managed.add(result['document_id'])
+        validate_cdxml(cdxml)
+        with self.lock:
+            path=self._new_path('.cdxml');path.write_text(cdxml)
+            result=self._open_working(path);self.managed.add(result['document_id'])
         return {'document':result,'working_copy':str(path)}
 
     def _open_working(self,path):
@@ -209,7 +212,8 @@ class Bridge:
 
     def close(self,document_id):
         did=self._id(document_id)
-        if did not in self.managed:raise ValueError('Close is restricted to documents created/imported by this server session')
-        backup=self._new_path('.cdxml','backups');self.export(did,str(backup),'cdxml')
-        self._run('close',did);self.managed.remove(did)
+        with self.lock:
+            if did not in self.managed:raise ValueError('Close is restricted to documents created/imported by this server session')
+            backup=self._new_path('.cdxml','backups');self.export(did,str(backup),'cdxml')
+            self._run('close',did);self.managed.remove(did)
         return {'closed_document_id':did,'backup':str(backup)}

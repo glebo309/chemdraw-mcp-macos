@@ -11,6 +11,7 @@ from .editing import source_token
 from .polish import numbers
 from .symbols import symbol_primitives, _distance_segment
 from .workflow import _write_json
+from .native_lock import native_transaction
 
 _STEPS = 64
 
@@ -201,6 +202,7 @@ def select_route(report,candidate_id,cdxml):
     return copy.deepcopy(expected[0]['arrow'])
 
 
+@native_transaction
 def annotate_selected_route_document(bridge,document_id,output_dir,suggestions,candidate_id,pixels=3200):
     snapshot = bridge._new_path('.cdxml','backups'); _native(bridge.export,document_id,str(snapshot),'cdxml')
     arrow = select_route(suggestions,candidate_id,snapshot.read_text())
@@ -220,6 +222,7 @@ def _record_selection(result,suggestions,candidate_id,arrow):
     _write_json(Path(result['output_dir'])/'route-suggestions.json',suggestions)
 
 
+@native_transaction
 def annotate_selected_route_file(bridge,path,output_dir,suggestions,candidate_id,pixels=3200):
     path = Path(path).expanduser().resolve(strict=True)
     if path.suffix.lower() != '.cdxml': raise ValueError('Selected route file input requires CDXML')

@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 
 from .core import PRESETS, preset_settings
 from .geometry import find_overlaps
+from .native_lock import native_transaction
 from .polish import (analyze_cdxml, chemical_signature, supported_root,
                      normalize_cdxml, layout_row, bounds, numbers)
 
@@ -59,6 +60,7 @@ def remap_ids(before, after):
     return result
 
 
+@native_transaction
 def analyze_document(bridge, document_id):
     snapshot=bridge._new_path('.cdxml','backups')
     bridge.export(document_id,str(snapshot),'cdxml')
