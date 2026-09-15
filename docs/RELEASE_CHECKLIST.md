@@ -1,10 +1,10 @@
 # Release and private handoff checklist
 
-Glenn approved public GitHub hosting on 2026-09-15, superseding the initial private-only decision. This checklist governs a stable release, not repository visibility. Package publication and the licence for original code remain separate decisions. Native acceptance on another Mac is still pending. A successful development-Mac run does not complete either gate.
+Glenn approved public GitHub hosting and subsequently open-source licensing under AGPL-3.0-only on 2026-09-15. This checklist governs a stable release, not repository visibility. Package publication and native acceptance on another Mac remain pending. A successful development-Mac run does not complete either gate.
 
 ## Required release gates
 
-- [ ] Obtain an explicit licence choice for the project's original code and approval for the intended distribution. Existing third-party licences do not grant that licence.
+- [x] Original project code is licensed under AGPL-3.0-only with Glenn's approval to make the repository open source. LICENSE, NOTICE and upstream notices are retained. Package publication remains separately gated.
 - [ ] Complete installation and native acceptance on another Mac with its own licensed ChemDraw installation. Record exact macOS, processor architecture, ChemDraw build, Python and installed dependency versions. Do not describe untested combinations as supported.
 - [ ] Reconcile package version, README, compatibility documentation, release notes and built artifact metadata for the exact candidate being handed off. Development source may contain features newer than the current package version.
 - [ ] Run the full portable suite from the locked environment and retain the results for that candidate.

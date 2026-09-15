@@ -1,0 +1,20 @@
+ChemDraw MCP for macOS
+Copyright (c) 2026 Glenn Bojanov
+
+Original project code is licensed under the GNU Affero General Public License,
+version 3 only (SPDX-License-Identifier: AGPL-3.0-only).
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of version 3 of the GNU Affero General Public License as published
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE for the full terms.
+
+Source and contributions: https://github.com/glebo309/chemdraw-mcp-macos
+
+Third-party components retain their applicable notices and licences. See
+THIRD_PARTY_NOTICES.md and licenses/live-chemdraw-mcp.txt. The AGPL grant for
+original project code does not replace those notices or relicense ChemDraw,
+fonts, user data or third-party artwork. ChemDraw itself is not distributed.

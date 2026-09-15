@@ -4,7 +4,7 @@ Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create n
 
 **Native rendering, not simulated clicks.** AppleScript controls the installed application. ChemDraw renders SVG and other native exports; offline `resvg` rasterizes the unchanged native SVG for transparent PNG. Optional RDKit validates graphs, converts identifiers, constructs offline scope candidates and supplies the new-drawing workflow's MOL coordinate seeds. Desktop ChemDraw then imports, cleans and renders those structures; RDKit does not render the exported figure. Natural-language interpretation comes from your MCP client, not an LLM embedded in this server.
 
-Independent experimental project, publicly available for inspection. Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
+Independent, open-source experimental project under [AGPLv3](LICENSE). Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 
 **Experimental, not a stable release:** native support is limited to the tested ChemDraw build and supported drawing subset. Cross-process coordination and opt-in circled charges have regression coverage; crowded charge positions fail explicitly rather than risking a changed molecular graph. See [current development status](docs/DEVELOPMENT_STATUS.md) for exact checks and pending acceptance on another Mac.
 
@@ -29,7 +29,7 @@ The v0.9 workflow layer connects the individual tools into callable jobs:
 - **Owned movement and routes:** `build-ownership` / `move-owned` carry explicit captions, symbols and internal curves with their molecules. `suggest-routes` / `apply-route` propose and render a selected obstacle-checked cubic path. Reaction-scheme vertical moves and one-sided cross-owner curve moves are refused; manual dragging is not covered. [Guide](docs/OWNERSHIP.md)
 - **Shared styles:** `make-lab-style` / `styled-job` use versioned, hashed numerical settings and reject conflicting recipe overrides. Each output retains its exact style package. [Starting package](examples/publication-bold.lab-style.json) · [Guide](docs/LAB_STYLE.md)
 
-Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Another-Mac acceptance and the original-code licence/publication decision remain pending in the [release checklist](docs/RELEASE_CHECKLIST.md).
+Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Another-Mac acceptance and package publication remain pending in the [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## Try the terminal workflow
 
@@ -301,4 +301,10 @@ The geometry layer adapts `Box`, `find_overlaps` and `grid_positions` from Micha
 
 Offline identifiers are documented in [the identifier contract](docs/IDENTIFIERS.md); the separate opt-in PubChem interface is documented in [resolver semantics](docs/RESOLVER.md). Other providers and native Name-to-Structure remain outside the implementation. [Layout and workflow research](docs/LAYOUT_WORKFLOW_RESEARCH.md) records the scope-grid motivation and further improvements. Use this README and the usage reference for interfaces, and [project progress](PROJECT_PROGRESS.md) for actual validation evidence.
 
-The source repository is public, but no stable release or open-source license grant for this project's original code has been made. Retained upstream licenses remain applicable to their respective code. ChemDraw is proprietary software and a trademark of its respective owner; this project is not affiliated with or endorsed by its vendor.
+## License and collaboration
+
+Original project code is available under [GNU AGPL version 3 only](LICENSE), with [copyright and warranty notices](NOTICE). Commercial and noncommercial use are allowed. Covered redistribution and modified network-served versions carry source-sharing obligations; the licence text governs. This does not automatically license users' drawings or research, nor every independent client that connects over MCP.
+
+Contributions are welcome: test another Mac/ChemDraw version, report a reproducible drawing problem, share a redistributable example, or send a focused pull request. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Do not upload confidential structures or proprietary assets. Marco DeCorti's visual guidance and upstream authors' contributions remain credited.
+
+Retained upstream licences remain applicable to their respective code. ChemDraw is proprietary software and a trademark of its respective owner; this project is not affiliated with or endorsed by its vendor. Open-source availability does not establish a stable release or compatibility beyond the documented tests.

@@ -1,5 +1,13 @@
 # Project progress
 
+## 2026-09-15: open-source licensing and collaboration
+
+Glenn requested making the project open source after discussing permissive and copyleft options. Original project code is now licensed under GNU AGPL version 3 only (AGPL-3.0-only), preserving the stated preference for access to covered improvements while allowing commercial use. LICENSE is the unchanged official GNU text, verified byte-for-byte; NOTICE declares project copyright and warranty terms. Existing upstream MIT notices remain unchanged. No restriction on ordinary user drawings or research, no promise that all independent paid clients are covered, and no contributor copyright assignment were added.
+
+README and CONTRIBUTING invite compatibility reports, reproducible drawing examples and focused pull requests. Current status, agent guidance, provenance and release checklist distinguish open-source availability from a tested stable release. Historical milestone entries retain their then-current licence status.
+
+Packaging regression tests failed for missing licence metadata/text before the change and now pass. Full portable suite: 716 passed, 34 native tests skipped in 6.43 s. The locked dependency check and offline wheel/source builds passed. The wheel declares License-Expression AGPL-3.0-only and includes LICENSE, NOTICE, THIRD_PARTY_NOTICES.md and the upstream MIT text; the source archive includes the same notices and excludes local validation/environment files. Drawing behavior was not changed, so native tests were not rerun for this licence-only increment. Package publication, another-Mac acceptance and the onboarding/charge/metal-complex work remain separate.
+
 ## 2026-09-15: v0.9.1 coordination, charge ownership and readable previews
 
 GitHub examples now use opaque white-background SVG copies. The original transparent exports and their native drawing elements are unchanged. This fix was published in commit a9809f8, with a regeneration script and structural regression test.

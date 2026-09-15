@@ -2,7 +2,7 @@
   "schema_version": 1,
   "reviewed_on": "2026-09-14",
   "review_method": "Primary GitHub repository metadata, pinned source files and license texts; no upstream Windows/Linux application execution",
-  "own_project_public_license": null,
+  "own_project_public_license": "AGPL-3.0-only",
   "format_references": [
     {
       "id": "native-integral-group",

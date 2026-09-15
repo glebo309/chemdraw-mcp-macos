@@ -4,7 +4,7 @@ Working plan, updated 2026-09-15. The repository is public and experimental, not
 
 ## Current molecule-first priorities
 
-Reliable editable molecules and reactions take precedence over charts, presentation panels or decorative graphics. Per-user cross-process coordination is implemented. Opt-in native circled charges now require safe owner geometry and final native graph/association checks. Independent-Mac acceptance, remaining crowded-symbol limitations and original-code licensing are the next release decisions, not additional unverified drawing features.
+Reliable editable molecules and reactions take precedence over charts, presentation panels or decorative graphics. Per-user cross-process coordination is implemented. Opt-in native circled charges now require safe owner geometry and final native graph/association checks. Independent-Mac acceptance and remaining crowded-symbol limitations are next. Original project code is now licensed under AGPL-3.0-only.
 
 The next chemistry expansion is explicit metal coordination: distinguish coordinate bonds, formal charges and oxidation-state labels; preserve supplied spatial geometry; test bounded square-planar, tetrahedral and octahedral depictions. Do not infer cis/trans, fac/mer or absolute metal stereochemistry from an ambiguous name or flat sketch. General metal-complex creation and 3D geometry are not implemented.
 
@@ -20,7 +20,7 @@ All four approved increments are implemented through CLI and MCP: complete expli
 
 The scope job produces actual category bands. Reaction series retain supplied components and coefficients without balance or mechanism prediction. Ownership sidecars govern tool-controlled moves, not manual dragging; reaction schemes reject vertical movement because native role inference can discard reactants. Route proposals require explicit anchors and selection. Style packages lock actual supported workflow settings and retain their hash with each result.
 
-The remaining broad capabilities below are not silently included: arbitrary nested/multipage editing, native manual-drag arrow attachment, automatic scaffold/chemistry inference and an additional naming provider. Independent-Mac acceptance, package publication and original-code licensing remain pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for handoff preparation.
+The remaining broad capabilities below are not silently included: arbitrary nested/multipage editing, native manual-drag arrow attachment, automatic scaffold/chemistry inference and an additional naming provider. Independent-Mac acceptance and package publication remain pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for handoff preparation.
 
 ## First deliverable: repair an existing figure safely
 
@@ -70,7 +70,7 @@ Version 0.8 also implements optional scope framing and group dividers as a separ
 
 ## Repository quality gates before publication
 
-- Choose the project's own license deliberately. Preserve all upstream notices and audit each copied file and packaged dependency. Do not redistribute proprietary ChemDraw software, fonts, templates or third-party paper artwork without appropriate rights.
+- Retain the project's AGPL-3.0-only licence and all upstream notices; audit each copied file and packaged dependency. Do not redistribute proprietary ChemDraw software, fonts, templates or third-party paper artwork without appropriate rights.
 - Install from a clean supported Mac account with documented ChemDraw activation and Automation permission prerequisites.
 - Publish a compatibility matrix separating tested macOS/ChemDraw combinations from untested ones.
 - Provide CLI help, structured JSON examples, client-independent MCP setup and actionable diagnostics. Do not edit unrelated client configuration.
