@@ -6,6 +6,7 @@ CLI and MCP share the same workflow implementations. Natural-language interpreta
 
 | CLI | MCP | Contract |
 | --- | --- | --- |
+| `first-run` | `chemdraw_first_run` | [One-call native setup and drawing check](FIRST_RUN.md) |
 | `scope-job --plan-only` / `scope-job` | `chemdraw_plan_scope_job` / `chemdraw_build_scope_job` | [Accepted candidates to a native grouped scope](SCOPE_JOB.md) |
 | `reaction-series` | `chemdraw_build_reaction_series` | [Explicit rows, salts, small species and coefficients](REACTION_EXPANDED.md) |
 | `build-ownership` / `move-owned` | `chemdraw_build_ownership` / `chemdraw_move_owned` | [Snapshot-bound molecule/annotation ownership](OWNERSHIP.md) |
@@ -15,6 +16,8 @@ CLI and MCP share the same workflow implementations. Natural-language interpreta
 The [demo walkthrough](DEMO_WALKTHROUGH.md) connects these to actual examples. CLI subcommand `--help` lists required input/recipe/output arguments. Offline ownership and route commands read a supplied CDXML snapshot and write a new JSON sidecar/report; MCP equivalents snapshot an explicit live document. Native operations create working copies. None of these commands publishes a package or installs files on another machine.
 
 ## Install and diagnose
+
+For an actual first drawing, run `uv run --locked --extra chemistry chemdraw-mac first-run` from a checkout. It checks installation, draws a fixed native example and opens its review in an interactive terminal. [One-command setup, flags and errors](FIRST_RUN.md). Claude Desktop and Codex local clients use the same implementation over MCP: [client setup](MCP_CLIENTS.md).
 
 From the project directory, with `uv` installed:
 
