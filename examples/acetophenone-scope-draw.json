@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "columns": 3,
+  "pixels": 4000,
+  "scaffold_smiles": "CC(=O)c1ccccc1",
+  "structures": [
+    {"compound_id":"1","label":"Parent","smiles":"CC(=O)c1ccccc1"},
+    {"compound_id":"2","label":"2-Me","smiles":"CC(=O)c1ccccc1C"},
+    {"compound_id":"3","label":"3-Me","smiles":"CC(=O)c1cccc(C)c1"},
+    {"compound_id":"4","label":"4-Me","smiles":"CC(=O)c1ccc(C)cc1"},
+    {"compound_id":"5","label":"4-OMe","smiles":"COc1ccc(C(C)=O)cc1"},
+    {"compound_id":"6","label":"4-CF3","smiles":"CC(=O)c1ccc(C(F)(F)F)cc1"},
+    {"compound_id":"7","label":"4-CN","smiles":"CC(=O)c1ccc(C#N)cc1"},
+    {"compound_id":"8","label":"4-NO2","smiles":"CC(=O)c1ccc([N+](=O)[O-])cc1"},
+    {"compound_id":"9","label":"4-F","smiles":"CC(=O)c1ccc(F)cc1"},
+    {"compound_id":"10","label":"4-Cl","smiles":"CC(=O)c1ccc(Cl)cc1"},
+    {"compound_id":"11","label":"4-Br","smiles":"CC(=O)c1ccc(Br)cc1"},
+    {"compound_id":"12","label":"2-iPr","smiles":"CC(=O)c1ccccc1C(C)C"},
+    {"compound_id":"13","label":"2-tBu","smiles":"CC(=O)c1ccccc1C(C)(C)C"},
+    {"compound_id":"14","label":"2,6-Me2","smiles":"CC(=O)c1c(C)cccc1C"}
+  ]
+}

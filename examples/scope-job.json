@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "parent_smiles": "CC(=O)[c:1]1ccccc1",
+  "handle_atom_map": 1,
+  "groups": [
+    {"label": "Reference / donors", "categories": ["reference", "electron_donating"]},
+    {"label": "Withdrawers", "categories": ["electron_withdrawing", "halogen"]},
+    {"label": "Bulky / positional", "categories": ["steric", "positional"]}
+  ],
+  "accept_all": true,
+  "columns": 4,
+  "preset": "house",
+  "layout": {"margin": 24, "h_gap": 12, "v_gap": 16, "label_gap": 8},
+  "frame": true,
+  "separators": true,
+  "pixels": 3200
+}

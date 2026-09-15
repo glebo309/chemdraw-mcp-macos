@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "parent_smiles": "n1[cH:2]c[cH:4]cc1",
+  "site_atom_maps": [2, 4],
+  "substituents": ["Me", "Cl"],
+  "include_parent": true
+}

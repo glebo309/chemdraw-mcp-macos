@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-09-14",
+  "review_method": "Primary GitHub repository metadata, pinned source files and license texts; no upstream Windows/Linux application execution",
+  "own_project_public_license": null,
+  "format_references": [
+    {
+      "id": "native-integral-group",
+      "reviewed_on": "2026-09-15",
+      "native_version": "23.0.1",
+      "installed_examples_inspected": ["BioDrawResources/GS_DNA_4.cdxml", "BioDrawResources/GS_Replication.cdxml"],
+      "documentation": ["https://chemapps.stolaf.edu/iupac/cdx/sdk/Group.htm", "https://chemapps.stolaf.edu/iupac/cdx/sdk/properties/Group_Integral.htm"],
+      "disposition": "format_observation_only_no_artwork_or_source_copied",
+      "scope": "Offline nonnested Integral group probe only. Not enabled in ordinary ownership movement; native manual dragging unverified."
+    }
+  ],
+  "runtime_additions": [
+    {
+      "id": "resvg-py",
+      "reviewed_on": "2026-09-15",
+      "repository": "https://github.com/baseplate-admin/resvg-py",
+      "package_version": "0.5.0",
+      "package_source": "https://pypi.org/project/resvg_py/0.5.0/",
+      "license_spdx_observed": "MIT",
+      "copyright": "Copyright (C) 2024 baseplate-admin",
+      "disposition": "runtime_dependency_not_vendored",
+      "scope": "Offline pixel rasterization of unchanged native ChemDraw SVG, including evenodd shadow clipping. No molecular depiction or graph generation. Underlying resvg 0.48.0 is dual MIT/Apache-2.0."
+    }
+  ],
+  "sources": [
+    {
+      "id": "live-chemdraw-mcp",
+      "repository": "https://github.com/MALeitch/live-chemdraw-mcp",
+      "revision": "a9cebc6cf61e4d9b019463019626684fdf30beb6",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE",
+      "copyright": "Copyright (c) 2026 Michael Leitch",
+      "disposition": "source_adapted",
+      "upstream_files": ["chemdraw_connector/domain/layout_math.py"],
+      "symbols": ["Box", "find_overlaps", "grid_positions"],
+      "local_files": ["chemdraw_macos/geometry.py"],
+      "retained_license": "licenses/live-chemdraw-mcp.txt",
+      "scope": "Pure bounding-box geometry, overlap detection and uniform grid positions. Grid caller supplies measured compound-plus-caption extents and validates fit; no COM bridge copied"
+    },
+    {
+      "id": "chemdraw-skill",
+      "repository": "https://github.com/ZiChenWang114514/chemdraw-skill",
+      "revision": "155cfd600c42f609ffe906fd8f26c9edd539a2fa",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE",
+      "copyright": "Copyright (c) 2026 chemdraw-skill contributors",
+      "disposition": "ideas_only",
+      "scope": "Workflow routing, provenance, explicit native save-cycle verification and honest unresolved-stereo reporting"
+    },
+    {
+      "id": "cdxml-toolkit-community",
+      "repository": "https://github.com/ZiChenWang114514/cdxml-toolkit-community",
+      "revision": "03c4d94dabf20d23b3118a5b2d9afd9d9c90f7d4",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE",
+      "copyright": "Copyright (c) 2026 Hiu Fung Kevin Lee",
+      "disposition": "ideas_only",
+      "upstream_files": ["cdxml_toolkit/coord_normalizer.py"],
+      "rejected_adaptation": "Default flip_y and strip_hydrogens are inappropriate for preserving an existing ChemDraw document",
+      "scope": "Portable document/layout architecture, not Windows COM execution"
+    },
+    {
+      "id": "cdxml-toolkit-original",
+      "repository": "https://github.com/leehiufung911/cdxml-toolkit",
+      "revision": "c84eb10083975be3ed335890d866378da28a084d",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE",
+      "copyright": "Copyright (c) 2026 Hiu Fung Kevin Lee",
+      "disposition": "evaluated",
+      "scope": "Original toolkit provenance retained separately from its community fork"
+    },
+    {
+      "id": "jurimaxam-chemdraw-mcp",
+      "repository": "https://github.com/jurimaxam-dotcom/chemdraw-mcp",
+      "revision": "9f19767c0c48289ab62b5743602f1a3aff05b375",
+      "license_spdx_observed": "Apache-2.0",
+      "license_path": "LICENSE",
+      "copyright": null,
+      "copyright_note": "Root license retains standard placeholder; no personal attribution inferred",
+      "disposition": "ideas_only",
+      "scope": "Diagnostic UX, resolver provenance, optional CDXML interchange; generator remains external"
+    },
+    {
+      "id": "rdkit",
+      "repository": "https://github.com/rdkit/rdkit",
+      "revision": "23378a7f2f82ae6c867201db8c56ab4cc4a4e671",
+      "license_spdx_observed": "BSD-3-Clause",
+      "license_path": "license.txt",
+      "copyright": "Copyright (c) 2006-2015, Rational Discovery LLC, Greg Landrum, and Julie Penzotti and others",
+      "disposition": "optional_validator_candidate",
+      "upstream_files": ["Code/GraphMol/FileParsers/CDXMLParser.cpp", "Code/GraphMol/Depictor/DepictUtils.h"],
+      "scope": "Use installed package API for chemistry checks, not native figure rendering or lossless document serialization"
+    },
+    {
+      "id": "indigo",
+      "repository": "https://github.com/epam/Indigo",
+      "revision": "8642d73cca2b827a5351d8a8eb21816492381497",
+      "license_spdx_observed": "Apache-2.0",
+      "license_path": "LICENSE",
+      "disposition": "evaluated_deferred",
+      "scope": "Potential optional chemistry backend; no dependency or source selected"
+    },
+    {
+      "id": "ketcher",
+      "repository": "https://github.com/epam/ketcher",
+      "revision": "df40dd518ab6122bb768c93fe27e697f9c4cd994",
+      "license_spdx_observed": "Apache-2.0",
+      "license_path": "LICENSE",
+      "copyright": "Copyright 2021 EPAM Systems",
+      "disposition": "evaluated_deferred",
+      "scope": "Potential browser editing/review adapter; not native ChemDraw control"
+    },
+    {
+      "id": "openbabel",
+      "repository": "https://github.com/openbabel/openbabel",
+      "revision": "9be528bcdb31a219637ae3d1699170a8aaa5be6d",
+      "license_spdx_observed": "GPL-2.0-only",
+      "license_path": "COPYING",
+      "upstream_files": ["src/formats/xml/cdxmlformat.cpp"],
+      "copyright": "Copyright (C) 2006 by Geoff Hutchison; Portions Copyright (C) 2010 by Joerg Kurt Wegner; Portions Copyright (C) 2012 by NextMove Software",
+      "disposition": "not_selected",
+      "scope": "Minimal CDXML chemistry support is not a lossless figure pathway; no source copied or dependency selected"
+    },
+    {
+      "id": "opsin",
+      "repository": "https://github.com/dan2097/opsin",
+      "revision": "996a580588c8fd8c6dd07529d63449fa72e66f2f",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE.txt",
+      "copyright": "Copyright 2017 Daniel Lowe",
+      "disposition": "evaluated_deferred",
+      "scope": "Optional offline systematic-name resolver with warnings preserved; no adapter delivered"
+    },
+    {
+      "id": "keyclip",
+      "repository": "https://github.com/mmaskeri/keyClip",
+      "revision": "e6782a07a52ab600d643dd8d6060991627a52b21",
+      "license_spdx_observed": "MIT",
+      "license_path": "LICENSE.txt",
+      "copyright": "Copyright (c) 2019 Mark A. Maskeri (mmaskeri)",
+      "disposition": "ideas_only",
+      "scope": "Future editable Keynote handoff; no clipboard or keystroke implementation copied"
+    }
+  ]
+}

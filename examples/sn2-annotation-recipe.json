@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "line_width": 0.9,
+  "pixels": 3200,
+  "arrows": [
+    {"key": "nucleophilic-attack", "electrons": 2, "source": {"kind": "symbol", "id": "1500"}, "target": {"kind": "atom", "id": "2103", "offset": [0, -14]}, "controls": [[0, -33], [0, -28]]},
+    {"key": "leaving-group", "electrons": 2, "source": {"kind": "bond", "id": "2105", "offset": [0, 0]}, "target": {"kind": "atom", "id": "2104", "offset": [4, 13]}, "controls": [[-5, 26], [8, 14]]}
+  ]
+}

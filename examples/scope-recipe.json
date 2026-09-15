@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "columns": 4,
+  "cells": [
+    {"compound_id": "3a", "fragment_ids": ["1"], "caption_id": "30", "yield_percent": 82},
+    {"compound_id": "3b", "fragment_ids": ["101"], "caption_id": "130", "yield_percent": 67},
+    {"compound_id": "3c", "fragment_ids": ["201"], "caption_id": "230", "yield_percent": 91},
+    {"compound_id": "3d", "fragment_ids": ["301"], "caption_id": "330", "yield_percent": 58},
+    {"compound_id": "3e", "fragment_ids": ["401"], "caption_id": "430", "yield_percent": 74},
+    {"compound_id": "3f", "fragment_ids": ["501"], "caption_id": "530", "yield_percent": 0},
+    {"compound_id": "3g", "fragment_ids": ["601"], "caption_id": "630", "yield_percent": null},
+    {"compound_id": "3h", "fragment_ids": ["701"], "caption_id": "730", "yield_percent": 88}
+  ],
+  "pixels": 3200
+}

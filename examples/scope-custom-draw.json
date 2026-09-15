@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "columns": 3,
+  "scaffold_smiles": "c1ccncc1",
+  "structures": [
+    {"compound_id": "1", "label": "Parent", "smiles": "c1ccncc1"},
+    {"compound_id": "2", "label": "2-Me", "smiles": "Cc1ccccn1"},
+    {"compound_id": "3", "label": "2-Cl", "smiles": "Clc1ccccn1"},
+    {"compound_id": "4", "label": "4-Me", "smiles": "Cc1ccncc1"},
+    {"compound_id": "5", "label": "4-Cl", "smiles": "Clc1ccncc1"}
+  ]
+}

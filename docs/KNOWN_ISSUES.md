@@ -1,0 +1,91 @@
+## 2026-09-15: stale atom-source mechanism fixtures
+
+The visible SN2 regression still began its attack curve beside the Br label, even though the checked-in demonstration recipe already selected the circled negative charge. A valid native curve save did not establish a correct electron source. The old test fixture and an atom-source API escape hatch were the causes.
+
+New electron-flow curves and route proposals now reject atom-label sources. Two-electron atom donation requires an explicitly selected displayed CircleMinus or LonePair; one-electron donation requires an explicit graphical electron dot. Donation from a bond uses the donating bond ID. Targets may still be atoms or bonds. If the displayed electron source is missing, add the appropriate symbol first rather than silently choosing an atom or inventing a lone pair. The caller still supplies chemical intent; these rules do not certify an entire mechanism.
+
+The SN2 regression now selects its native circled-minus symbol and checks the calibrated visible-edge start. Fishhook head-shape fixtures use bond sources and remain rendering tests, not alternative one-electron SN2 mechanisms. Ownership and route examples with neutral oxygen explicitly add a lone pair. Direct and suggested atom-source rejection have retained failing-then-passing regressions.
+
+## 2026-09-15: ownership moves and native reaction-role inference
+
+The reaction-series style pass initially reset coefficient text to CaptionSize: the saved example had 8.25 pt coefficients beside 14 pt atoms. Coefficients are now explicitly restored to atom typography after the general style pass and before native measurement. Final verification checks coefficient family and size as well as value and position, retaining the documented 0.05 pt native size-quantization tolerance. This correction is restricted to explicitly owned coefficient text, not all page captions.
+
+Moving the SN2 reactant molecules down by 30 pt caused ChemDraw to remove the step's explicit reactant list, while retaining products and conditions. The mapped semantic verifier rejected the result. This was not harmless ID renumbering and the verifier was not relaxed.
+
+Ownership preflight now rejects vertical owner translations in drawings containing reaction schemes. Horizontal translations remain subject to exact native role preservation; they are not a promise that arbitrary movement across the reaction arrow is valid. Ordinary molecule sheets support both axes. The working native examples retain captions, charge symbols and internal curves, with remapped ownership sidecars. No manual-drag attachment guarantee is implied.
+
+The expanded reaction layout also encountered asymmetric native arrow ink: the top and bottom extend different distances from the shaft. Above-arrow conditions must use the measured tail-to-top extent, not half the arrow bounding-box height. A retained-geometry regression covers the observed half-point top-margin failure.
+
+At 30 pt separation between two reaction rows, native saving added the first row's product caption to the second row's above-arrow condition list. The molecule graphs and reactant/product roles were unchanged, but that condition association was wrong. A serial native probe with 120 pt row separation retained every explicit association and passed the unchanged verifier. The reaction-series default is now 120 pt. Explicit tighter spacing remains possible but can fail native semantic checks; the tool neither deletes the extra association to hide the failure nor claims arbitrary captions are guaranteed safe.
+
+Native MOL imports of isolated Na+ and K+ also carried an `AbnormalValence` override, while a previously tested native CDXML salt fixture did not. The reaction-specific builder uses a bounded, graph-checked CDXML seed for those two ions, and checked MOL seeds for other supported components. Salts retain explicit ownership of their separately imported components. No existing atom attributes are stripped and the general drawing parser is not relaxed.
+
+## 2026-09-15: shadow clipping in PNG, not a ChemDraw frame-fill bug
+
+The native rounded shadow rectangle exported correct CDXML and SVG, but macOS sips rasterized its evenodd clip hole as filled. The resulting PNG had a grey interior even though an independent browser render of the same untouched SVG and native PDF showed an outside-only shadow. Adding a redundant SVG fill-rule did not fix sips. Do not change the molecular drawing or frame fill to compensate for this rasterizer bug.
+
+PNG now rasterizes the unchanged native SVG through pinned offline resvg-py in a timed worker. The source vector remains unchanged; external references, images, scripts and unsupported SVG features fail explicitly. The output must have the requested proportional longest-side dimensions and RGBA format. A real pixel regression checks a transparent clip hole and a partially transparent shadow. Font rendering and unfamiliar SVG features still need review; no browser dependency or network rendering service is introduced.
+
+## 2026-09-15: native symbols, font bearings and final-export verification
+
+ChemDraw's CirclePlus/Minus bounds are control handles, not the visible circle's enclosing box. Native probes calibrated circle radius/stroke and lone-pair dot positions. Arrow origins now use that visible geometry and the departure tangent, including the appropriate lone-pair dot. Native saved associations and formal charges are checked independently. Charge conversion removes only the matching terminal charge suffix from a supported atom label: retaining both the suffix and a native charge symbol can make ChemDraw count the charge twice. Existing formal charge must remain unchanged.
+
+A native SymbolType Electron placed near an atom can set its Radical property. Graphical electron annotations therefore use a native filled-circle Oval with verified geometry, not a radical symbol or a chemical-state edit. LonePair and circled charges retain their native symbol forms. No whole-path or full wedge/multiple-bond ink collision certification is claimed.
+
+Helvetica Neue caption bearings in the supplied Sharpless template exposed a centring error. The layout must translate measured ink bounds and the text anchor by the same amount. Forcing the anchor to the molecular centre afterwards moves the ink off centre. The fix preserves the existing 0.75 pt ink and 0.05 pt anchor checks.
+
+Native saves may omit a local arrow LineWidth equal to the root value. Verification compares effective inherited width, never treats a missing local attribute as permission to change the visible width. Unsupported style substitutions still fail.
+
+Final symbol and annotation CDXML snapshots are exported after SVG/PNG rendering so changes during rendering cannot evade the final verifier. A NativeUncertain error during owned-copy cleanup stops all subsequent cleanup; it must not be masked by an earlier validation exception.
+
+## 2026-09-15: common-scaffold rotation and native rounding
+
+Native cleanup independently tilted the ortho-methyl acetophenone candidate. New drawings can now align an explicitly supplied common scaffold to the first native structure using only proper rotation and translation. The alignment checks graph/stereo preservation, internal distances and a maximum 0.25 pt fit RMSD. It does not infer a scaffold, reflect a structure or change its size. Moved atom-label bounds are cleared and ChemDraw remeasures them before grid placement.
+
+The first native integration exposed a verifier bug: nearly equal x coordinates changed lexicographic order when ChemDraw rounded coordinates to two decimals. The drawing was intact, but sorted-point comparison rejected it. Fragment matching now requires a unique unordered coordinate bijection within the existing 0.03 pt tolerance. Missing or reused points and excessive displacement still fail. Arrow head/tail order and subsequent atom-mapped graph/stereo checks remain unchanged. Regression tests retain the actual near-vertical coordinate example and native document bond settings.
+
+## 2026-09-15: explicit SMILES, MOL chirality and initial page geometry
+
+The first live SMILES creation test imported a tetrahedral SMILES centre as an enhanced AND group. The intermediate MOL file had a zero chiral flag. For explicitly assigned ordinary SMILES tetrahedral centres, the writer now sets `_MolFileChiralFlag` to 1 before exporting the seed. ChemDraw then retained the requested absolute centre, confirmed by the native isotope/stereo test. This is an input-semantics correction, not permission to strip enhanced stereo from arbitrary user files. [RDKit molfile property documentation](https://www.rdkit.org/docs/RDKit_Book.html)
+
+A later composition test set a large XML bounding box without a matching physical print page, causing ChemDraw to ask whether to expand the document. Native automation stopped as uncertain. The failed owned import was inspected, its page-expansion dialog cancelled once during development, then its exact scratch document backed up and closed. No dialog automation was added to the server and no pre-existing document was closed.
+
+Composition now keeps the first native import's page/print settings and stages normalized molecules without overlap within that page. Staging before normalization also caused a conservative fit rejection because native cleanup used a 30 pt bond length while the house preset uses 18 pt. Positive normalization now precedes staging bounds and packing. CrossingBonds metadata caused by overlapping staged structures is avoided by nonoverlapping staging, not by silently dropping unknown native properties.
+
+MOL writing provides initial 2D coordinates only. Actual ChemDraw imports, cleans and renders the result. Identity is checked after both native import and cleanup, including the live chiral/isotope and nitro test. [RDKit coordinate and MOL writer documentation](https://www.rdkit.org/docs/GettingStartedInPython.html)
+
+## 2026-09-15: annotation XML whitespace and failure auditing
+
+Pretty-printed XML indentation between text runs is formatting, not chemical label content. The annotation parser removes whitespace-only text outside `s` runs while preserving the text inside each run. This fixed native ID matching for the established SN2 fixture without rewriting its labels.
+
+The annotation verifier now checks supported charge background styling as well as foreground, width, position and atom association. If a source file disappears during final export, the audit records failed source preservation and closes only determinate owned copies. It no longer leaves a success audit behind a missing-file exception. Regression tests cover both failures.
+
+Scope-grid native errors now use the same conservative uncertainty boundary as annotations and batch: no retries or automatic closes after an unknown native outcome. Deterministic validation failures remain distinct from native-operation failures.
+
+## 2026-09-15: native structure assembly checks
+
+A graph decoder can read an oxygen atom correctly even if its displayed CDXML text says NH. Structure assembly separately checks elemental/H label text against decoded atoms. It also removes cached BondCircularOrdering references when renumbering native fragments, alongside the existing BondOrdering cache handling. The depicted bonds and wedges remain the chemical evidence. Neither check is an exhaustive rendered-glyph validator.
+
+## 2026-09-15: preserve document settings when isolating a fragment for validation
+
+The first batch native test failed atom-coordinate decoding because its validation helper created a fresh bare CDXML root for each fragment. That discarded the source document settings used by the decoder. The established scope helper keeps the original root and page settings, removing only unrelated page children. Batch now follows that working pattern. The actual source and native exports were not chemically changed; the validation wrapper was wrong.
+
+ChemDraw may also add reaction-scheme metadata when importing a drawing with an arrow but no supplied scheme. Batch checks explicit source scheme roles when supplied. It does not certify ChemDraw's newly inferred reaction roles as chemically correct. Neither issue justifies dropping a supplied scheme or weakening atom-mapped chemistry checks.
+
+## 2026-09-15: pre-reversed chemical labels in a generated fixture
+
+The first chlorobenzoic-acid demo supplied `HO` as the text of a left-hand oxygen atom with chemical face 96 and automatic label placement. ChemDraw 23.0.1.11 retained `HO` in its saved CDXML but rendered `OH` in SVG, leaving H visually nearest the bond. Both the source and edited copy inherited the issue. This was an input-label mistake in our fixture, not an analogue-edit chemistry change.
+
+A controlled native comparison changed only that supplied text to `OH`. The exported SVG then correctly displayed `HO` on the left. The example now uses this element-first chemical label; the editor likewise generates element-first text and lets ChemDraw arrange it. Do not pre-reverse an automatically oriented label based on its expected screen location.
+
+Regression: `test_live_aromatic_file_edit_renders_left_hydroxyl_correctly` checks actual SVG text after native import and editing. It failed on the original fixture before correction. This is a bounded regression, not proof that arbitrary chemical labels or every ChemDraw version behave identically.
+
+Local diagnostic evidence is retained in `local-validation/bromo-analogue-v1/` and `local-validation/label-orientation-probe.*`. The corrected user-facing demo is `local-validation/bromo-analogue-v2/review.html`.
+
+## Validation is not visual approval
+
+The editor verifies atom-mapped chemical identity, supported stereochemistry, atom coordinates and chemical text in saved CDXML. That does not comprehensively verify exported glyph positions, subscript typography, collision avoidance or page fit. The first demo's label issue demonstrates why `visual_review` remains `required` even when machine checks pass.
+
+## Delayed native open
+
+ChemDraw may accept an open before its document appears in the scripting document list. The bridge reconciles the exact working path with bounded read-only listing. It never repeats an uncertain open. Generic timeouts still require inspecting the application and recovery artifacts before retrying.
