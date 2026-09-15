@@ -14,11 +14,11 @@ Special thanks to **Marco DeCorti** for showing what makes a chemical drawing cl
 
 ## Native before and after
 
-Both images below are exports from desktop ChemDraw, not a substitute renderer. Reproduce them with the included example and recipe below.
+Both drawings below are exports from desktop ChemDraw, not a substitute renderer. GitHub previews have a solid white background for readability in light and dark themes; original exports remain transparent. Reproduce them with the included example and recipe below.
 
 | Before | After |
 |---|---|
-| ![Original illustrative oxidation drawing](assets/oxidation-before.svg) | ![Normalized native oxidation drawing](assets/oxidation-after.svg) |
+| ![Original illustrative oxidation drawing](assets/readme/oxidation-before.svg) | ![Normalized native oxidation drawing](assets/readme/oxidation-after.svg) |
 
 ## Complete jobs and reusable lab settings
 
@@ -60,7 +60,7 @@ The included example changes the existing chlorine atom to bromine and updates t
 
 | Original | Analogue copy |
 |---|---|
-| ![4-Chlorobenzoic acid native drawing](assets/analogue-before.svg) | ![4-Bromobenzoic acid native drawing](assets/analogue-after.svg) |
+| ![4-Chlorobenzoic acid native drawing](assets/readme/analogue-before.svg) | ![4-Bromobenzoic acid native drawing](assets/readme/analogue-after.svg) |
 
 ```sh
 uv run --extra chemistry chemdraw-mac edit \
@@ -79,7 +79,7 @@ Keep the existing molecular orientations, normalize bond scale, and arrange expl
 
 | Before | Four-column grid |
 |---|---|
-| ![Unarranged illustrative scope structures](assets/scope-before.svg) | ![Native scope grid with compound labels](assets/scope-after.svg) |
+| ![Unarranged illustrative scope structures](assets/readme/scope-before.svg) | ![Native scope grid with compound labels](assets/readme/scope-after.svg) |
 
 ```sh
 uv run --extra chemistry chemdraw-mac grid \
