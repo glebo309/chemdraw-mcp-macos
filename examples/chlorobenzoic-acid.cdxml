@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CDXML BondLength="18" LineWidth="1.58" BoldWidth="2" BondSpacing="18" LabelFont="3" LabelSize="14" CaptionFont="3" CaptionSize="10" InterpretChemically="no">
+  <fonttable><font id="3" name="Helvetica Neue" charset="Unicode"/></fonttable>
+  <page id="100" BoundingBox="0 0 540 720">
+    <fragment id="1">
+      <n id="2" p="90 42"/>
+      <n id="3" p="105.588457 51"/>
+      <n id="4" p="105.588457 69"/>
+      <n id="5" p="90 78"/>
+      <n id="6" p="74.411543 69"/>
+      <n id="7" p="74.411543 51"/>
+      <n id="8" p="90 24" Element="17" NumHydrogens="0"><t p="85 28"><s font="3" size="14" face="96">Cl</s></t></n>
+      <n id="9" p="90 96"/>
+      <n id="10" p="105.588457 105" Element="8" NumHydrogens="0"><t p="100 109"><s font="3" size="14" face="96">O</s></t></n>
+      <n id="11" p="74.411543 105" Element="8" NumHydrogens="1"><t p="63 109"><s font="3" size="14" face="96">OH</s></t></n>
+      <b id="12" B="2" E="3" Order="2"/>
+      <b id="13" B="3" E="4"/>
+      <b id="14" B="4" E="5" Order="2"/>
+      <b id="15" B="5" E="6"/>
+      <b id="16" B="6" E="7" Order="2"/>
+      <b id="17" B="7" E="2"/>
+      <b id="18" B="2" E="8"/>
+      <b id="19" B="5" E="9"/>
+      <b id="20" B="9" E="10" Order="2"/>
+      <b id="21" B="9" E="11"/>
+    </fragment>
+    <t id="30" p="90 132" Justification="Center"><s font="3" size="10">4-Chlorobenzoic acid</s></t>
+  </page>
+</CDXML>

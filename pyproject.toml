@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chemdraw-mcp-macos"
+version = "0.9.0"
+description = "Native ChemDraw automation for macOS over MCP"
+requires-python = ">=3.11"
+dependencies = ["mcp>=1.27.1,<2", "defusedxml>=0.7.1", "resvg-py==0.5.0"]
+
+[project.optional-dependencies]
+chemistry = ["rdkit>=2024.9,<2027"]
+
+[project.scripts]
+chemdraw-mcp-macos = "chemdraw_macos.server:main"
+chemdraw-mac = "chemdraw_macos.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "pillow>=11,<13"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["chemdraw_macos"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"licenses" = "chemdraw_macos/licenses"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

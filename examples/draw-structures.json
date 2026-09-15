@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "columns": 3,
+  "pixels": 3200,
+  "structures": [
+    {"compound_id": "a", "label": "Ethanol", "smiles": "CCO"},
+    {"compound_id": "b", "label": "Stereo/isotope test", "smiles": "[13CH3][C@H](O)C(=O)O"},
+    {"compound_id": "c", "label": "Nitrobenzene", "smiles": "O=[N+]([O-])c1ccccc1"}
+  ]
+}

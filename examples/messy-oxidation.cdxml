@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CDXML BondLength="30" LineWidth="0.6" LabelFont="3" LabelSize="10" CaptionFont="3" CaptionSize="10" InterpretChemically="no">
+  <fonttable><font id="3" name="Arial" charset="Unicode"/></fonttable>
+  <page id="100" BoundingBox="0 0 540 720">
+    <fragment id="1">
+      <n id="2" p="40 60"/>
+      <n id="3" p="65.980762 75"/>
+      <n id="4" Element="8" NumHydrogens="1" p="91.961524 60"><t p="87 64"><s font="3" size="10" face="96">OH</s></t></n>
+      <b id="5" B="2" E="3" LineWidth="0.6"/>
+      <b id="6" B="3" E="4" LineWidth="0.6"/>
+    </fragment>
+    <fragment id="20">
+      <n id="21" p="290 120"/>
+      <n id="22" p="302.990381 127.5"/>
+      <n id="23" Element="8" NumHydrogens="0" p="315.980762 120"><t p="309 126"><s font="3" size="18" face="96">O</s></t></n>
+      <b id="24" B="21" E="22" LineWidth="2"/>
+      <b id="25" B="22" E="23" Order="2" LineWidth="2"/>
+    </fragment>
+    <t id="10" p="67 180" Justification="Center"><s font="3" size="10">Ethanol</s></t>
+    <t id="30" p="305 205" Justification="Center"><s font="3" size="12">Ethanal</s></t>
+    <t id="51" p="170 62" Justification="Center"><s font="3" size="10">[O]</s></t>
+    <arrow id="50" Head3D="225 92 0" Tail3D="145 92 0" ArrowheadHead="Full" ArrowheadType="Solid" HeadSize="1000" ArrowheadCenterSize="875" ArrowheadWidth="250"/>
+  </page>
+</CDXML>

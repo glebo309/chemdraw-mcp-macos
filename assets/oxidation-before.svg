@@ -1,0 +1,22 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="290px" height="156px" viewBox="0 0 290 156" style="background-color: #ffffff00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+<text x="0" y="0" stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 51.0724 11.5815)" font-style="normal" font-weight="normal" font-size="200px" font-family="Arial" >
+OH</text>
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 797,1205.2 L 803,1194.8 L 1319.62,1493.07 L 1319.62,1506.93 L 797,1205.2 Z " />
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 1319.62,1506.93 L 1319.62,1493.07 L 1738.57,1251.19 L 1744.57,1261.58 L 1319.62,1506.93 Z " />
+<text x="0" y="0" stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 270.73 72.2817)" font-style="normal" font-weight="normal" font-size="360px" font-family="Arial" >
+O</text>
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 5790,2417.32 L 5810,2382.68 L 6059.81,2526.91 L 6059.81,2573.09 L 5790,2417.32 Z " />
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 6069.81,2567.32 L 6049.81,2532.68 L 6161.94,2467.94 L 6181.94,2502.58 L 6069.81,2567.32 Z " />
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 6069.81,2451.85 L 6049.81,2417.21 L 6111.94,2381.34 L 6131.94,2415.98 L 6069.81,2451.85 Z " />
+<text x="0" y="0" stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 13.042 128)" font-style="normal" font-weight="normal" font-size="200px" font-family="Arial" >
+Ethanol</text>
+<text x="0" y="0" stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 247.65 153)" font-style="normal" font-weight="normal" font-size="240px" font-family="Arial" >
+Ethanal</text>
+<text x="0" y="0" stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 126.333 10)" font-style="normal" font-weight="normal" font-size="200px" font-family="Arial" >
+[O]</text>
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 4396,1846 L 2900,1846 L 2900,1834 L 4396,1834 Z " />
+<path stroke="none" fill="#000000" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 4500,1840 C 4500,1840 4380,1871 4380,1871 C 4380,1871 4395,1853.56 4395,1840 C 4395,1826 4380,1808 4380,1808 C 4380,1808 4500,1840 4500,1840 C 4500,1840 4500,1840 4500,1840 " />
+<path stroke="#000000" stroke-width="1" fill="none" transform="matrix(0.05 0 0 0.05 -37 -52)" d="M 4500,1840 C 4500,1840 4380,1871 4380,1871 C 4380,1871 4395,1853.56 4395,1840 C 4395,1826 4380,1808 4380,1808 C 4380,1808 4500,1840 4500,1840 C 4500,1840 4500,1840 4500,1840 " />
+</svg>

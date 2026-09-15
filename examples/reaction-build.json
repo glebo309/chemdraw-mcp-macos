@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "pixels": 3200,
+  "reactants": [
+    {"compound_id": "1", "label": "Ethanol", "smiles": "CCO"}
+  ],
+  "products": [
+    {"compound_id": "2", "label": "Ethanal", "smiles": "CC=O"}
+  ],
+  "conditions_above": "oxidation",
+  "conditions_below": ""
+}

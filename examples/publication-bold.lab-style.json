@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "package_name": "publication-bold",
+  "package_version": "1.0.0",
+  "settings": {
+    "preset": {
+      "BondSpacing": "18",
+      "ChainAngle": "120",
+      "MarginWidth": "1.6",
+      "HashSpacing": "2.5",
+      "BondLength": "18",
+      "LineWidth": "1.58",
+      "BoldWidth": "2",
+      "LabelSize": "14",
+      "CaptionSize": "8.28",
+      "font": "Helvetica Neue"
+    },
+    "grid": {
+      "h_gap": 12,
+      "v_gap": 16,
+      "label_gap": 8,
+      "margin": 24
+    },
+    "reaction": {
+      "gap": 16.0,
+      "label_gap": 10.0,
+      "condition_gap": 10.0,
+      "row_gap": 120.0,
+      "margin": 36.0
+    },
+    "symbols": {
+      "span": 10.5,
+      "line_width": 1.58,
+      "clearance": 2.0
+    }
+  },
+  "conventions": {
+    "chemical_scale": "Shared bond length; never equal molecular bounding boxes.",
+    "orientation": "Explicit shared-scaffold alignment; never infer stereochemistry from orientation.",
+    "charges": "Native CirclePlus/Minus linked to existing formal charges, using the symbols workflow.",
+    "electron_flow": "Explicit electron source and target; charge or lone-pair source where appropriate.",
+    "review": "Native chemistry/layout checks plus human visual review. Not a chemical correctness certificate."
+  },
+  "references": [
+    {
+      "name": "scope-job",
+      "sha256": "796dd8db1a6dc13a9ad4e37c6c4998eac07e82c1c2c36de86ef26ccb46976c80",
+      "description": "Editable native reference input or explicit example recipe; inspect rendering on the receiving Mac."
+    },
+    {
+      "name": "sn2-annotation-input",
+      "sha256": "9b6fe55d261864db81e3fc8f26136e99f2b7fcbd1df252390b059b2dfaa4a2c4",
+      "description": "Editable native reference input or explicit example recipe; inspect rendering on the receiving Mac."
+    }
+  ],
+  "sha256": "de4eb73b84c61831751651e5ca33b5c288a0850295be5582ad428f7eeef7fcc4"
+}

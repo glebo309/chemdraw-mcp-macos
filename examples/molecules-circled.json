@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "charge_style": "circled",
+  "columns": 2,
+  "structures": [
+    {"compound_id": "1", "label": "Nitrobenzene", "smiles": "O=[N+]([O-])c1ccccc1"},
+    {"compound_id": "2", "label": "Glycine zwitterion", "smiles": "[NH3+]CC(=O)[O-]"},
+    {"compound_id": "3", "label": "Tetramethylammonium", "smiles": "C[N+](C)(C)C"},
+    {"compound_id": "4", "label": "Benzoate", "smiles": "O=C([O-])c1ccccc1"}
+  ]
+}

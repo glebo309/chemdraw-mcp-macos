@@ -1,0 +1,33 @@
+{
+  "steps": [
+    {
+      "step_id": "substitution",
+      "reactants": [
+        {"compound_id": "bromide", "label": "Bromide", "smiles": "[Br-]"},
+        {"compound_id": "iodomethane", "label": "Methyl iodide", "smiles": "CI"}
+      ],
+      "products": [
+        {"compound_id": "bromomethane", "label": "Methyl bromide", "smiles": "CBr"},
+        {"compound_id": "iodide", "label": "Iodide", "smiles": "[I-]"}
+      ],
+      "conditions_above": "SN2",
+      "conditions_below": ""
+    },
+    {
+      "step_id": "neutralization",
+      "reactants": [
+        {"compound_id": "acid", "label": "Acetic acid", "smiles": "CC(=O)O", "coefficient": 2},
+        {"compound_id": "base", "label": "NaOH", "smiles": "[Na+].[OH-]", "coefficient": 2}
+      ],
+      "products": [
+        {"compound_id": "salt", "label": "NaOAc", "smiles": "CC(=O)[O-].[Na+]", "coefficient": 2},
+        {"compound_id": "water", "label": "Water", "smiles": "O", "coefficient": 2}
+      ],
+      "conditions_above": "Acid + base",
+      "conditions_below": ""
+    }
+  ],
+  "preset": "house",
+  "layout": {"gap": 8, "label_gap": 10, "condition_gap": 10, "row_gap": 120, "margin": 18},
+  "pixels": 3200
+}

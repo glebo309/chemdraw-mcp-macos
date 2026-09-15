@@ -1,0 +1,85 @@
+<CDXML CreationProgram="ChemDraw 23.0.1.11" BoundingBox="21.74 64.18 351.76 139.71" FractionalWidths="yes" InterpretChemically="no" ShowAtomQuery="yes" ShowAtomStereo="no" ShowAtomEnhancedStereo="yes" ShowAtomNumber="no" ShowResidueID="no" ShowBondQuery="yes" ShowBondRxn="yes" ShowBondStereo="no" ShowTerminalCarbonLabels="no" ShowNonTerminalCarbonLabels="no" HideImplicitHydrogens="no" LabelFont="240" LabelSize="14" LabelFace="96" CaptionFont="240" CaptionSize="8.25" HashSpacing="2.50" MarginWidth="1.60" LineWidth="1.58" BoldWidth="2" BondLength="18" BondSpacing="18" ChainAngle="120" LabelJustification="Auto" CaptionJustification="Left" AminoAcidTermini="HOH" ShowSequenceTermini="yes" ShowSequenceBonds="yes" ShowSequenceUnlinkedBranches="no" ResidueWrapCount="40" ResidueBlockCount="10" PrintMargins="36 36 36 36" ChemPropName="" ChemPropFormula="Chemical Formula: " ChemPropExactMass="Exact Mass: " ChemPropMolWt="Molecular Weight: " ChemPropMOverZ="m/z: " ChemPropAnalysis="Elemental Analysis: " ChemPropBoilingPt="Boiling Point: " ChemPropMeltingPt="Melting Point: " ChemPropCritTemp="Critical Temp: " ChemPropCritPres="Critical Pres: " ChemPropCritVol="Critical Vol: " ChemPropGibbs="Gibbs Energy: " ChemPropLogP="Log P: " ChemPropMR="MR: " ChemPropHenry="Henry's Law: " ChemPropEForm="Heat of Form: " ChemProptPSA="tPSA: " ChemPropID="" ChemPropFragmentLabel="" color="0" bgcolor="1" RxnAutonumberStart="1" RxnAutonumberConditions="no" RxnAutonumberStyle="Roman" RxnAutonumberFormat="(#)">
+  <colortable>
+    <color r="1" g="1" b="1" />
+    <color r="0" g="0" b="0" />
+  </colortable>
+  <fonttable>
+    <font id="240" charset="x-mac-roman" name="Helvetica Neue" />
+  </fonttable>
+  <page id="4505" BoundingBox="0 0 1046 770" HeaderPosition="36" FooterPosition="36" PrintTrimMarks="yes" HeightPages="1" WidthPages="2">
+    <fragment id="1001" BoundingBox="24 79.33 49.37 105" Z="1">
+      <n id="1100" p="27.70 100" Z="2" Element="35" NumHydrogens="0" Charge="-1" NeedsClean="yes" AS="N" AtomID="1">
+        <t p="22.90 105" BoundingBox="24 95 37.16 105" LabelJustification="Left" LabelAlignment="Left">
+          <s font="240" size="14" color="0" face="96">Br</s>
+        </t>
+      </n>
+      <graphic id="1500" BoundingBox="42.70 86 32.20 86" Z="3" Warning="Chemical symbol is not associated with an atom." LineWidth="2" GraphicType="Symbol" SymbolType="CircleMinus">
+        <represent attribute="Charge" object="1100" />
+      </graphic>
+    </fragment>
+    <fragment id="2002" BoundingBox="96.37 94.88 134.94 108.21" Z="4">
+      <n id="2103" p="116.28 100" Z="5" NumHydrogens="3" NeedsClean="yes" AS="N" AtomID="2">
+        <t p="121.33 105.12" BoundingBox="96.37 94.88 120.77 108.21" LabelJustification="Right" Justification="Right" LabelAlignment="Right">
+          <s font="240" size="14" color="0" face="96">CH3</s>
+        </t>
+      </n>
+      <n id="2104" p="134.28 100" Z="6" Element="53" NumHydrogens="0" NeedsClean="yes" AS="N" AtomID="3">
+        <t p="132.47 105" BoundingBox="133.61 95 134.94 105" LabelJustification="Left">
+          <s font="240" size="14" color="0" face="96">I</s>
+        </t>
+      </n>
+      <b id="2105" Z="7" B="2103" E="2104" BS="N" />
+    </fragment>
+    <fragment id="3003" BoundingBox="234.94 94.88 282.31 108.21" Z="8">
+      <n id="3109" p="254.85 100" Z="9" NumHydrogens="3" NeedsClean="yes" AS="N" AtomID="4">
+        <t p="259.90 105.12" BoundingBox="234.94 94.88 259.34 108.21" LabelJustification="Right" Justification="Right" LabelAlignment="Right">
+          <s font="240" size="14" color="0" face="96">CH3</s>
+        </t>
+      </n>
+      <n id="3110" p="272.85 100" Z="10" Element="35" NumHydrogens="0" NeedsClean="yes" AS="N" AtomID="5">
+        <t p="268.05 105" BoundingBox="269.15 95 282.31 105" LabelJustification="Left" LabelAlignment="Left">
+          <s font="240" size="14" color="0" face="96">Br</s>
+        </t>
+      </n>
+      <b id="3111" Z="11" B="3109" E="3110" BS="N" />
+    </fragment>
+    <fragment id="4004" BoundingBox="329.31 79.33 351.65 105" Z="12">
+      <n id="4114" p="329.98 100" Z="13" Element="53" NumHydrogens="0" Charge="-1" NeedsClean="yes" AS="N" AtomID="6">
+        <t p="328.17 105" BoundingBox="329.31 95 330.64 105" LabelJustification="Left">
+          <s font="240" size="14" color="0" face="96">I</s>
+        </t>
+      </n>
+      <graphic id="4503" BoundingBox="344.98 86 334.48 86" Z="14" Warning="Chemical symbol is not associated with an atom." LineWidth="2" GraphicType="Symbol" SymbolType="CircleMinus">
+        <represent attribute="Charge" object="4114" />
+      </graphic>
+    </fragment>
+    <t id="901" p="72.87 104.80" BoundingBox="69.34 97.72 76.40 104.80" Z="15" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="14" color="0">+</s>
+    </t>
+    <t id="951" p="184.94 84" BoundingBox="177.82 77.97 191.63 85.76" Z="16" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="8.25" color="0" face="2">S</s>
+      <s font="240" size="8.25" color="0" face="34">N</s>
+      <s font="240" size="8.25" color="0">2</s>
+    </t>
+    <t id="905" p="305.81 104.80" BoundingBox="302.28 97.72 309.34 104.80" Z="17" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="14" color="0">+</s>
+    </t>
+    <t id="970" p="36.68 138" BoundingBox="21.74 132.11 52.09 138.09" Z="18" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="8.25" color="0">Bromide</s>
+    </t>
+    <t id="971" p="115.65 138" BoundingBox="91.48 132.11 140.31 139.71" Z="19" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="8.25" color="0">Methyl iodide</s>
+    </t>
+    <t id="972" p="258.62 138" BoundingBox="230.55 132.11 287.18 139.71" Z="20" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="8.25" color="0">Methyl bromide</s>
+    </t>
+    <t id="973" p="340.48 138" BoundingBox="329.70 132.11 351.76 138.09" Z="21" CaptionJustification="Center" CaptionLineHeight="variable" Justification="Center">
+      <s font="240" size="8.25" color="0">Iodide</s>
+    </t>
+    <graphic id="950" SupersededBy="4506" BoundingBox="214.94 100 154.94 100" Z="22" GraphicType="Line" ArrowType="FullHead" HeadSize="1000" />
+    <scheme id="4507">
+      <step id="4508" ReactionStepReactants="1001 2002" ReactionStepProducts="3003 4004" ReactionStepArrows="950" ReactionStepObjectsAboveArrow="951" />
+    </scheme>
+    <arrow id="4506" BoundingBox="154.94 97.02 214.94 101.98" Z="22" FillType="None" ArrowheadHead="Full" ArrowheadType="Solid" HeadSize="500" ArrowheadCenterSize="438" ArrowheadWidth="125" Head3D="214.94 100 0" Tail3D="154.94 100 0" Center3D="292.41 150 0" MajorAxisEnd3D="352.41 150 0" MinorAxisEnd3D="292.41 210 0" />
+  </page>
+</CDXML>
