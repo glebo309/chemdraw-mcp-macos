@@ -2,6 +2,9 @@
 
 These drawings and recipes are software demonstrations, not research results or experimental protocols.
 
+- `ions-circled.json`: glycine zwitterion and benzoate with opt-in native circled charges. Uses the ordinary `draw` command and returns final artifact paths.
+- `molecules-circled.json`: crowded four-molecule stress case. At the supplied house style it is expected to reject unsafe circled-charge placement; it is not a successful demonstration. Its same four graphs are covered by native plain-charge drawing tests.
+
 - `messy-oxidation.cdxml` + `oxidation-recipe.json`: normalize an illustrative ethanol/ethanal scheme.
 - `chlorobenzoic-acid.cdxml` + `bromo-analogue-recipe.json`: change one explicit halogen atom in a native copy.
 - `scope-input.cdxml` + `scope-recipe.json`: eight labelled structures into four columns. Every percentage in this recipe is invented test data. The zero and missing values deliberately test different display behavior. Do not cite these values as experimental yields.

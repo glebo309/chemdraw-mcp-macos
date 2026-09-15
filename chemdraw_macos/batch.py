@@ -12,6 +12,7 @@ from .polish import supported_root, chemical_signature
 from .core import validate_cdxml
 from .editing import verify_native_edit
 from .workflow import remap_ids, content_fingerprint, _write_json
+from .native_lock import NativeBusy
 
 
 class NativeUncertain(RuntimeError):
@@ -20,6 +21,7 @@ class NativeUncertain(RuntimeError):
 
 def _native(fn,*args,**kwargs):
     try:return fn(*args,**kwargs)
+    except NativeBusy:raise
     except Exception as exc:
         raise NativeUncertain(str(exc)) from exc
 

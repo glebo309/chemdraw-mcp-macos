@@ -1,5 +1,19 @@
 # Project progress
 
+## 2026-09-15: v0.9.1 coordination, charge ownership and readable previews
+
+GitHub examples now use opaque white-background SVG copies. The original transparent exports and their native drawing elements are unchanged. This fix was published in commit a9809f8, with a regeneration script and structural regression test.
+
+Native CLI and MCP workflows now share a per-user, cross-process gate with a bounded two-second wait. Nested workflows are reentrant; create/import/close and file wrappers hold the gate across their complete transactions. Busy contention is reported separately from uncertain native outcomes. The protocol does not coordinate manual GUI changes, other automation or separate Macs. Process exit releases the lock, but does not prove an already dispatched AppleEvent completed. See docs/NATIVE_COORDINATION.md.
+
+The earlier circled-charge failure was a genuine native reassignment from nitrogen to a nearby carbon. Candidate positions now require the intended atom to be uniquely nearest, in addition to existing clearance checks; final native chemistry and ownership remain checked. The original four charged structures pass in plain mode. Opt-in circled mode passes for glycine zwitterion and benzoate, with three uniform native symbols. Crowded tetramethylammonium and nitrobenzene remain refused in circled mode at the current house style. No validator was weakened, charge silently changed, or molecule distorted to force acceptance.
+
+Final portable acceptance: 713 passed, 34 native tests skipped in 6.32 s, recorded in local-validation/portable-v091-final.xml. Full serial native acceptance: 34 passed in 441.91 s, recorded in local-validation/native-coordination-v2.xml, with retained artifacts under local-validation/native-coordination-v2/. Interrupted runs are not counted as passes. Native tests and the CLI demo preserved pre-existing documents.
+
+The actual CLI draw command with examples/ions-circled.json produced local-validation/ions-circled-v091/review.html and charged/figure.cdxml, SVG and PNG. Its final working copy remains open. The white-background preview was visually inspected: three matching circled charges are clear of atoms, bonds and captions, although the negative charges sit low beside the caption row and remain a visual-refinement opportunity. All saved chemistry, coordinate, symbol and page checks passed. Doctor reports ready with ChemDraw 23.0.1.11 and the shared gate.
+
+Package metadata is 0.9.1. The dependency lock validates and wheel/source builds succeed locally; validation bundles and proprietary references remain excluded. Public source hosting is approved; package publication, original-code licensing and independent-Mac acceptance remain separate gates. Marco DeCorti's acknowledgment is retained.
+
 ## 2026-09-15: public experimental repository
 
 Glenn explicitly approved making the repository public. GitHub visibility was changed and verified PUBLIC. Reviewed the sole existing commit's file inventory and scanned tracked text for credential patterns; no matches were found. Local validation outputs, environments, builds, proprietary templates and reference PDFs remain excluded. Marco DeCorti's acknowledgment is retained. Documentation now distinguishes public experimental source from a stable release and from an open-source licence grant. No code or test behavior changed in this publication step; the documented unfinished-work status remains current.

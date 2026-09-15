@@ -25,6 +25,25 @@ def source():
 REQUESTS=[{'key':'br-charge','kind':'charge','atom_id':'1100'},
           {'key':'i-charge','kind':'charge','atom_id':'4114'}]
 
+def test_charge_placement_keeps_owner_uniquely_nearest():
+    import math
+    # Native tetramethylammonium geometry: a clear circle can still be nearer
+    # a methyl carbon, causing ChemDraw to reassign the formal charge on save.
+    text='''<CDXML BondLength="18" LabelSize="14" LineWidth="1.58"><page id="1" BoundingBox="0 0 300 300"><fragment id="2">
+    <n id="3" p="62.09 159.20"/><n id="4" p="77.68 150.20" Element="7" Charge="1" NumHydrogens="0"><t p="72.63 155.36" BoundingBox="73.71 140.37 88.53 155.36"><s>N+</s></t></n>
+    <n id="5" p="86.68 165.78"/><n id="6" p="93.27 141.20"/><n id="7" p="68.68 134.61"/>
+    <b id="8" B="3" E="4"/><b id="9" B="4" E="5"/><b id="10" B="4" E="6"/><b id="11" B="4" E="7"/>
+    </fragment></page></CDXML>'''
+    try:
+        planned,_=plan_symbols(text,[{'key':'n','kind':'charge','atom_id':'4'}])
+    except ValueError as exc:
+        assert 'No collision-free' in str(exc)
+        return  # Refusal is safe when the original measured label leaves no room.
+    root=ET.fromstring(planned);g=root.find('page/fragment/graphic')
+    p=tuple(map(float,g.get('BoundingBox').split()[:2]))
+    atoms={n.get('id'):tuple(map(float,n.get('p').split())) for n in root.findall('page/fragment/n')}
+    assert all(math.dist(p,atoms['4'])+.25<=math.dist(p,q) for k,q in atoms.items() if k!='4')
+
 def test_native_charge_symbols_are_uniform_and_keep_chemistry():
     text,plan=plan_symbols(source(),REQUESTS)
     root=ET.fromstring(text);gs=root.findall('page/fragment/graphic')

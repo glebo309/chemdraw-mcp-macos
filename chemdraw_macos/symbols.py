@@ -13,6 +13,7 @@ from .editing import source_token
 from .polish import numbers
 from .batch import _native, NativeUncertain
 from .workflow import _file_hash, _write_json
+from .native_lock import native_transaction
 
 DOTS={'LonePair','Electron'}
 KINDS={'charge':None,'lone_pair':'LonePair','electron':'Electron'}
@@ -55,6 +56,7 @@ def symbol_inventory(text):
     return result
 
 
+@native_transaction
 def inspect_symbols_document(bridge,document_id):
     snapshot=bridge._new_path('.cdxml','backups');_native(bridge.export,document_id,str(snapshot),'cdxml')
     return {**symbol_inventory(snapshot.read_text()),'snapshot':str(snapshot),'document':_native(bridge.inspect,document_id)['document']}
@@ -153,6 +155,11 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
         for distance in range(math.ceil(radius+clearance+2),37):
             for turn in (0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6,7,-7,8):
                 a=angle+turn*math.pi/8;p=(x+distance*math.cos(a),y+distance*math.sin(a))
+                # ChemDraw may replace an explicit Charge association with a
+                # nearby atom on save. Never place a charge in another atom's
+                # nearest-owner region, even if its circle has no ink collision.
+                if kind=='charge' and any(math.dist(p,(x,y))+.25>math.dist(p,q)
+                                          for other,q in positions.items() if other!=aid):continue
                 # Pair axis is perpendicular to the outward direction and its
                 # two dots straddle the chosen centre; the atom stays untouched.
                 if kind=='lone_pair':
@@ -236,6 +243,7 @@ def symbols_document(bridge,document_id,output_dir,symbols,expected_source_token
             _write_json(out/'audit.json',audit);raise
 
 
+@native_transaction
 def symbols_file(bridge,path,output_dir,symbols,expected_source_token=None,span=None,line_width=None,clearance=2,pixels=3200):
     out=_destination(output_dir,pixels);path=Path(path).expanduser().resolve(strict=True)
     if path.suffix.lower()!='.cdxml':raise ValueError('Symbol input requires CDXML')

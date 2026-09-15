@@ -16,6 +16,7 @@ from .polish import supported_root, numbers
 from .editing import atom_mapping, source_token
 from .workflow import remap_ids, _file_hash, _write_json
 from .batch import _verify as verify_core, _native, NativeUncertain
+from .native_lock import native_transaction
 
 
 def _positive(value):
@@ -171,6 +172,7 @@ def annotation_inventory(text):
             'note':'Offsets and cubic controls are explicit page-point geometry. Ownership is recorded in the recipe, not a promise of native moving attachment.'}
 
 
+@native_transaction
 def inspect_annotations_document(bridge,document_id):
     path=bridge._new_path('.cdxml','backups');_native(bridge.export,document_id,str(path),'cdxml')
     return {**annotation_inventory(path.read_text()),'snapshot':str(path),'document':bridge.inspect(document_id)['document']}
@@ -299,6 +301,7 @@ def annotate_document(bridge,document_id,output_dir,arrows,expected_source_token
             _write_json(out/'audit.json',audit);raise
 
 
+@native_transaction
 def annotate_file(bridge,path,output_dir,arrows,expected_source_token=None,line_width=.9,pixels=3200):
     out=Path(output_dir).expanduser()
     if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output requires absolute path and existing parent')

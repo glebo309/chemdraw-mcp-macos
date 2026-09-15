@@ -100,3 +100,13 @@ def test_styled_job_rejects_unknown_fields_before_native(tmp_path):
         def __getattr__(self,name):raise AssertionError('Native called')
     with pytest.raises(ValueError,match='fields'):
         run_styled_job(NoNative(),package(),'draw',{'invented':True},str(tmp_path/'out'))
+
+def test_styled_draw_forwards_explicit_charge_mode(tmp_path,monkeypatch):
+    from chemdraw_macos.lab_style import run_styled_job
+    import chemdraw_macos.draw
+    def draw(bridge,output_dir,**options):
+        assert options['charge_style']=='circled'
+        Path(output_dir).mkdir()
+        return {'audit':{}}
+    monkeypatch.setattr(chemdraw_macos.draw,'draw_structures',draw)
+    run_styled_job(object(),package(),'draw',{'structures':[],'charge_style':'circled'},str(tmp_path/'out'))

@@ -118,7 +118,7 @@ def run_styled_job(bridge,package,workflow,recipe,output_dir):
     if type(options.get('schema_version',1)) is not int or options.pop('schema_version',1)!=1:
         raise ValueError('Unsupported styled recipe schema')
     fields={
-        'draw':{'structures','preset','columns','pixels','scaffold_smiles','layout'},
+        'draw':{'structures','preset','columns','pixels','scaffold_smiles','layout','charge_style'},
         'reaction':{'reactants','products','conditions_above','conditions_below','preset','pixels','scaffold_smiles','layout'},
         'reaction-series':{'steps','preset','pixels','layout'},
         'scope-job':{'parent_smiles','handle_atom_map','groups','accept_all','selected_candidate_ids','columns','preset','frame','separators','pixels','layout'},

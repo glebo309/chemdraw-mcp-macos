@@ -12,6 +12,7 @@ from .geometry import Box, find_overlaps
 from .editing import source_token
 from .batch import _native, NativeUncertain, _verify, _document_content
 from .workflow import remap_ids, _write_json, _file_hash
+from .native_lock import native_transaction
 
 
 def _xml(root):
@@ -276,6 +277,7 @@ def decorate_scope_document(bridge,document_id,output_dir,groups,expected_source
     return _run(bridge,document_id,_destination(output_dir,pixels),groups,expected_source_token,frame,separators,pixels)
 
 
+@native_transaction
 def decorate_scope_file(bridge,path,output_dir,groups,expected_source_token=None,frame=True,separators=True,pixels=3200):
     out = _destination(output_dir,pixels);path = Path(path).expanduser().resolve(strict=True)
     if path.suffix.lower()!='.cdxml' or not path.is_file() or path.stat().st_size>10_000_000:

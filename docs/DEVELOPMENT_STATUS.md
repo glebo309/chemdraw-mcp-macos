@@ -1,22 +1,23 @@
 # Experimental development snapshot
 
-Updated 2026-09-15. This snapshot preserves work in progress, not a release candidate. Package metadata remains 0.9.0; see PROJECT_PROGRESS.md for the earlier version's native validation evidence.
+Updated 2026-09-15. Package version 0.9.1 remains experimental, with native evidence limited to the development Mac and ChemDraw 23.0.1.11.
 
 ## Current checks
 
-- Full portable command: `.venv/bin/pytest -q`.
-- Result: 683 passed, 32 skipped, 11 failed in 6.05 seconds.
-- All 11 failures are in `tests/test_native_lock.py`. These are new red-phase tests for coordination between independent CLI/MCP clients. The implementation is not present yet; current locks serialize only within each bridge instance.
-- The seven focused tests in `tests/test_draw_charges.py` pass. The new `charge_style` option is experimental, not native-accepted.
-- The first native four-molecule circled-charge demo stopped with `Unsupported or partially parsed chemistry; refusing to proceed`, after a nitrogen valence sanitization diagnostic. The precise cause remains under investigation. No successful charge-style production claim follows from portable tests.
-- No native operation was automatically retried after this failure. Diagnostic artifacts remain local and are not repository assets.
+- Full portable command: `.venv/bin/pytest -q`. Recorded result: 713 passed, 34 native tests skipped, no failures.
+- Per-user cross-process coordination is implemented, including reentrant native workflows and complete low-level create/import/close transactions. Busy contention is distinguished from uncertain native outcomes.
+- Opt-in `charge_style: "circled"` is available in draw and styled draw jobs. The default remains plain; returned `artifacts` points to the actual final CDXML/SVG/PNG.
+- The original native failure was a real charge reassignment from nitrogen to a nearby carbon. Placement now rejects a charge center closer to another atom. Crowded tetramethylammonium and nitrobenzene at the current house style remain refused in circled mode; plain-charge graphs are supported.
+- Full serial native acceptance passed all 34 tests in 441.91 seconds, including all four original plain-charge graphs and three circled charges across glycine zwitterion and benzoate. The actual CLI ionic demo also passed and its preview was visually inspected on white. Negative charges sit low beside the caption row, a remaining visual-refinement opportunity. Evidence paths are recorded in PROJECT_PROGRESS.md; interrupted runs are not counted as passes.
+- Opaque GitHub previews preserve the original transparent exports and every native drawing element. Marco DeCorti's acknowledgment is retained.
+- The 0.9.1 wheel and source archive build offline. Archive checks confirm the coordination module and upstream notice, with local validation bundles and proprietary references excluded. Built packages are local, not published releases.
 
 ## Next work
 
-1. Diagnose the charged-molecule native roundtrip without weakening chemistry or stereochemistry validation.
-2. Complete and verify cross-process coordination, retaining bounded waits and uncertain-write handling.
-3. Verify both CLI and MCP paths with native artifacts and visual inspection before promoting either addition.
-4. Continue molecule-first usability and consistent styling. Reactions combine explicit molecules; charts and general figure composition are not the current priority.
-5. Investigate explicit coordination bonds and spatial depictions for metal complexes. General metal-complex construction and 3D geometry are not implemented or certified.
+1. Verify installation and native drawing on another Mac with its own licensed ChemDraw.
+2. Improve crowded circled-charge placement without weakening graph, stereo or owner checks. Current refusals are explicit limits, not solved layouts.
+3. Continue molecule-first usability and consistent styling. Reactions combine explicit molecules; charts and general figure composition are not the current priority.
+4. Investigate explicit coordination bonds and supplied spatial depictions for metal complexes. General metal-complex construction and 3D geometry are not implemented or certified.
+5. Choose an original-code licence separately from public hosting before presenting the project as open source.
 
 The repository was made public with Glenn's approval on 2026-09-15. It includes source, tests, documentation and synthetic examples. It excludes local-validation bundles, virtual environments, built distributions, proprietary templates, application binaries and reference PDFs. Public hosting does not establish a stable release or original-code licence grant.

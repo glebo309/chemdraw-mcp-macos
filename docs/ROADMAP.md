@@ -1,6 +1,14 @@
 # Product roadmap
 
-Working plan, updated 2026-09-15. Local project only. This document does not announce a public release. The current README and test results describe implemented support.
+Working plan, updated 2026-09-15. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
+
+## Current molecule-first priorities
+
+Reliable editable molecules and reactions take precedence over charts, presentation panels or decorative graphics. Per-user cross-process coordination is implemented. Opt-in native circled charges now require safe owner geometry and final native graph/association checks. Independent-Mac acceptance, remaining crowded-symbol limitations and original-code licensing are the next release decisions, not additional unverified drawing features.
+
+The next chemistry expansion is explicit metal coordination: distinguish coordinate bonds, formal charges and oxidation-state labels; preserve supplied spatial geometry; test bounded square-planar, tetrahedral and octahedral depictions. Do not infer cis/trans, fac/mer or absolute metal stereochemistry from an ambiguous name or flat sketch. General metal-complex creation and 3D geometry are not implemented.
+
+Visual references include the [Baran lab seminar collection](https://baranlab.org/seminars/), Yuzuru Kanda's [Classics in Semisynthesis](https://baranlab.org/wp-content/uploads/2017/06/Classics_in_Semisynthesis-Kanda2017.pdf), and Tian Qin's [Bimetallic Complex in Organic Synthesis](https://baranlab.org/wp-content/uploads/2026/08/Qin_Sept_15.pdf). Inspected pages illustrate conserved scaffold orientations, clear wedges/hashes, compact substituent labels and explicit metal coordination. These are design references, not copied repository artwork or proof of implementation support.
 
 ## Product promise
 
@@ -12,7 +20,7 @@ All four approved increments are implemented through CLI and MCP: complete expli
 
 The scope job produces actual category bands. Reaction series retain supplied components and coefficients without balance or mechanism prediction. Ownership sidecars govern tool-controlled moves, not manual dragging; reaction schemes reject vertical movement because native role inference can discard reactants. Route proposals require explicit anchors and selection. Style packages lock actual supported workflow settings and retain their hash with each result.
 
-The remaining broad capabilities below are not silently included: arbitrary nested/multipage editing, cross-process locking, native manual-drag arrow attachment, automatic scaffold/chemistry inference and an additional naming provider. The independent-Mac acceptance and original-code licence/publication choices remain pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for handoff preparation.
+The remaining broad capabilities below are not silently included: arbitrary nested/multipage editing, native manual-drag arrow attachment, automatic scaffold/chemistry inference and an additional naming provider. Independent-Mac acceptance, package publication and original-code licensing remain pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for handoff preparation.
 
 ## First deliverable: repair an existing figure safely
 

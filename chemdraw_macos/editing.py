@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 
 from .polish import supported_root, chemical_signature, numbers
 from .workflow import content_fingerprint, _file_hash, _write_json
+from .native_lock import native_transaction
 
 ELEMENTS = {'C':6, 'N':7, 'O':8, 'F':9, 'P':15, 'S':16, 'Cl':17, 'Br':35, 'I':53}
 
@@ -285,6 +286,7 @@ def verify_native_edit(planned,native):
             'mapped_chemistry_verified':True,'native_labels_verified':True}
 
 
+@native_transaction
 def edit_file(bridge,path,output_dir,operations,captions,expected_source_token=None,pixels=2400):
     """Validate original CDXML before native import; remap explicit recipe IDs."""
     path=Path(path).expanduser().resolve(strict=True)

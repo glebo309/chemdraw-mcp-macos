@@ -6,7 +6,7 @@ Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create n
 
 Independent experimental project, publicly available for inspection. Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 
-**Development snapshot, not a stable release:** the repository includes unfinished test-first work on cross-process coordination and one-call circled charges. The latest portable run has 683 passing tests, 32 skipped native tests and 11 failing coordination tests whose implementation is still pending. The new charged-molecule demo is also blocked by a native chemistry-validation failure. See [current development status](docs/DEVELOPMENT_STATUS.md); earlier validation evidence does not certify these additions.
+**Experimental, not a stable release:** native support is limited to the tested ChemDraw build and supported drawing subset. Cross-process coordination and opt-in circled charges have regression coverage; crowded charge positions fail explicitly rather than risking a changed molecular graph. See [current development status](docs/DEVELOPMENT_STATUS.md) for exact checks and pending acceptance on another Mac.
 
 ## Acknowledgments
 
@@ -126,6 +126,8 @@ Add a rounded shadowed box, true dotted group dividers and optional headings to 
 [Native framed-scope example](assets/standard-scope-framed.svg) · [Editable input](examples/scope-decoration-input.cdxml) · [Reproducible recipe](examples/scope-decoration-recipe.json)
 
 ## From explicit structures to a native figure
+
+For supported ions, add `"charge_style": "circled"` to the draw manifest to create native circled charge symbols in the same job. [Try the ionic example](examples/ions-circled.json). The default remains `"plain"`. Crowded arrangements, including the current house-style tetramethylammonium/nitrobenzene examples, may have no safe circled-symbol position and are rejected; plain-charge drawing remains available. Returned `artifacts` points to the actual final CDXML/SVG/PNG, including the optional charge pass.
 
 `draw` accepts a manifest of explicit `{compound_id, label, smiles}` records. It preserves the supplied chemical identity through MOL seeding, native import and native Clean Up Structure, then hands the measured native structures to the grid workflow:
 
@@ -277,11 +279,11 @@ Both CLI and MCP call the same workflow implementation. [Usage and recipe refere
 - Batch export accepts supported flat CDXML and the bounded annotation subset, with no styling or layout changes. Full/half-headed cubic curves and explicitly associated circled charges are verified. Unknown graphics remain unsupported; any reaction scheme inferred by ChemDraw is not chemically certified.
 - Annotations support a separate bounded subset with existing circled-charge graphics and single-cubic electron-flow curves. Explicit references belong to the recipe; they do not promise native moving attachment. The separate symbols workflow adds supported graphical dots/charges without chemical or radical-state edits. No automatic mechanism inference runs.
 - The offline scope proposers attach only curated groups to supported mapped parents. This does not enable arbitrary atom insertion/deletion in an existing ChemDraw document or certify reaction compatibility.
-- `draw` creates new structures from explicit graphs, uses native cleanup and retains the first native import's page settings. Positive scale normalization and nonoverlapping uniform staging cells precede native composition, followed by measured grid-fit verification; the tool does not create custom paper sizes. Plain formal-charge atoms are distinct from graphical circled-charge symbols; drawing/grid workflows do not gain the annotation graphics support available in annotation and batch workflows.
+- `draw` creates new structures from explicit graphs, uses native cleanup and retains the first native import's page settings. Positive scale normalization and nonoverlapping uniform staging cells precede native composition, followed by measured grid-fit verification; the tool does not create custom paper sizes. Its optional circled-charge finishing pass uses the separate symbol verifier. The underlying grid still rejects general molecular graphics.
 - Chemistry is checked after native export. Glyph collisions, charge placement, source correctness and unsupported chemistry still need review.
 - Existing output paths are rejected. Draw creates new private structures; imports, polish, analogue editing, grids, annotations and batch export use working copies. Explicit low-level cleanup edits its target after a backup.
 - Backups remain local and contain chemical data. Only explicit `resolve` calls with network permission send queries to PubChem; other workflows stay local. Connected AI clients have separate privacy policies.
-- Commands are serialized within one process, not across competing clients. Avoid simultaneous editing of the same document.
+- Updated CLI/MCP clients share a per-user process lock, including native working-copy workflows. A competing call waits at most two seconds before returning busy without dispatching its native operation. Manual GUI edits, older clients and other automation software do not honor this lock. [Coordination contract](docs/NATIVE_COORDINATION.md)
 - An AppleEvent timeout has an uncertain outcome and is not retried automatically. Inspect ChemDraw before retrying.
 - No raw AppleScript, arbitrary menu, clipboard or quit tool is exposed. Native Name-to-Structure and unrestricted molecular editing are not implemented.
 
