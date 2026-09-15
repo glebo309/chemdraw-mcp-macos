@@ -1,6 +1,6 @@
 # Release and private handoff checklist
 
-This is a preparation checklist, not permission for public release or redistribution. Glenn approved private GitHub hosting on 2026-09-15. Public release and the licence for original code remain separate decisions. Native acceptance on another Mac is still pending. A successful development-Mac run does not complete either gate.
+Glenn approved public GitHub hosting on 2026-09-15, superseding the initial private-only decision. This checklist governs a stable release, not repository visibility. Package publication and the licence for original code remain separate decisions. Native acceptance on another Mac is still pending. A successful development-Mac run does not complete either gate.
 
 ## Required release gates
 

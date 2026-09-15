@@ -1,5 +1,9 @@
 # Project progress
 
+## 2026-09-15: public experimental repository
+
+Glenn explicitly approved making the repository public. GitHub visibility was changed and verified PUBLIC. Reviewed the sole existing commit's file inventory and scanned tracked text for credential patterns; no matches were found. Local validation outputs, environments, builds, proprietary templates and reference PDFs remain excluded. Marco DeCorti's acknowledgment is retained. Documentation now distinguishes public experimental source from a stable release and from an open-source licence grant. No code or test behavior changed in this publication step; the documented unfinished-work status remains current.
+
 ## 2026-09-15: private repository and contributor acknowledgment
 
 Glenn approved private GitHub hosting. Repository: https://github.com/glebo309/chemdraw-mcp-macos, verified PRIVATE before the initial push. Marco DeCorti is acknowledged in the README for visual guidance, reference examples and checking generated drawings. No collaborators were invited, public release made or original-code licence granted.

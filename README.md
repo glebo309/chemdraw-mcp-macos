@@ -4,9 +4,9 @@ Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create n
 
 **Native rendering, not simulated clicks.** AppleScript controls the installed application. ChemDraw renders SVG and other native exports; offline `resvg` rasterizes the unchanged native SVG for transparent PNG. Optional RDKit validates graphs, converts identifiers, constructs offline scope candidates and supplies the new-drawing workflow's MOL coordinate seeds. Desktop ChemDraw then imports, cleans and renders those structures; RDKit does not render the exported figure. Natural-language interpretation comes from your MCP client, not an LLM embedded in this server.
 
-Independent private development prototype. Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
+Independent experimental project, publicly available for inspection. Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 
-**Development snapshot, not a release:** the initial private repository includes unfinished test-first work on cross-process coordination and one-call circled charges. The latest portable run has 683 passing tests, 32 skipped native tests and 11 failing coordination tests whose implementation is still pending. The new charged-molecule demo is also blocked by a native chemistry-validation failure. See [current development status](docs/DEVELOPMENT_STATUS.md); earlier validation evidence does not certify these additions.
+**Development snapshot, not a stable release:** the repository includes unfinished test-first work on cross-process coordination and one-call circled charges. The latest portable run has 683 passing tests, 32 skipped native tests and 11 failing coordination tests whose implementation is still pending. The new charged-molecule demo is also blocked by a native chemistry-validation failure. See [current development status](docs/DEVELOPMENT_STATUS.md); earlier validation evidence does not certify these additions.
 
 ## Acknowledgments
 
@@ -232,7 +232,7 @@ Set `CHEMDRAW_APP` to the absolute `.app` path when discovery is ambiguous. `CHE
 
 ## Available tools
 
-Twenty-seven MCP tools share the workflow implementations. Identifiers, style extraction and scope proposals are offline; only explicit resolver calls use PubChem:
+The following core MCP tools share the workflow implementations; the complete-job tools are described above. Identifiers, style extraction and scope proposals are offline; only explicit resolver calls use PubChem:
 
 | Tool | Behaviour |
 |---|---|
@@ -299,4 +299,4 @@ The geometry layer adapts `Box`, `find_overlaps` and `grid_positions` from Micha
 
 Offline identifiers are documented in [the identifier contract](docs/IDENTIFIERS.md); the separate opt-in PubChem interface is documented in [resolver semantics](docs/RESOLVER.md). Other providers and native Name-to-Structure remain outside the implementation. [Layout and workflow research](docs/LAYOUT_WORKFLOW_RESEARCH.md) records the scope-grid motivation and further improvements. Use this README and the usage reference for interfaces, and [project progress](PROJECT_PROGRESS.md) for actual validation evidence.
 
-No public release or license grant for this project's original code has been made. Retained upstream licenses remain applicable to their respective code. ChemDraw is proprietary software and a trademark of its respective owner; this project is not affiliated with or endorsed by its vendor.
+The source repository is public, but no stable release or open-source license grant for this project's original code has been made. Retained upstream licenses remain applicable to their respective code. ChemDraw is proprietary software and a trademark of its respective owner; this project is not affiliated with or endorsed by its vendor.

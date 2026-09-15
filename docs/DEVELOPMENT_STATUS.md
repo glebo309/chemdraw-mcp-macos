@@ -1,4 +1,4 @@
-# Private development snapshot
+# Experimental development snapshot
 
 Updated 2026-09-15. This snapshot preserves work in progress, not a release candidate. Package metadata remains 0.9.0; see PROJECT_PROGRESS.md for the earlier version's native validation evidence.
 
@@ -19,4 +19,4 @@ Updated 2026-09-15. This snapshot preserves work in progress, not a release cand
 4. Continue molecule-first usability and consistent styling. Reactions combine explicit molecules; charts and general figure composition are not the current priority.
 5. Investigate explicit coordination bonds and spatial depictions for metal complexes. General metal-complex construction and 3D geometry are not implemented or certified.
 
-The private repository includes source, tests, documentation and synthetic examples. It excludes local-validation bundles, virtual environments, built distributions, proprietary templates, application binaries and reference PDFs. No public release or original-code licence grant is implied.
+The repository was made public with Glenn's approval on 2026-09-15. It includes source, tests, documentation and synthetic examples. It excludes local-validation bundles, virtual environments, built distributions, proprietary templates, application binaries and reference PDFs. Public hosting does not establish a stable release or original-code licence grant.
