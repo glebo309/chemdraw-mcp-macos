@@ -1,6 +1,6 @@
 # Contributing
 
-This is a private development prototype. Private GitHub hosting has been approved; public hosting, releases and a license for original project code have not yet been chosen. These instructions do not authorize publishing private files or proprietary ChemDraw assets.
+This is a publicly hosted experimental prototype. A stable release and a license for original project code have not yet been chosen. These instructions do not authorize publishing private files or proprietary ChemDraw assets. Public visibility is not an open-source licence grant.
 
 ## Build a bounded, visible result
 
