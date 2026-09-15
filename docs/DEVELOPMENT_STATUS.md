@@ -4,7 +4,7 @@ Updated 2026-09-15. Package version 0.9.1 remains experimental, with native evid
 
 ## Current checks
 
-- Full portable command: `.venv/bin/pytest -q`. Recorded result: 713 passed, 34 native tests skipped, no failures.
+- Full portable command: `.venv/bin/pytest -q`. Recorded result after licensing checks: 716 passed, 34 native tests skipped, no failures. No native behavior changed in the licence-only increment.
 - Per-user cross-process coordination is implemented, including reentrant native workflows and complete low-level create/import/close transactions. Busy contention is distinguished from uncertain native outcomes.
 - Opt-in `charge_style: "circled"` is available in draw and styled draw jobs. The default remains plain; returned `artifacts` points to the actual final CDXML/SVG/PNG.
 - The original native failure was a real charge reassignment from nitrogen to a nearby carbon. Placement now rejects a charge center closer to another atom. Crowded tetramethylammonium and nitrobenzene at the current house style remain refused in circled mode; plain-charge graphs are supported.
@@ -18,4 +18,4 @@ Updated 2026-09-15. Package version 0.9.1 remains experimental, with native evid
 2. Improve crowded circled-charge placement without weakening graph, stereo or owner checks. Current refusals are explicit limits, not solved layouts.
 3. Continue molecule-first usability and consistent styling. Reactions combine explicit molecules; charts and general figure composition are not the current priority.
 4. Investigate explicit coordination bonds and supplied spatial depictions for metal complexes. General metal-complex construction and 3D geometry are not implemented or certified.
-5. Choose an original-code licence separately from public hosting before presenting the project as open source.
+5. Complete the remaining stable-release acceptance and distribution review. Original project code is now AGPL-3.0-only.
