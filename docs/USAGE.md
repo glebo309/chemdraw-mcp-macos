@@ -2,6 +2,15 @@
 
 CLI and MCP share the same workflow implementations. Natural-language interpretation comes from a connected assistant; the server itself is not an LLM. The separate `resolve` interface contacts PubChem only when the caller explicitly enables network access; other workflows do not perform name lookup.
 
+## Core or full MCP
+
+`chemdraw-mcp-macos --profile core` exposes direct native document tools without
+requiring the optional chemistry dependency. `--profile full` adds the drawing
+workflows below and remains the default. `chemdraw-mac serve --profile core` is
+an equivalent launcher. Both are stdio servers for a connected client, not chat
+prompts. See [architecture and exact boundaries](ARCHITECTURE.md) and
+[client configuration](MCP_CLIENTS.md#choose-core-or-full).
+
 ## Complete production jobs
 
 | CLI | MCP | Contract |

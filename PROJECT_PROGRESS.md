@@ -1,5 +1,50 @@
 # Project progress
 
+## 2026-09-15: independently usable core MCP and optional workflows
+
+The basic native MCP was already implemented. The server now has an explicit
+`--profile core` tool surface with ten direct native operations; `--profile full`
+retains the existing default toolset. `chemdraw-mac serve` forwards the same option.
+Core reuses the exact existing functions and schemas, does not require RDKit, and
+does not expose the workflow tools. This is one package with selectable tools,
+not two services or a new embedded language model. The connected AI client owns
+natural-language interpretation; reusable server workflows own explicit drawing,
+layout and preservation operations. README and docs/ARCHITECTURE.md now explain
+that distinction and prioritize general input-driven capabilities over per-molecule
+functions. Experimental metal work is separate from ordinary core usability.
+
+Eight new portable profile tests passed, including fresh stdio discovery/calls,
+non-core call rejection, unchanged full discovery, matching schemas, shared bridge
+dispatch, CLI forwarding and an RDKit import blocker. The development working
+tree's portable suite passed 803 tests with 41 skips before adding the second
+native profile parametrization. Both native scratch profiles then passed in
+17.85 seconds: creation, private-copy import, inspection, per-molecule and whole
+document cleanup, style copy, CDXML/CDX/SVG/PDF/PNG exports, and closure of only
+their known copies. Pre-existing document inventory/metadata matched afterward.
+The final portable rerun passed 803 tests with 42 native skips in 7.90 seconds.
+Reports: local-validation/core-profile-portable-final.xml and core-profile-native.xml.
+This does not establish another-Mac or arbitrary chemical-subset acceptance.
+
+The focused Git snapshot was also tested separately, excluding the pending
+installer, cage, charge-search and complex changes. Its portable suite passed
+742 tests with 36 native skips in 7.72 seconds. Its two full/core native scratch
+tests passed in 17.64 seconds. Reports: local-validation/core-profile-focused-portable.xml
+and core-profile-focused-native.xml. Only this independently tested profile,
+documentation and export-guard increment is selected for the focused commit.
+
+A preceding export probe exposed native save assigning a filename to an untitled
+drawing during a snapshot. Core export now refuses that case before dispatching
+save, with a source-order regression check. The prior drawing was not deleted;
+its assigned backup name was not silently reverted. Live rejection of a newly
+created untitled document remains untested.
+
+The failed CDX binary-aromatic-patching test specification was moved to ignored
+local-validation/abandoned_aromatic_cdx_spec.py, not implemented or weakened into
+a passing production test. A later native probe preserved aromatic ring orders
+with closed curves inside the molecular fragment. That general representation
+finding is not integrated yet; ferrocene remains unavailable in the production
+workflow. Existing local rc2 artifacts are unchanged.
+
 ## 2026-09-15: v0.9.2 one-command native first run
 
 Glenn approved a one-command onboarding workflow with a small molecular terminal animation and asked whether the same workflows work from desktop assistant apps. `first-run` and new MCP `chemdraw_first_run` now share one implementation: dependency discovery, native connection, explicit caffeine/aspirin drawing through cleanup and grid validation, required artifact checks and a retained `first-run.json` report. Default output is uniquely named. The final drawing stays open; pre-existing documents are preserved. Fresh server discovery reports 38 tools.
