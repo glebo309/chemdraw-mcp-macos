@@ -21,6 +21,7 @@ from .scope_job import plan_scope_job,build_scope_job
 from .reaction_series import build_reaction_series
 from .ownership import build_ownership,move_document
 from .lab_style import make_package,save_package,load_package,run_styled_job
+from .first_run import run_first_run
 
 mcp=FastMCP('ChemDraw macOS',instructions='Controls actual ChemDraw through AppleScript. Use explicit current document IDs. Imports and styling create working copies. Review native cleanup before publication. No RDKit renderer is used.')
 _bridge=None
@@ -32,6 +33,11 @@ def bridge():
 READ=ToolAnnotations(readOnlyHint=True,destructiveHint=False,openWorldHint=False)
 WRITE=ToolAnnotations(readOnlyHint=False,destructiveHint=False,openWorldHint=False)
 EDIT=ToolAnnotations(readOnlyHint=False,destructiveHint=True,openWorldHint=False)
+
+@mcp.tool(annotations=WRITE)
+def chemdraw_first_run(output_dir:str|None=None)->dict:
+    """Explicitly requested setup smoke test: check local dependencies and native connection, then create NEW caffeine/aspirin drawings through native cleanup, layout and validation. Returns editable CDXML, SVG, PNG, HTML review and report; final working copy stays open, pre-existing drawings preserved. Default output is a unique workspace folder; supplied path must be new and absolute. No animation, browser launch, package installation, permissions change or client configuration edits. No retry or extra close after native uncertainty. Visual review is still required; this is not full compatibility certification."""
+    return run_first_run(output_dir,bridge_factory=bridge)
 
 @mcp.tool(annotations=READ)
 def chemdraw_plan_scope_job(job:dict)->dict:

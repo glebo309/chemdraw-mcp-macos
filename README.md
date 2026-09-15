@@ -31,7 +31,21 @@ The v0.9 workflow layer connects the individual tools into callable jobs:
 
 Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Another-Mac acceptance and package publication remain pending in the [release checklist](docs/RELEASE_CHECKLIST.md).
 
-## Try the terminal workflow
+## First drawing in one command
+
+With [uv](https://docs.astral.sh/uv/getting-started/installation/), Git and your own activated ChemDraw installed on your Mac:
+
+```sh
+uvx --from 'chemdraw-mcp-macos[chemistry] @ git+https://github.com/glebo309/chemdraw-mcp-macos@main' chemdraw-mac first-run
+```
+
+This runs the public development branch in an isolated tool environment, checks the local installation, draws caffeine and aspirin in desktop ChemDraw, validates the native exports and opens a local review. A small ASCII molecular ring animates while the native workflow runs. Dependency download/build progress comes from uv before the command starts. Nothing installs or licenses ChemDraw for you.
+
+Already in a checkout? Use `uv run --locked --extra chemistry chemdraw-mac first-run` instead for the committed dependency lock. Outputs go to a new uniquely named folder, the final drawing stays editable in ChemDraw, and pre-existing documents are preserved. Use `--json` for scripts or `--no-open --no-animation` for a quiet terminal. [First-run behavior and troubleshooting](docs/FIRST_RUN.md)
+
+**Desktop apps work too:** connect the same local MCP server to Claude Desktop or your Codex desktop client, then ask it to run `chemdraw_first_run`. No terminal animation or automatic browser launch is sent over MCP. [Desktop client setup](docs/MCP_CLIENTS.md)
+
+## Try the polishing workflow
 
 From the project directory, with `uv` installed and ChemDraw running and activated:
 
@@ -196,6 +210,8 @@ A photo or hand sketch can be interpreted by an image-capable connected assistan
 
 ## Connect an assistant
 
+For app-specific Claude Desktop JSON and Codex TOML setup, see [desktop client instructions](docs/MCP_CLIENTS.md). This is a local stdio server, not a remote web connector.
+
 The basic bridge does not require RDKit. Install with `uv sync --locked` for native import, cleanup, styling and export only. For identifiers, resolution, scope proposals and validated native figure workflows, retain the optional chemistry extra as above. `identify`, `propose-scope`, `scan-scope`, `import-style` and `resolve` do not require a running ChemDraw application; only `resolve` requires explicit network opt-in. Launch the installed executable directly from your MCP client:
 
 ```json
@@ -239,6 +255,7 @@ The following core MCP tools share the workflow implementations; the complete-jo
 | Tool | Behaviour |
 |---|---|
 | `chemdraw_doctor` | Reports installation, live connection and optional validator availability |
+| `chemdraw_first_run` | Checks setup, draws a fixed native example and returns editable files, review and audit |
 | `chemdraw_list_documents` | Native document IDs, names, paths, modified flags and molecule counts |
 | `chemdraw_inspect_document` | Native molecule indices/bounds and document settings |
 | `chemdraw_analyze_document` | Exports a snapshot and reports supported object geometry plus a top-level source token; editable single molecules also receive atom/bond IDs |

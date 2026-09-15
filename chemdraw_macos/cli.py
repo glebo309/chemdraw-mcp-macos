@@ -29,6 +29,11 @@ from .lab_style import make_package,save_package,load_package,run_styled_job
 def main(argv=None):
     parser=argparse.ArgumentParser(prog='chemdraw-mac',description='Native ChemDraw automation for macOS')
     commands=parser.add_subparsers(dest='command',required=True)
+    first=commands.add_parser('first-run',help='Check setup, draw a native example and open its review')
+    first.add_argument('--output',help='Optional new absolute output directory; default is a unique workspace folder')
+    first.add_argument('--json',action='store_true',help='JSON only; no animation or browser launch')
+    first.add_argument('--no-open',action='store_true',help='Do not open the HTML review in a browser')
+    first.add_argument('--no-animation',action='store_true',help='Use plain progress lines instead of the ring animation')
     d=commands.add_parser('doctor',help='Check installation, native connection and validation support')
     d.add_argument('--no-connect',action='store_true')
     commands.add_parser('documents',help='List live document IDs')
@@ -130,6 +135,9 @@ def main(argv=None):
     from contextlib import ExitStack, nullcontext
     transactions=ExitStack()
     try:
+        if args.command=='first-run':
+            from .first_run import run_cli
+            return run_cli(args)
         if args.command=='make-lab-style':
             sections=json.loads(args.settings.read_text()) if args.settings else {}
             result=save_package(make_package(args.name,args.version,inspect_style_file(args.style)['preset'],**sections),args.output)

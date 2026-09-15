@@ -16,6 +16,8 @@ Opt-in native tests exercise the stdio MCP bridge, bounded native polish, analog
 
 ## Supported operations
 
+One-call first-run onboarding reuses the existing native draw workflow with fixed caffeine/aspirin inputs. It checks dependencies, connection, final audit and required exports, leaving visual review explicitly required. It has actual stdio and installed-wheel evidence on the development Mac only. CLI animation/browser behavior is separate from the silent MCP workflow. [First-run details](FIRST_RUN.md), [desktop connection instructions](MCP_CLIENTS.md).
+
 Updated native workflows use a per-user cooperative process lock across CLI/MCP instances and scratch workspaces. Competing calls fail busy after a bounded wait without dispatching their native command. Manual edits and uncooperative/older clients remain outside its scope. See [coordination](NATIVE_COORDINATION.md).
 
 The draw workflow optionally runs a circled-charge finishing pass for supported +1/-1 charged atoms. Saved chemistry and associations must survive native rendering; dense owner regions can be rejected even when plain-charge drawing works. This does not enable general organometallic structures or arbitrary graphics inside the grid workflow. See [symbols](SYMBOLS.md).

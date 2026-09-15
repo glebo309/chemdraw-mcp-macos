@@ -1,5 +1,17 @@
 # Project progress
 
+## 2026-09-15: v0.9.2 one-command native first run
+
+Glenn approved a one-command onboarding workflow with a small molecular terminal animation and asked whether the same workflows work from desktop assistant apps. `first-run` and new MCP `chemdraw_first_run` now share one implementation: dependency discovery, native connection, explicit caffeine/aspirin drawing through cleanup and grid validation, required artifact checks and a retained `first-run.json` report. Default output is uniquely named. The final drawing stays open; pre-existing documents are preserved. Fresh server discovery reports 38 tools.
+
+Interactive CLI uses a six-position ASCII ring with truthful stage labels and opens the local review on success. JSON/nonterminal output remains machine-readable, with no browser or escape sequences. MCP has neither presentation behavior. Missing dependencies, existing destinations, busy/uncertain operations, partial exports, interruption and browser-launch failures have regression coverage. Ctrl-C initially lost the native stage/output path; the failing regression now passes. There are no automatic write retries, extra uncertainty cleanup, permission changes or client-configuration edits.
+
+Verification: full locked portable suite passed 733 tests with 35 native skips in 6.43 s, recorded in local-validation/first-run-portable-final.xml. Targeted serial native suite passed 5 tests in 117.38 s, recorded in local-validation/first-run-native.xml: the new actual stdio first-run plus four existing draw cases. The test closes only its own final copy and checks the original document inventory. This is not a repeat of the earlier full 34-test native acceptance.
+
+The 0.9.2 wheel and source archive built offline. The installed wheel was exercised through uvx from outside the checkout, including interactive ring animation, successful browser launch and native output at local-validation/first-run-cli-v092/review.html. Its white-background native preview was visually inspected: readable structures, aligned captions/IDs and no apparent label overlap. The original transparent exports remain unchanged. Checks passed on ChemDraw 23.0.1.11 with Python 3.13.2; this remains same-Mac evidence. Wheel contents retain the native module and all AGPL/upstream notices, excluding local validation bundles.
+
+README and docs/FIRST_RUN.md provide the Git-source uvx command and locked-checkout alternative. docs/MCP_CLIENTS.md documents Claude Desktop JSON and Codex local configuration, native-job timeout considerations and the local-versus-web boundary using official client documentation. Client settings were not changed. A native doctor call through the current connected assistant session also responded successfully. Another-Mac acceptance, crowded-charge refinement, metal complexes, desktop-extension packaging and package publication remain separate work.
+
 ## 2026-09-15: open-source licensing and collaboration
 
 Glenn requested making the project open source after discussing permissive and copyleft options. Original project code is now licensed under GNU AGPL version 3 only (AGPL-3.0-only), preserving the stated preference for access to covered improvements while allowing commercial use. LICENSE is the unchanged official GNU text, verified byte-for-byte; NOTICE declares project copyright and warranty terms. Existing upstream MIT notices remain unchanged. No restriction on ordinary user drawings or research, no promise that all independent paid clients are covered, and no contributor copyright assignment were added.
