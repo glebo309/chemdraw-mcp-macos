@@ -23,7 +23,19 @@ from .ownership import build_ownership,move_document
 from .lab_style import make_package,save_package,load_package,run_styled_job
 from .first_run import run_first_run
 
-mcp=FastMCP('ChemDraw macOS',instructions='Controls actual ChemDraw through AppleScript. Use explicit current document IDs. Imports and styling create working copies. Review native cleanup before publication. No RDKit renderer is used.')
+INSTRUCTIONS = (
+    'Controls actual ChemDraw through AppleScript. Natural-language interpretation and '
+    'tool selection belong to the connected AI client; this server has no embedded LLM. '
+    'Use explicit current document IDs. Imports and styling create working copies. '
+    'Native cleanup changes depiction; inspect its result. Core calls do not certify '
+    'chemical identity or layout. No RDKit renderer is used. '
+)
+mcp=FastMCP('ChemDraw macOS',instructions=INSTRUCTIONS +
+    'Full profile: direct native operations plus optional deterministic drawing, layout '
+    'and validation workflows. Prefer an appropriate workflow when its documented '
+    'input subset fits; otherwise use supported core operations with explicit inputs. '
+    'Do not invent missing stereochemistry, products or experimental results. '
+    'Experimental complex support is not a prerequisite for ordinary drawing.')
 _bridge=None
 def bridge():
     global _bridge
@@ -238,5 +250,40 @@ def chemdraw_grid_document(document_id:int,output_dir:str,cells:list[dict],expec
     return grid_document(bridge(),document_id,output_dir,cells,expected_source_token,preset,
                          columns,width,height,margin,h_gap,v_gap,label_gap,pixels)
 
-def main():mcp.run(transport='stdio')
+def get_server(profile: str = 'full') -> FastMCP:
+    """Select the exposed tool surface without changing the shared implementations."""
+    if profile == 'full':
+        return mcp
+    if profile != 'core':
+        raise ValueError(f'Unknown MCP profile: {profile}')
+    core = FastMCP('ChemDraw macOS', instructions=INSTRUCTIONS +
+        'Core profile: native document operations only. Accept local CDXML/CDX/MOL/SDF '
+        'through import_file or explicit CDXML through create_document. No name resolver '
+        'or SMILES drawing workflow is exposed. RDKit is not required. Inspect exports '
+        'visually and validate supplied chemistry separately. Export of an untitled '
+        'document is refused because native save would assign it a filename.')
+    for fn, annotations in (
+        (chemdraw_list_documents, READ),
+        (chemdraw_inspect_document, READ),
+        (chemdraw_import_file, WRITE),
+        (chemdraw_create_document, WRITE),
+        (chemdraw_clean, EDIT),
+        (chemdraw_apply_style, WRITE),
+        (chemdraw_export, WRITE),
+        (chemdraw_close_working_document, EDIT),
+        (chemdraw_list_styles, READ),
+        (chemdraw_doctor, READ),
+    ):
+        core.add_tool(fn, annotations=annotations)
+    return core
+
+
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description='Native ChemDraw MCP server over stdio')
+    parser.add_argument('--profile', choices=('core', 'full'), default='full',
+                        help='core: direct native tools; full: core plus drawing workflows (default)')
+    args = parser.parse_args(argv)
+    get_server(args.profile).run(transport='stdio')
+
 if __name__=='__main__':main()

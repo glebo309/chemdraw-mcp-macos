@@ -18,6 +18,31 @@ Use the absolute installed executable path in client settings. This avoids depen
 
 Do not point the client at `chemdraw-mac first-run`: that is a one-shot CLI command, not the server. `chemdraw-mac serve` is an alternative stdio server entry point.
 
+## Choose core or full
+
+The same executable supports `--profile core` for direct native document operations
+or `--profile full` for core plus drawing workflows. Full remains the default.
+Core does not require the chemistry extra: `uv sync --locked` is sufficient in a
+checkout. These are tool profiles in one package, not separate servers to install.
+
+In a client's JSON server entry, add:
+
+```json
+"args": ["--profile", "core"]
+```
+
+For a TOML server table, add:
+
+```toml
+args = ["--profile", "core"]
+```
+
+Use `full` or omit the arguments for the existing full toolset. Restart/reload the
+configured server after changing the profile. In core mode, test the connection
+with `chemdraw_doctor`; `chemdraw_first_run` is a full-profile workflow and is not
+exposed. A core client can instead import a supplied structure and export it.
+See [the architecture guide](ARCHITECTURE.md) for the exact core tool list and limits.
+
 ## Codex local clients
 
 Codex uses `[mcp_servers.NAME]` tables in `~/.codex/config.toml`; local clients on the same host share MCP configuration. See the [official OpenAI documentation](https://developers.openai.com/codex/mcp/) for current desktop settings and configuration behavior.

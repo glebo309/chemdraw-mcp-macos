@@ -130,7 +130,9 @@ def main(argv=None):
     route=commands.add_parser('apply-route',help='Render an explicitly selected, snapshot-bound route in a native copy')
     route.add_argument('--input',type=Path,required=True);route.add_argument('--report',type=Path,required=True)
     route.add_argument('--candidate',required=True);route.add_argument('--output',required=True)
-    commands.add_parser('serve',help='Run the MCP stdio server')
+    serve_parser=commands.add_parser('serve',help='Run the MCP stdio server')
+    serve_parser.add_argument('--profile',choices=('core','full'),default='full',
+                              help='Direct native tools only, or core plus drawing workflows (default: full)')
     args=parser.parse_args(argv)
     from contextlib import ExitStack, nullcontext
     transactions=ExitStack()
@@ -181,7 +183,7 @@ def main(argv=None):
             print(json.dumps(result,indent=2));return 0 if result['status'] in ('ready','basic_only') else 1
         if args.command=='serve':
             from .server import main as serve
-            serve();return 0
+            serve(['--profile',args.profile]);return 0
         bridge=Bridge()
         transactions.enter_context(getattr(bridge,'lock',nullcontext()))
         if args.command=='scope-job':result=build_scope_job(bridge,json.loads(args.manifest.read_text()),args.output)

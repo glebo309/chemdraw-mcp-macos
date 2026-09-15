@@ -8,6 +8,24 @@ Independent, open-source experimental project under [AGPLv3](LICENSE). Native wo
 
 **Experimental, not a stable release:** native support is limited to the tested ChemDraw build and supported drawing subset. Cross-process coordination and opt-in circled charges have regression coverage; crowded charge positions fail explicitly rather than risking a changed molecular graph. See [current development status](docs/DEVELOPMENT_STATUS.md) for exact checks and pending acceptance on another Mac.
 
+## Two layers, one native MCP
+
+**The core MCP already works on its own.** Use it to import, create, inspect,
+clean, style and export native ChemDraw documents. The optional workflow layer
+adds reusable drawing, layout and validation operations. Your connected AI client
+interprets natural language and chooses the tools; there is no LLM inside this server.
+
+| Mode | Launch command | Intended use |
+| --- | --- | --- |
+| Core | `chemdraw-mcp-macos --profile core` | Direct native document tools; no RDKit required |
+| Full (default) | `chemdraw-mcp-macos --profile full` | Core plus drawing, reaction, scope and validation workflows |
+
+Both modes use the same native bridge. Full workflows accept structures and recipes,
+not a fixed catalogue of molecules. Experimental metal-complex work is an additional
+capability, not something users must wait for before using the core MCP.
+See [architecture, installation and design principles](docs/ARCHITECTURE.md) and
+[client configuration](docs/MCP_CLIENTS.md#choose-core-or-full).
+
 ## Acknowledgments
 
 Special thanks to **Marco DeCorti** for showing what makes a chemical drawing clear and visually polished, providing reference examples, and carefully checking the generated output. His input helped shape the project's molecular drawing style and visual quality standards.
@@ -250,7 +268,10 @@ Set `CHEMDRAW_APP` to the absolute `.app` path when discovery is ambiguous. `CHE
 
 ## Available tools
 
-The following core MCP tools share the workflow implementations; the complete-job tools are described above. Identifiers, style extraction and scope proposals are offline; only explicit resolver calls use PubChem:
+The following tools are available in the full profile; the complete-job tools are
+described above. The smaller core profile exposes only the direct native tools
+listed in [architecture](docs/ARCHITECTURE.md#what-core-provides). Identifiers,
+style extraction and scope proposals are offline; only explicit resolver calls use PubChem:
 
 | Tool | Behaviour |
 |---|---|

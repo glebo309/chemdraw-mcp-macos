@@ -60,6 +60,11 @@ on run argv
             set settingsRow to {fixed length of targetDoc, line width of targetDoc, label size of targetDoc, label font of targetDoc, caption size of targetDoc, caption font of targetDoc}
             return my jsonText({my documentRow(targetDoc), moleculeRows, settingsRow})
         else if operation is "export" then
+            set diskPath to ""
+            try
+                set diskPath to my pathOfFile(file of targetDoc)
+            end try
+            if diskPath is "" then error "Untitled document cannot be exported safely: native save would assign a filename. No save dispatched."
             set targetPath to item 3 of argv
             set targetFormat to item 4 of argv
             save targetDoc in (my fileReference(targetPath)) as targetFormat

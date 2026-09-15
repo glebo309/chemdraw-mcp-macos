@@ -10,9 +10,10 @@ pytestmark=pytest.mark.skipif(os.environ.get('CHEMDRAW_LIVE_TEST')!='1',reason='
 SOURCE='''<CDXML BondLength="18" LineWidth="0.6" LabelFont="3" LabelSize="10" InterpretChemically="no"><fonttable><font id="3" charset="Unicode" name="Helvetica Neue"/></fonttable><page id="100" BoundingBox="0 0 540 720"><fragment id="1"><n id="2" p="80 100"/><n id="3" Element="8" NumHydrogens="1" p="110 115"><t p="105 119"><s font="3" size="10" face="96">OH</s></t></n><b id="4" B="2" E="3"/></fragment></page></CDXML>'''
 
 @pytest.mark.asyncio
-async def test_real_mcp_scratch(tmp_path):
+@pytest.mark.parametrize('profile', ['full', 'core'])
+async def test_real_mcp_scratch(tmp_path, profile):
     env=dict(os.environ,CHEMDRAW_MCP_WORKSPACE=str(tmp_path/'workspace'))
-    params=StdioServerParameters(command=sys.executable,args=['-m','chemdraw_macos.server'],env=env)
+    params=StdioServerParameters(command=sys.executable,args=['-m','chemdraw_macos.server','--profile',profile],env=env)
     results={};created=[]
     async with stdio_client(params) as (read,write):
         async with ClientSession(read,write) as session:
