@@ -137,21 +137,60 @@ def install_shared_app(source, *, home=None):
 
 def install_and_connect(source_app, clients, *, home=None):
     import shlex
+    shell_directory = os.environ.get('ZDOTDIR') if home is None else None
     home = Path(home) if home is not None else Path.home()
     app = install_shared_app(source_app, home=home)
     runtime = app/'Contents/Resources/backend/chemdraw-runtime'
     launcher = home/'Library/Application Support/ChemDraw MCP/bin/chemdraw-mcp'
     # Clients always reference this one path, independent of download/client folders.
-    script = '#!/bin/sh\nexec '+shlex.quote(str(runtime))+' "$@"\n'
-    _regular(launcher)
-    previous = launcher.read_bytes() if launcher.exists() else None
-    _atomic(launcher, script.encode(), 0o700)
+    command = '#!/bin/sh\nexec '+shlex.quote(str(runtime))
+    files = [(launcher, command+' "$@"\n', 0o700),
+             (launcher.with_name('chemdraw-mac'), command+' --cli "$@"\n', 0o700),
+             (launcher.with_name('chemdraw-mcp-macos'), command+' --cli serve "$@"\n', 0o700)]
+    # macOS Terminal's default interactive zsh reads this for new tabs/windows.
+    # Keep the user's settings and avoid repeatedly adding our directory to PATH.
+    rc = (Path(shell_directory).expanduser() if shell_directory else home)/'.zshrc'
+    _regular(rc)
+    previous_rc = rc.read_text() if rc.exists() else ''
+    directory = shlex.quote(str(launcher.parent))
+    block = ('# >>> ChemDraw MCP terminal access >>>\n'
+             'case ":$PATH:" in\n'
+             f'  *:{directory}:*) ;;\n'
+             f'  *) export PATH={directory}:"$PATH" ;;\n'
+             'esac\n# <<< ChemDraw MCP terminal access <<<\n')
+    if '# >>> ChemDraw MCP terminal access >>>' in previous_rc:
+        if previous_rc.count(block) != 1:
+            raise ValueError('ChemDraw terminal settings were edited. No assistant settings changed.')
+    else:
+        files.append((rc, previous_rc+'\n'+block, rc.stat().st_mode & 0o777 if rc.exists() else 0o600))
+    plans = []
+    for path, text, mode in files:
+        _regular(path)
+        before = path.read_bytes() if path.exists() else None
+        after = text.encode()
+        if before != after:
+            plans.append((path, before, after, mode))
+    written, backups = [], []
     try:
+        for path, before, after, mode in plans:
+            if (path.read_bytes() if path.exists() else None) != before:
+                raise ValueError('Terminal settings changed during setup. Please try setup again.')
+            if before is not None:
+                fd, name = tempfile.mkstemp(prefix=path.name+'.before-chemdraw-', dir=path.parent)
+                with os.fdopen(fd, 'wb') as handle:
+                    handle.write(before)
+                backups.append(name)
+            _atomic(path, after, mode)
+            written.append((path, before, after, mode))
         result = connect_clients(clients, launcher, home=home)
     except Exception:
-        if previous is None:
-            launcher.unlink()
-        else:
-            _atomic(launcher, previous, 0o700)
+        for path, before, after, mode in reversed(written):
+            if path.read_bytes() == after:
+                if before is None:
+                    path.unlink()
+                else:
+                    _atomic(path, before, mode)
         raise
-    return {**result, 'installed_app': str(app)}
+    return {**result, 'backups': backups+result['backups'], 'installed_app': str(app),
+            'terminal_command': str(launcher.with_name('chemdraw-mac')),
+            'terminal_shell_config': str(rc)}

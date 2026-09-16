@@ -226,6 +226,13 @@ def runtime_main(argv=None):
     if args[:2] == ['-m', 'chemdraw_macos.raster']:
         from .raster import main
         return main(args[2:])
+    if args[:1] == ['--cli']:
+        settings = read_settings()
+        if settings.get('chemdraw_app'):
+            os.environ['CHEMDRAW_APP'] = str(validate_app(settings['chemdraw_app']))
+        os.environ.pop('CHEMDRAW_DESKTOP_EXTENSION', None)
+        from .cli import main
+        return main(args[1:])
     if args == ['--setup-service']:
         os.environ.pop('CHEMDRAW_DESKTOP_EXTENSION', None)
         serve_setup()

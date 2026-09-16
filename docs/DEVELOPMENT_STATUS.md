@@ -1,13 +1,20 @@
 # Experimental development snapshot
 
-Updated 2026-09-16. Current candidate: **0.10.0rc12**. The Git route has an
+Updated 2026-09-17. Current candidate: **0.10.0rc13**. The Git route has an
 `install.sh` entry point that installs locked dependencies and launches themed
 terminal setup. The Apple Silicon DMG includes the graphical helper and runtime.
 Shared native drawings support measured tables across physical pages and
 physical-scale exports. Fresh terminal testing corrected both Apple Terminal
 background colours and discovery of filename-suffixed add-in installations.
 
-The rc12 portable suite passes 1123 tests, with 90 opt-in skips. Native evidence
+Graphical Finish also installs terminal commands using the bundled runtime and
+a backed-up zsh PATH entry. Reaction preservation checks can read the active
+untitled original without saving it. Full-profile guidance explicitly exposes
+the existing electron-pushing annotation workflow; complete mechanism layout
+and chemistry inference are not solved by that guidance.
+
+The rc13 portable suite passes 1130 tests, with 91 opt-in skips. Four focused
+native tests and twelve frozen-runtime/packaging checks passed. Native evidence
 is limited to the development Mac and ChemDraw 23.0.1.11. Another-Mac acceptance,
 Developer ID signing/notarization and transactional graphical updates remain
 open. See PROJECT_PROGRESS.md for exact candidate checks. The older rc2 feature

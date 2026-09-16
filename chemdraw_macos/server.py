@@ -55,6 +55,16 @@ mcp=FastMCP('ChemDraw macOS',instructions=INSTRUCTIONS +
     'Full profile: direct native operations plus optional deterministic drawing, layout '
     'and validation workflows. Prefer an appropriate workflow when its documented '
     'input subset fits; otherwise use supported core operations with explicit inputs. '
+    'Electron-pushing arrows ARE supported in this full profile, separately from reaction construction. '
+    'For a mechanism, first establish explicit structures and chemical steps; do not substitute '
+    'a reaction-series drawing for a complete electron-pushing mechanism. Use chemdraw_inspect_symbols '
+    'and chemdraw_add_symbols for missing donor lone pairs, then refresh IDs/token with '
+    'chemdraw_inspect_annotations and use chemdraw_annotate_document for native editable '
+    'two-electron curves or one-electron fishhooks. chemdraw_suggest_routes and chemdraw_apply_route '
+    'offer explicit, geometry-checked route candidates. These workflows create NEW COPIES, not '
+    'in-place annotations. They do not infer or validate the chemical mechanism. Inspect the final '
+    'native image for arrow placement and overlaps. If an operation is rejected, report that '
+    'specific limitation rather than claiming that electron-pushing arrows cannot be drawn. '
     'Do not invent missing stereochemistry, products or experimental results. '
     'Experimental complex support is not a prerequisite for ordinary drawing.')
 _bridge=None

@@ -42,12 +42,17 @@ PATH change is assumed. For an optional first drawing after setup:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc12),
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc13),
 open it, and open **ChemDraw MCP**. The graphical helper includes Python and
 dependencies, guides the ChemDraw add-in step, and connects selected local clients.
 It does not install or license ChemDraw itself.
 
-**Experimental candidate: 0.10.0rc12.** Requires your own licensed ChemDraw and a
+The graphical install also includes terminal access. After Finish, open a new
+macOS zsh Terminal window and run `chemdraw-mac --help` or `chemdraw-mac first-run`.
+No second download, Python or uv installation is needed. Setup preserves and
+backs up existing shell settings before adding its PATH entry.
+
+**Experimental candidate: 0.10.0rc13.** Requires your own licensed ChemDraw and a
 logged-in Mac desktop. Native tests have run on Apple Silicon, macOS 15.6,
 ChemDraw 23.0.1.11. The Mac app is ad-hoc signed, not Developer ID signed or
 notarized. Independent-Mac acceptance is still open. Only one assistant can own
@@ -239,6 +244,13 @@ Each stable figure key gets native CDXML/SVG, a PNG rasterized from native SVG, 
 Batch also accepts the supported annotation subset: existing full-headed or left/right-fishhook cubic curves and explicitly associated circled-charge symbols. It reuses the annotation preservation verifier alongside the ordinary molecule/reaction checks. Unknown curve/symbol types still fail closed. Exporting a mechanism does not route its arrows, repair collisions or certify its chemistry.
 
 ## Add electron-flow arrows
+
+In the full MCP profile, assistants have `chemdraw_inspect_annotations` and
+`chemdraw_annotate_document`, plus symbol and route tools. The smaller core and
+drawing profiles do not expose these annotation workflows. A reaction-series
+diagram alone is not a complete electron-pushing mechanism. Check the client's
+actual tool list before reporting that arrows are unavailable. Annotation creates
+a new copy and requires explicit chemical intent, not automatic mechanism inference.
 
 The SN2 reference now has a reproducible annotation workflow. Add native editable full-headed two-electron curves or left/right fishhooks for one-electron flow, using explicit atom/bond endpoints or a displayed donor-symbol source:
 

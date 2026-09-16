@@ -17,9 +17,11 @@ def run_setup(args, *, session=None, home=None, input_fn=None, stream=None, exec
         return 1
     input_fn = input_fn or input
     home = Path(home) if home is not None else Path.home()
-    executable = Path(executable) if executable else Path(sys.executable).parent/'chemdraw-mcp-macos'
+    frozen = getattr(sys, 'frozen', False)
+    installed_bin = home/'Library/Application Support/ChemDraw MCP/bin' if frozen else Path(sys.executable).parent
+    executable = Path(executable) if executable else installed_bin/'chemdraw-mcp-macos'
     source = Path(__file__).resolve().parents[1]
-    if (source/'uv.lock').is_file() and (source/'pyproject.toml').is_file():
+    if not frozen and (source/'uv.lock').is_file() and (source/'pyproject.toml').is_file():
         project = [] if Path.cwd().resolve() == source else ['--project', str(source)]
         demo = shlex.join(['uv', 'run', *project, '--locked', '--extra', 'chemistry', 'chemdraw-mac', 'first-run'])
     else:

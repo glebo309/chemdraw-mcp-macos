@@ -1,5 +1,42 @@
 # Project progress
 
+## 2026-09-17: rc13 local candidate, terminal access and reaction preflight
+
+Graphical Finish now installs chemdraw-mac and chemdraw-mcp-macos wrappers against
+the same bundled runtime, plus a backed-up, idempotent zsh PATH block. Existing
+shell text is retained, custom ZDOTDIR is respected, symlinks are refused, and
+client-registration failure restores terminal changes. New terminal windows can
+use the tools without Python, uv or a source checkout. Frozen CLI dispatch uses
+the selected ChemDraw app; terminal setup points to the installed wrappers.
+
+Full-profile instructions now explicitly route electron-pushing requests to the
+existing native symbol, annotation and optional route tools. Full arrows and
+both fishhook sides passed native MCP tests. This is not complete mechanism
+inference, in-place annotation, or a fix for the disconnected reaction-series
+layout reported from the second Mac. Its exact client version/profile is unknown.
+
+The reaction failure with an open untitled document came from exporting originals
+for preservation checks. Untitled originals now use the desktop API read instead;
+saved-document exports keep their existing behavior. The live reaction test passed
+with an existing untitled blank left unmodified and unnamed. The API still requires
+the untitled document being read to be active; multiple inactive untitled documents
+are not certified by this case. Native copies and curves remain separate documents.
+
+Failing regressions preceded implementation. Portable suite: 1130 passed, 91
+opt-in skips. The reaction and three arrow-head native tests passed. An additional
+older custom-style test selected accidentally still assumes auto uses a background
+copy; it received the documented custom-style rejection before any write. It is
+not included in the passing native gate. User document inventory was rechecked.
+All 12 bundled runtime/packaging tests passed, including the real CLI without
+Python/uv, both client registrations, plain ZIP extraction and native document
+read. A fresh zsh subprocess also found and executed the installed chemdraw-mac
+wrapper from an isolated shell directory. The final build passed ad-hoc signing,
+bundled dependency checks and disk-image verification. The Desktop copy is
+ChemDraw-MCP-Apple-Silicon-rc13.dmg; source build is local-validation/desktop-build-rc13-final.
+Glenn approved pushing these changes and publishing rc13 on 2026-09-17. Release
+artifacts are being rebuilt from the publication source, including updated docs.
+Successful public upload and checksum verification will be recorded separately.
+
 ## Published experimental release
 
 Version 0.10.0rc12 is public on GitHub at

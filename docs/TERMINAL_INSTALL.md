@@ -1,5 +1,12 @@
 # Terminal installation
 
+Already used the graphical installer? Starting with rc13,
+Finish also installs the terminal commands. Open a new macOS zsh Terminal window
+and run `chemdraw-mac --help` or `chemdraw-mac first-run`. You do not need Git,
+Python or uv for that route. It uses the same installed runtime, not a second
+installation. See [graphical setup](DESKTOP_INSTALLER.md) for PATH details.
+Earlier builds, including rc12, do not include these terminal launchers.
+
 For Mac users who prefer the terminal. This route does not launch the graphical
 installer. It uses the same native bridge, checks and molecular animation.
 

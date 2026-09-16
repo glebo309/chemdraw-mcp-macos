@@ -9,6 +9,11 @@ below, especially independent-Mac acceptance and notarization, remain open.
 
 ## Required release gates
 
+On 2026-09-17 Glenn approved pushing rc13 and updating the experimental GitHub
+release downloads. This includes bundled terminal access, untitled-original
+reaction preflight and electron-arrow tool guidance. The recorded rc13 checks
+do not close the independent-Mac, complete mechanism-layout or notarization gates.
+
 - [x] Original project code is licensed under AGPL-3.0-only with Glenn's approval to make the repository open source. LICENSE, NOTICE and upstream notices are retained. Package publication remains separately gated.
 - [ ] Complete installation and native acceptance on another Mac with its own licensed ChemDraw installation. Record exact macOS, processor architecture, ChemDraw build, Python and installed dependency versions. Do not describe untested combinations as supported.
 - [ ] Reconcile package version, README, compatibility documentation, release notes and built artifact metadata for the exact candidate being handed off. Development source may contain features newer than the current package version.

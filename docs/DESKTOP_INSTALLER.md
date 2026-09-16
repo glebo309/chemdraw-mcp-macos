@@ -1,5 +1,21 @@
 # Graphical ChemDraw MCP setup
 
+## rc13: terminal access included
+
+Finish also installs `chemdraw-mac` and `chemdraw-mcp-macos` launchers, using the
+same bundled runtime as the desktop clients. No extra download, Python or uv is
+required. Open a new Terminal window after setup, then use `chemdraw-mac --help`,
+`chemdraw-mac doctor`, or `chemdraw-mac first-run`.
+
+The installer appends a marked PATH block to `.zshrc` (respecting `ZDOTDIR` when
+set), with a private backup of existing contents. Repeated setup does not duplicate
+the block. Client-registration failure rolls back the launcher and shell changes.
+Symlinked shell configuration is refused rather than overwriting its target.
+Other shells can use the absolute commands in
+`~/Library/Application Support/ChemDraw MCP/bin/` or add that directory to PATH.
+No terminal theme or unrelated settings are changed. Download the
+[rc13 experimental release](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc13).
+
 ## rc10: explicit install route on every preparation screen
 
 The preparation page always offers Save add-in installer to Downloads and the
@@ -41,8 +57,9 @@ The same three-page setup and read-only connection check are retained. Finish
 saves the selected local client connections and closes the window. Restart those
 assistants afterwards to load their settings. One versioned app is copied to
 `~/Library/Application Support/ChemDraw MCP/versions/`; both clients use the same
-stable launcher under `ChemDraw MCP/bin/`. No shell profile, Python installation
-or repeated package download is needed. Previous app versions are retained.
+stable launcher under `ChemDraw MCP/bin/`. No manual shell-profile editing,
+Python installation or repeated package download is needed. Previous app versions
+are retained. The rc13 candidate adds terminal access as described above.
 
 Only selected clients are configured. Claude uses its desktop JSON settings;
 Codex uses `~/.codex/config.toml`. Other servers and preferences are preserved,

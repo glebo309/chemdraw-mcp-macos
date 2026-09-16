@@ -119,7 +119,14 @@ def _document_content(bridge,document_id):
         from .shared import clipboard,fingerprint
         return fingerprint(_native(clipboard,bridge,document_id)['cdxml'])
     path=bridge._new_path('.cdxml','backups')
-    _native(bridge.export,document_id,str(path),'cdxml')
+    from .core import Bridge
+    if isinstance(bridge, Bridge) and not _native(bridge.inspect,document_id)['document']['file']:
+        # Native save/export would bind an untitled user document to a filename.
+        # The desktop API reads current unsaved content without that side effect.
+        from .addin import get_backend
+        path.write_text(_native(get_backend(bridge).read,document_id)['cdxml'])
+    else:
+        _native(bridge.export,document_id,str(path),'cdxml')
     root=validate_cdxml(path.read_text())
     for key in ('Name','CreationProgram','WindowPosition','WindowSize'):root.attrib.pop(key,None)
     def record(e):
