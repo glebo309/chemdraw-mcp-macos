@@ -1,6 +1,19 @@
 # Product roadmap
 
-Working plan, updated 2026-09-16. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
+Working plan, updated 2026-09-17. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
+
+## Generation speed, requested 2026-09-17
+
+- [ ] Benchmark end-to-end generation for one molecule, a full analogue table,
+  a reaction and an electron-pushing mechanism. Separate assistant/tool-selection
+  time from identifier lookup, native reads, import/cleanup, layout, validation
+  and exports; compare cold and warm runs on a stated Mac/ChemDraw build.
+- [ ] Use those timings to remove redundant native round trips and repeated
+  cleanup/exports, batch safe operations and reuse unchanged validated results.
+  Retain source-preservation, chemistry, stereo, physical-scale and layout checks.
+- [ ] Record before/after wall times and tool-call counts for the same fixtures.
+  Report actual workflow stages during long jobs, without invented progress or
+  completion estimates. No speedup is claimed until measured.
 
 ## Next user-facing work, requested 2026-09-16
 
