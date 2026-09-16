@@ -1,5 +1,20 @@
 # Project progress
 
+## Published experimental release: rc13
+
+Version 0.10.0rc13 is public at
+https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc13.
+The tag targets source commit 5f388345215f86e2fe9e318d178add6bd947f057.
+DMG, MCPB, wheel, source archive and SHA256SUMS are uploaded; all five GitHub
+asset digests match local checksums. Publication builds live in
+local-validation/desktop-build-rc13-publication and local-validation/release-rc13.
+The rebuilt publication artifacts passed all twelve bundled acceptance checks;
+the portable suite was rerun with 1130 passes and 91 opt-in skips.
+
+Glenn also requested a generation-speed TODO. docs/ROADMAP.md now tracks cold/warm
+end-to-end and per-stage timings, fewer redundant native calls/exports, and
+measured before/after results without relaxing chemical or visual-quality gates.
+
 ## 2026-09-17: rc13 local candidate, terminal access and reaction preflight
 
 Graphical Finish now installs chemdraw-mac and chemdraw-mcp-macos wrappers against
@@ -33,11 +48,11 @@ read. A fresh zsh subprocess also found and executed the installed chemdraw-mac
 wrapper from an isolated shell directory. The final build passed ad-hoc signing,
 bundled dependency checks and disk-image verification. The Desktop copy is
 ChemDraw-MCP-Apple-Silicon-rc13.dmg; source build is local-validation/desktop-build-rc13-final.
-Glenn approved pushing these changes and publishing rc13 on 2026-09-17. Release
-artifacts are being rebuilt from the publication source, including updated docs.
-Successful public upload and checksum verification will be recorded separately.
+Glenn approved pushing these changes and publishing rc13 on 2026-09-17. The
+publication artifacts were rebuilt with updated documentation; verified public
+upload is recorded above.
 
-## Published experimental release
+## Previous experimental release: rc12
 
 Version 0.10.0rc12 is public on GitHub at
 https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc12.
