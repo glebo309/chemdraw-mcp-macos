@@ -2,6 +2,11 @@
 
 Glenn approved public GitHub hosting and subsequently open-source licensing under AGPL-3.0-only on 2026-09-15. This checklist governs a stable release, not repository visibility. Package publication and native acceptance on another Mac remain pending. A successful development-Mac run does not complete either gate.
 
+On 2026-09-16 Glenn approved the rc12 experimental GitHub prerelease with DMG,
+MCPB, wheel and source artifacts. The 1123-test portable run and 11 frozen-runtime
+and packaging tests passed, including a native read. The stable-release gates
+below, especially independent-Mac acceptance and notarization, remain open.
+
 ## Required release gates
 
 - [x] Original project code is licensed under AGPL-3.0-only with Glenn's approval to make the repository open source. LICENSE, NOTICE and upstream notices are retained. Package publication remains separately gated.
@@ -15,6 +20,12 @@ Glenn approved public GitHub hosting and subsequently open-source licensing unde
 - [ ] Inspect the final archive contents. Exclude private research drawings, proprietary templates/book pages, fonts, application binaries, secrets, local-validation bundles and virtual environments unless separately authorized and appropriately licensed. Use the redistributable example sources, not private reference material.
 
 ## Acceptance procedure
+
+For the 0.10.0rc3 shared-document test candidate, start with [TEST_ON_MAC.md](TEST_ON_MAC.md).
+It includes fresh per-Mac add-in installation, no-HTML first-run and serial client
+comparison. The native shared-API tests require CHEMDRAW_ADDIN_LIVE_TEST=1 in
+addition to the older CHEMDRAW_LIVE_TEST flag below; skips are not acceptance.
+See VALIDATION-0.10.0rc3.md for the development-Mac results.
 
 From the candidate source directory on the receiving Mac:
 

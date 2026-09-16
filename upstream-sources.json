@@ -5,6 +5,48 @@
   "own_project_public_license": "AGPL-3.0-only",
   "format_references": [
     {
+      "id": "claude-desktop-extension-packaging",
+      "reviewed_on": "2026-09-16",
+      "documentation": ["https://claude.com/docs/connectors/building/mcpb", "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/MANIFEST.md", "https://pyinstaller.org/en/stable/feature-notes.html"],
+      "disposition": "format_observation_only_no_source_copied",
+      "scope": "Original native SwiftUI setup and MCPB 0.3 manifest. Binary artifact bundles Python, dependencies and PyInstaller bootloader with their retained installed licenses; no vendor artwork or existing machine credentials."
+    },
+    {
+      "id": "targeted-native-selection-probes",
+      "reviewed_on": "2026-09-15",
+      "references": ["Installed ChemDraw 23.0.1 scripting dictionary: document selection, atom/bond objects and native command names", "https://github.com/MALeitch/live-chemdraw-mcp/blob/main/AGENTS.md"],
+      "disposition": "api_observation_only_no_source_copied",
+      "scope": "Mac individual atom/bond and list selection assignment failed in live scratch probes, including JXA. Windows selection notes were comparison only. Original copied-CDXML target editing and native subset alignment; no vendor code or artwork redistributed."
+    },
+    {
+      "id": "native-command-and-name-conversion-bridge",
+      "reviewed_on": "2026-09-15",
+      "references": ["Installed ChemDraw 23.0.1 scripting dictionary and read-only command inventory", "ChemDraw 21 User Guide: alignment/distribution, Clean Up Reaction, and Name to Structure sections"],
+      "disposition": "api_observation_only_no_source_copied",
+      "scope": "Original allowlisted native command wrappers and caption-to-structure conversion. No vendor dictionary, manual extracts, artwork or implementation source redistributed. Native naming may use unobservable ChemACX fallback and therefore requires explicit network consent."
+    },
+    {
+      "id": "native-spatial-chelates-and-multicentre-probes",
+      "reviewed_on": "2026-09-15",
+      "documentation": ["https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Node_Type.htm", "https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Node_Attachments.htm", "https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Bond_Display.htm", "https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Bond_Order.htm", "https://pubchem.ncbi.nlm.nih.gov/compound/1474"],
+      "disposition": "format_observation_only_no_source_copied",
+      "scope": "Original procedural chelate and haptic regression fixtures. Targeted manual sections and a private read-only installed-template inspection informed native property patterns only. No vendor artwork, coordinates, manual pages or source redistributed. Native aromatic CDXML order loss and discarded multicentre charges remain explicit limitations."
+    },
+    {
+      "id": "native-explicit-coordination",
+      "reviewed_on": "2026-09-15",
+      "documentation": ["https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Bond_Order.htm", "https://chemapps.stolaf.edu/iupac/cdx/sdk/properties/3DPosition.htm"],
+      "disposition": "format_observation_only_no_source_copied",
+      "scope": "Original explicit donor-to-metal CDXML writer and native point/XYZ/atom/bond preservation checks; no vendor templates or artwork incorporated."
+    },
+    {
+      "id": "native-crossing-bonds",
+      "reviewed_on": "2026-09-15",
+      "documentation": ["https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Bond_CrossingBonds.htm", "https://chemapps.stolaf.edu/iupac/cdx/sdk/properties/ZOrder.htm"],
+      "disposition": "format_observation_only_no_source_copied",
+      "scope": "Same-fragment crossing cache references, ID remapping and relative foreground-order preservation. Original implementation with native cubane, bullvalene and adamantane regression fixtures."
+    },
+    {
       "id": "native-integral-group",
       "reviewed_on": "2026-09-15",
       "native_version": "23.0.1",

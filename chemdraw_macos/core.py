@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import os
+import plistlib
 from pathlib import Path
 import shutil
 import subprocess
@@ -35,7 +36,8 @@ def preset_settings(preset):
     return validate_style(preset)
 
 def style_cdxml(text: str,preset: str|dict)->str:
-    root=validate_cdxml(text);spec=preset_settings(preset)
+    from .styles import validate_style
+    root=validate_cdxml(text);spec=validate_style(preset_settings(preset))
     fonttable=root.find('fonttable')
     if fonttable is None:fonttable=ET.SubElement(root,'fonttable')
     fontid=str(max([int(f.get('id','0')) for f in fonttable]+[2])+1)
@@ -57,7 +59,7 @@ def style_cdxml(text: str,preset: str|dict)->str:
             face=spec.get('LabelFace' if atom else 'CaptionFace')
             if face is not None:s.set('face',str((int(s.get('face','96' if atom else '0'))&~3)|(int(face)&3)))
     for e in root.iter():
-        if isinstance(preset,dict) and e is not root:
+        if e is not root:
             # Native objects may override document defaults. Replace the
             # supported local style fields too, retaining chemical script bits.
             for key in spec.keys() & e.attrib.keys():
@@ -76,6 +78,13 @@ def style_cdxml(text: str,preset: str|dict)->str:
     return ET.tostring(root,encoding='unicode')
 
 def app_location()->Path:
+    if os.environ.get('CHEMDRAW_DESKTOP_EXTENSION') == '1':
+        from .desktop_setup import read_settings, validate_app
+        settings = read_settings()
+        if not settings.get('setup_complete'):
+            raise RuntimeError('Finish the ChemDraw MCP setup window before using native tools')
+        if settings.get('chemdraw_app'):
+            return validate_app(settings['chemdraw_app'])
     explicit=os.environ.get('CHEMDRAW_APP')
     if explicit:return Path(explicit).expanduser().resolve()
     candidates=sorted(Path('/Applications').glob('ChemDraw*.app'))
@@ -90,6 +99,24 @@ class Bridge:
         self.app=app_path or app_location()
         self.workspace=workspace or Path(os.environ.get('CHEMDRAW_MCP_WORKSPACE',str(Path.home()/'ChemDraw-MCP-Output')))
         self.timeout=timeout;self.lock=shared_native_lock();self.managed=set()
+
+    def app_running(self):
+        """Inspect running applications without sending ChemDraw a launch event."""
+        with (self.app/'Contents/Info.plist').open('rb') as handle:
+            bundle=plistlib.load(handle)['CFBundleIdentifier']
+        script=('ObjC.import("AppKit"); '
+                '$.NSRunningApplication.runningApplicationsWithBundleIdentifier('
+                +json.dumps(bundle)+').count > 0')
+        result=subprocess.run(['/usr/bin/osascript','-l','JavaScript','-e',script],
+                              capture_output=True,text=True,timeout=self.timeout,check=True)
+        return result.stdout.strip()=='true'
+
+    def automatic_presentation(self):
+        if not self.app_running():return 'background'
+        return 'interactive' if self._run('visible_documents') else 'background'
+
+    def default_new_document_visible(self):
+        return not getattr(self,'_production_depth',0)
 
     def _run(self,operation,*args):
         if not self.app.is_dir():raise RuntimeError(f'ChemDraw not found: {self.app}')
@@ -126,35 +153,52 @@ class Bridge:
         folder=self.workspace/category;folder.mkdir(parents=True,exist_ok=True)
         return folder/(str(uuid.uuid4())+suffix)
 
-    def import_file(self,path):
+    def import_file(self,path,visible=None):
+        if visible is None:visible=self.default_new_document_visible()
+        if type(visible) is not bool:raise ValueError('visible must be a boolean')
         source=Path(path).expanduser().resolve(strict=True)
         if source.suffix.lower() not in ('.cdxml','.cdx','.mol','.sdf'):raise ValueError('Supported imports: .cdxml, .cdx, .mol, .sdf')
         if source.stat().st_size>10_000_000:raise ValueError('Import exceeds 10 MB limit')
         if source.suffix.lower()=='.cdxml':validate_cdxml(source.read_text())
         with self.lock:
             copy=self._new_path(source.suffix);shutil.copyfile(source,copy)
-            result=self._open_working(copy);self.managed.add(result['document_id'])
+            result=self._open_working(copy) if visible else self._open_working(copy,visible=False)
+            self.managed.add(result['document_id'])
         return {'document':result,'source_untouched':str(source),'working_copy':str(copy)}
 
-    def create(self,cdxml):
+    def create(self,cdxml,visible=None):
+        if visible is None:visible=self.default_new_document_visible()
+        if type(visible) is not bool:raise ValueError('visible must be a boolean')
         validate_cdxml(cdxml)
         with self.lock:
             path=self._new_path('.cdxml');path.write_text(cdxml)
-            result=self._open_working(path);self.managed.add(result['document_id'])
+            result=self._open_working(path) if visible else self._open_working(path,visible=False)
+            self.managed.add(result['document_id'])
         return {'document':result,'working_copy':str(path)}
 
-    def _open_working(self,path):
-        try:return document_row(self._run('open',str(path)))
+    def _open_working(self,path,visible=True):
+        try:
+            args=() if visible else ('false',)
+            return document_row(self._run('open',str(path),*args))
         except RuntimeError as exc:
             if 'Could not identify the imported document uniquely' not in str(exc):raise
             # The single open may finish asynchronously. Reconcile by reading;
             # never issue another open or retry an uncertain write.
             for _ in range(20):
                 rows=[r for r in self._run('list') if r[2]==str(path)]
-                if len(rows)==1:return document_row(rows[0])
+                if len(rows)==1:
+                    if not visible:self.set_visibility(rows[0][0],False)
+                    return document_row(rows[0])
                 if len(rows)>1:raise RuntimeError(f'Multiple documents match working path {path}') from exc
                 time.sleep(.05)
             raise RuntimeError(f'Opened document could not be reconciled; working copy: {path}') from exc
+
+    def set_visibility(self,document_id,visible):
+        """Show/hide exactly the supplied document, never the whole application."""
+        if type(visible) is not bool:raise ValueError('visible must be a boolean')
+        row,actual=self._run('visibility',self._id(document_id),str(visible).lower())
+        if actual is not visible:raise RuntimeError('ChemDraw did not apply requested window visibility')
+        return {'document':document_row(row),'visible':actual}
 
     def output_path(self,path,format):
         if format not in (*FORMATS,'png'):raise ValueError(f'Unsupported format: {format}')
@@ -190,6 +234,34 @@ class Bridge:
             self.export(did,str(backup),'cdxml')
             result=document_row(self._run('clean',did,mid))
         return {'document':result,'backup':str(backup),'warning':'Native cleanup can change depiction; review stereochemistry and orientation before using the drawing.'}
+
+    def convert_name(self, document_id):
+        """Convert the sole caption in an owned, frontmost scratch document."""
+        did = self._id(document_id)
+        with self.lock:
+            if did not in self.managed:
+                raise ValueError('Name conversion requires a document owned by this server session')
+            return {'document': document_row(self._run('convert_name', did))}
+
+    def native_action(self, document_id, action, selection='current'):
+        """Apply an allowlisted native menu command to an owned working document."""
+        from .native_actions import ACTIONS
+        did = self._id(document_id)
+        if not isinstance(action, str) or action not in ACTIONS:
+            raise ValueError('Unsupported native action')
+        if selection not in ('current', 'all'):
+            raise ValueError('Selection must be current or all')
+        with self.lock:
+            if did not in self.managed:
+                raise ValueError('Native actions require a document owned by this server session; import a copy first')
+            backup = self._new_path('.cdxml', 'backups')
+            self.export(did, str(backup), 'cdxml')
+            row, applied = self._run('native_action', did, ACTIONS[action], selection)
+        return {'document': document_row(row), 'backup': str(backup),
+                'action': action, 'native_command': ACTIONS[action], 'selection': selection,
+                'status': 'native_action_applied_review_required' if applied else 'unavailable_for_selection',
+                'chemical_preservation_verified': False,
+                'warning': 'Actual ChemDraw command. Existing selection or all objects as requested. Native cleanup, grouping and caption behavior require review; no workflow geometry/identity certificate.'}
 
     def apply_style(self,document_id,preset='house'):
         preset_settings(preset)

@@ -1,6 +1,21 @@
 # Product roadmap
 
-Working plan, updated 2026-09-15. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
+Working plan, updated 2026-09-16. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
+
+## Next user-facing work, requested 2026-09-16
+
+- [x] Implement guided terminal setup and verify an isolated package installation, live connection read and animated drawing. Fresh-Mac Add-in Manager import remains an independent acceptance gate. [Terminal guide](TERMINAL_INSTALL.md)
+- [ ] Design and test graphical updates: detect installed version, retain client settings and private add-in credentials, replace the shared runtime safely, explain any client restart, and recover the prior version on failure. Choose an explicit update action before considering automatic updates.
+- [x] Document explicit terminal replacement and revision pinning alongside current graphical update limits. Transactional graphical rollback remains pending. [Update guide](UPDATES.md)
+- [x] Refresh the GitHub landing page with the new pink/lavender/yellow design and actual installer screenshot, separate Git and DMG routes, architecture, and customization guides.
+- [x] Explain the MCP/harness/native-renderer responsibilities and supported profiles. [Architecture](ARCHITECTURE.md)
+- [x] Add customization instructions with numerical style and assistant-instruction boundaries. [Customization](GETTING_STARTED.md#customize-the-drawing-style)
+- [x] Add worked prompts for a first molecule, edited-parent scope, paged table and physical-scale exports. [Examples](GETTING_STARTED.md)
+
+The rc10 same-document vertical-page table and physical-scale export work is
+implemented and locally native-tested; exact evidence is in PROJECT_PROGRESS.md.
+The README refresh and linked guides are included in the rc12 publication work
+approved by Glenn. Automatic graphical updating is not implemented.
 
 ## Current molecule-first priorities
 

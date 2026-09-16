@@ -1,6 +1,65 @@
 # Usage
 
-CLI and MCP share the same workflow implementations. Natural-language interpretation comes from a connected assistant; the server itself is not an LLM. The separate `resolve` interface contacts PubChem only when the caller explicitly enables network access; other workflows do not perform name lookup.
+## Physical exports and paginated shared tables (rc10)
+
+Use `chemdraw_export_figure(document_id, output_dir, dpi=600, include_pdf=False)`
+for publication; use 300 DPI for slides. CLI: `export-figure ID --output
+/absolute/new-folder --dpi 600 --pdf`. See [physical exports](PHYSICAL_EXPORT.md).
+Shared molecule requests default to `page_policy="add_pages"`: overflow appends
+identical sheets inside the same document. `page_policy="keep"` refuses overflow.
+One hidden native measuring copy is closed before insertion. The complete table
+uses common column centers, row baselines and chemical scale across sheets.
+Existing drawings retain geometry and captions.
+
+For the experimental desktop JavaScript API, use `chemdraw_addin_connect`,
+`chemdraw_addin_read_document`, and `chemdraw_addin_append_cdxml` in the full
+profile. CLI equivalents are `addin-connect`, `addin-read`, and `addin-append`.
+This path reads untitled drawings and appends explicit CDXML without clipboard
+or keyboard placement. Ordinary molecule drawing now uses this same connection.
+[Setup and exact limits](DESKTOP_ADDIN.md).
+
+For ordinary new molecule, panel and explicit reaction requests, use the
+[guarded drawing harness](DRAWING_HARNESS.md): MCP `chemdraw_draw` or CLI
+`chemdraw-mac produce`. The optional `drawing` profile exposes only that entry
+point and diagnostics; `full` retains advanced tools. The harness has typed
+inputs and mandatory native/delivery checks, not model-controlled skip flags.
+
+CLI and MCP share the same workflow implementations. Natural-language interpretation comes from a connected assistant; the server itself is not an LLM. The separate `resolve` interface contacts PubChem only when the caller explicitly enables network access. Native `draw-name` also requires explicit network consent because ChemDraw may use an online naming fallback.
+
+`produce --presentation shared --document ID` and matching
+`chemdraw_draw(presentation="shared", document_id=ID)` append supported molecule
+drawings to that same document, including an untitled document. `auto` and
+`interactive` use the active ChemDraw canvas, or create one if none exists.
+Supply its document ID to bind the target explicitly. `background` retains the
+older separate export workflow, including temporary native imports.
+
+The advanced `chemdraw_draw_structures` entry point follows the same routing and
+accepts `document_id`. CLI `draw` accepts `presentation` and `document_id` in its
+manifest. Both `live-read` and `analyze` use the desktop API for current content,
+including unsaved changes, without saving, clipboard access or selecting all.
+Use returned `molecular_graphs` for identity. A retained caption is not evidence
+that a manually changed molecule still has its old identity.
+
+Shared delivery currently supports a single physical page containing flat molecules
+and captions. The planner constructs the full batch before one native addCDXML
+call. It uses house style by default, retains a unique matching live parent's
+orientation, and fits columns without dropping molecules or shrinking bonds.
+Existing chemistry/coordinates, new chemistry/geometry, native typography and
+line widths, page dimensions and file binding are checked. Exports contain the
+whole current canvas. The working document is not saved or closed. OS keyboard
+focus is not required after the one-time connection opening; the active ChemDraw
+document must remain the bound target. Full pages are refused, not expanded.
+This is sequential collaboration, not simultaneous human editing during a write.
+The harness's `panel="auto"` now chooses a plain aligned grid on this shared path
+without requiring a second call. A whole supplied common ring core can retain the
+live reference orientation even when the parent's substituent is replaced.
+Explicit advanced-tool decorations are still rejected, not silently dropped.
+Shared reactions, decorated groups, circled charges, custom layout/style and
+arbitrary graphics require an explicitly chosen separate background workflow.
+
+There are no per-molecule seed windows or extra final document on this API path.
+An uncertain target is left open for inspection, never reinserted automatically
+or reported completed merely because export files exist.
 
 ## Core or full MCP
 
@@ -11,11 +70,83 @@ an equivalent launcher. Both are stdio servers for a connected client, not chat
 prompts. See [architecture and exact boundaries](ARCHITECTURE.md) and
 [client configuration](MCP_CLIENTS.md#choose-core-or-full).
 
+## Direct native actions
+
+For the document already open in ChemDraw, use the new `live-read` / `live-action`
+pair, which explicitly permits same-document native actions without importing a
+copy. `visibility` and `render` provide document-window control and background
+exports of supplied CDXML. [Exact live/background contract](LIVE_DOCUMENT.md).
+The older copy workflows below retain their existing behavior.
+
+For explicit atom/bond/molecule IDs rather than the existing UI selection, use
+the full profile's [targeted editing interface](TARGETED_EDITING.md). It creates
+new copies and distinguishes logical selection from native UI highlighting.
+It supports explicit element/H/unit-charge and bond-order edits, supplied-fragment
+attachment, branch removal and bounded placement search. Existing retained atom
+positions stay fixed. See that guide for exact operation fields and stereo limits.
+
+These commands invoke ChemDraw itself, not a replacement layout algorithm. They
+are available in both MCP profiles without RDKit:
+
+```sh
+chemdraw-mac native-action --input /absolute/path/drawing.cdxml --action clean_structure
+chemdraw-mac native-action --input /absolute/path/reaction.cdxml --action clean_reaction
+```
+
+The CLI imports a private copy and selects all objects. MCP
+`chemdraw_native_action(document_id, action, selection='current')` acts on the
+current selection of an owned working document; `selection='all'` explicitly
+selects everything. Import a working copy first. The requested document must be
+frontmost, otherwise the command refuses to act. A recovery export precedes the
+command. The tool does not automatically retry uncertain writes or close copies.
+
+| Actions | Native operation |
+| --- | --- |
+| `clean_structure`, `clean_reaction` | Clean Up Structure / Clean Up Reaction |
+| `align_left`, `align_right`, `align_top`, `align_bottom` | Align selected object edges |
+| `align_horizontal_centers` | Move horizontally to share the same X centre |
+| `align_vertical_centers` | Move vertically to share the same Y centre |
+| `distribute_horizontal`, `distribute_vertical` | Distribute selected objects |
+| `expand_labels`, `contract_labels` | Expand / contract selected labels |
+
+ChemDraw must enable the command for the selection. Otherwise the result is
+`unavailable_for_selection`, not success. Reaction cleanup requires a recognized
+single-step reaction with a straight arrow; an arbitrary arrangement of fragments
+and an arrow may not qualify. Selecting all includes captions: this interface
+does not infer which caption belongs to which molecule. Native cleanup may change
+orientation. A completed native command is not a chemical-preservation certificate.
+
+Live acceptance on the development Mac covers six alignments, both distributions,
+structure cleanup, recognized reaction cleanup and an unavailable reaction case.
+Label expansion/contraction have dispatch tests but no live fixture acceptance yet.
+
+## Native Name to Structure
+
+```sh
+chemdraw-mac draw-name --name '(2R)-butan-2-ol' \
+  --output /absolute/existing/parent/new-name-drawing --allow-network
+```
+
+MCP `chemdraw_draw_name(name, output_dir, allow_network=True)` uses the same path,
+available in both profiles. ChemDraw converts a temporary caption using its own
+Name to Structure command. No RDKit coordinate seed or depiction is involved.
+Consent is required because ChemDraw can fall back to ChemACX; the API does not
+reveal whether a request used that service or an internal dictionary.
+
+The new output directory contains editable CDXML, native SVG, a rasterized PNG,
+review HTML and an audit. The drawing remains open as an owned working copy.
+The result is `native_generated_review_required`: the presence of a structure is
+checked, but runtime chemical identity is not independently certified. Native
+caption placement is retained and can leave substantial whitespace; this is a
+native conversion interface, not a polished caption-layout workflow. Unsupported
+names or modal native failures are not automatically retried.
+
 ## Complete production jobs
 
 | CLI | MCP | Contract |
 | --- | --- | --- |
 | `first-run` | `chemdraw_first_run` | [One-call native setup and drawing check](FIRST_RUN.md) |
+| `complex-draw` | `chemdraw_draw_complex` | [Explicit metal coordination, spatial chelates and charge corners](METAL_COMPLEXES.md); black default atoms, colour only when requested |
 | `scope-job --plan-only` / `scope-job` | `chemdraw_plan_scope_job` / `chemdraw_build_scope_job` | [Accepted candidates to a native grouped scope](SCOPE_JOB.md) |
 | `reaction-series` | `chemdraw_build_reaction_series` | [Explicit rows, salts, small species and coefficients](REACTION_EXPANDED.md) |
 | `build-ownership` / `move-owned` | `chemdraw_build_ownership` / `chemdraw_move_owned` | [Snapshot-bound molecule/annotation ownership](OWNERSHIP.md) |

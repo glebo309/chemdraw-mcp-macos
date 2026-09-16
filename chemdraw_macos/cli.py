@@ -15,6 +15,7 @@ from .annotations import annotate_file,annotate_document,inspect_annotations_doc
 from .identifiers import inspect_identifier
 from .scope_design import propose_scope,propose_custom_scope
 from .draw import draw_structures
+from .complexes import draw_complex
 from .styles import inspect_style_file
 from .resolver import resolve_identifier
 from .reaction import build_reaction
@@ -29,11 +30,64 @@ from .lab_style import make_package,save_package,load_package,run_styled_job
 def main(argv=None):
     parser=argparse.ArgumentParser(prog='chemdraw-mac',description='Native ChemDraw automation for macOS')
     commands=parser.add_subparsers(dest='command',required=True)
-    first=commands.add_parser('first-run',help='Check setup, draw a native example and open its review')
+    setup=commands.add_parser('setup',help='Guided terminal add-in installation and read-only connection test')
+    setup.add_argument('--app',help='Explicit installed ChemDraw .app path')
+    setup.add_argument('--client',action='append',choices=('claude','codex'),default=[],
+                       help='Register this local MCP server after a successful test; repeat for both')
+    setup.add_argument('--no-animation',action='store_true')
+    export=commands.add_parser('export-figure',help='Export native SVG and transparent PNG at original chemical scale')
+    export.add_argument('document_id',type=int)
+    export.add_argument('--output',required=True)
+    export.add_argument('--dpi',type=int,default=600)
+    export.add_argument('--pdf',action='store_true',help='Include native PDF with physical pages')
+    commands.add_parser('addin-connect',help='Prepare the experimental private desktop API add-in')
+    ar=commands.add_parser('addin-read',help='Read the active drawing through the desktop JavaScript API')
+    ar.add_argument('document_id',type=int)
+    aa=commands.add_parser('addin-append',help='Append explicit CDXML at exact coordinates through the desktop API')
+    aa.add_argument('document_id',type=int)
+    aa.add_argument('--input',type=Path,required=True)
+    aa.add_argument('--source-token',required=True)
+    lr=commands.add_parser('live-read',help='Read the actual existing ChemDraw document, without a preview or copy')
+    lr.add_argument('document_id',type=int)
+    la=commands.add_parser('live-action',help='Edit the same existing document with a snapshot-checked native action')
+    la.add_argument('document_id',type=int)
+    from .native_actions import ACTIONS
+    la.add_argument('--action',choices=ACTIONS,required=True)
+    la.add_argument('--source-token',required=True)
+    la.add_argument('--selection',choices=('current','all'),default='current')
+    vis=commands.add_parser('visibility',help='Show or hide one ChemDraw document window')
+    vis.add_argument('document_id',type=int);vis.add_argument('mode',choices=('show','hide'))
+    render=commands.add_parser('render',help='Render explicit CDXML in a hidden window, with no preview page')
+    render.add_argument('--input',type=Path,required=True);render.add_argument('--output',required=True)
+    render.add_argument('--show',action='store_true',help='Leave the new document visible and open instead')
+    ti=commands.add_parser('inspect-targets',help='Inspect explicit atom, bond and molecule snapshot IDs')
+    ti.add_argument('document_id',type=int)
+    ts=commands.add_parser('prepare-selection',help='Prepare a snapshot-checked logical selection, not native UI highlighting')
+    ts.add_argument('document_id',type=int);ts.add_argument('--kind',choices=('atom','bond','molecule'),required=True)
+    ts.add_argument('--ids',nargs='+',required=True);ts.add_argument('--source-token',required=True)
+    te=commands.add_parser('edit-targets',help='Make a native-rendered copy with an explicit target edit')
+    te.add_argument('--document',type=int,required=True);te.add_argument('--recipe',type=Path,required=True)
+    te.add_argument('--output',required=True)
+    first=commands.add_parser('first-run',help='Check setup and draw a native example in ChemDraw, without HTML or browser launch')
     first.add_argument('--output',help='Optional new absolute output directory; default is a unique workspace folder')
     first.add_argument('--json',action='store_true',help='JSON only; no animation or browser launch')
-    first.add_argument('--no-open',action='store_true',help='Do not open the HTML review in a browser')
-    first.add_argument('--no-animation',action='store_true',help='Use plain progress lines instead of the ring animation')
+    first.add_argument('--no-open',action='store_true',help='Compatibility option; first-run no longer opens a browser')
+    first.add_argument('--no-animation',action='store_true',help='Use plain progress lines instead of the molecular animation')
+    name_parser=commands.add_parser('draw-name',help='Draw using native ChemDraw Name to Structure, without RDKit depiction')
+    name_parser.add_argument('--name',required=True)
+    name_parser.add_argument('--output',required=True)
+    name_parser.add_argument('--allow-network',action='store_true',help='Allow possible ChemDraw fallback lookup through ChemACX')
+    name_parser.add_argument('--preset',choices=PRESETS,default='house')
+    name_parser.add_argument('--pixels',type=int,default=2400)
+    from .native_actions import ACTIONS
+    native_parser=commands.add_parser('native-action',help='Call native cleanup, alignment, distribution or label commands on an imported working copy')
+    native_parser.add_argument('--input',required=True,help='Local CDXML/CDX/MOL/SDF source; a private copy is opened')
+    native_parser.add_argument('--action',required=True,choices=ACTIONS)
+    complex_parser=commands.add_parser('complex-draw',help='Draw explicit coordination bonds and supplied point geometry without inference')
+    complex_parser.add_argument('--recipe',type=Path,required=True)
+    complex_parser.add_argument('--output',required=True)
+    complex_parser.add_argument('--preset',choices=PRESETS,default='house')
+    complex_parser.add_argument('--pixels',type=int,default=2400)
     d=commands.add_parser('doctor',help='Check installation, native connection and validation support')
     d.add_argument('--no-connect',action='store_true')
     commands.add_parser('documents',help='List live document IDs')
@@ -78,6 +132,12 @@ def main(argv=None):
     drawing.add_argument('--manifest',type=Path,required=True)
     drawing.add_argument('--output',required=True,help='New absolute output directory')
     drawing.add_argument('--style',type=Path,help='Explicit .cds/.cdx/.cdxml template overrides manifest preset')
+    produce=commands.add_parser('produce',help='Run the guarded native drawing harness from a typed request')
+    produce.add_argument('--request',type=Path,required=True)
+    produce.add_argument('--output',required=True)
+    produce.add_argument('--allow-network',action='store_true')
+    produce.add_argument('--presentation',choices=('auto','background','interactive','shared'),default='auto')
+    produce.add_argument('--document',type=int,help='Append to this existing ChemDraw document')
     sty=commands.add_parser('import-style',help='Extract supported document style values without opening ChemDraw')
     sty.add_argument('--input',required=True,type=Path)
     sty.add_argument('--output',type=Path,help='Optional new absolute JSON report file')
@@ -131,15 +191,59 @@ def main(argv=None):
     route.add_argument('--input',type=Path,required=True);route.add_argument('--report',type=Path,required=True)
     route.add_argument('--candidate',required=True);route.add_argument('--output',required=True)
     serve_parser=commands.add_parser('serve',help='Run the MCP stdio server')
-    serve_parser.add_argument('--profile',choices=('core','full'),default='full',
+    serve_parser.add_argument('--profile',choices=('core','full','drawing'),default='full',
                               help='Direct native tools only, or core plus drawing workflows (default: full)')
     args=parser.parse_args(argv)
     from contextlib import ExitStack, nullcontext
     transactions=ExitStack()
     try:
+        if args.command == 'export-figure':
+            from .physical_export import export_figure
+            result=export_figure(Bridge(),args.document_id,args.output,args.dpi,**({'include_pdf':True} if args.pdf else {}))
+            print(json.dumps(result,indent=2));return 0
+        if args.command in ('live-read','live-action','visibility','render'):
+            from .live import read_live_document,live_action,render_cdxml
+            b=Bridge()
+            if args.command=='live-read':result=read_live_document(b,args.document_id)
+            elif args.command=='live-action':result=live_action(b,args.document_id,args.action,args.source_token,args.selection)
+            elif args.command=='visibility':result=b.set_visibility(args.document_id,args.mode=='show')
+            else:result=render_cdxml(b,args.input.read_text(),args.output,background=not args.show)
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+            return 1 if result.get('status')=='unavailable_for_selection' else 0
+        if args.command in ('inspect-targets','prepare-selection','edit-targets'):
+            from .targeted import inspect_targets_document,prepare_selection_document,edit_targets_document
+            b=Bridge()
+            if args.command=='inspect-targets':result=inspect_targets_document(b,args.document_id)
+            elif args.command=='prepare-selection':result=prepare_selection_document(b,args.document_id,args.kind,args.ids,args.source_token)
+            else:
+                recipe=json.loads(args.recipe.read_text())
+                if not isinstance(recipe,dict) or set(recipe)-{'selection','operation','pixels'}:raise ValueError('Invalid targeted recipe')
+                result=edit_targets_document(b,args.document,args.output,recipe['selection'],recipe['operation'],recipe.get('pixels',2400))
+            print(json.dumps(result,indent=2,ensure_ascii=False));return 0
+        if args.command in ('addin-connect','addin-read','addin-append'):
+            from .addin import DesktopAddin
+            with DesktopAddin(Bridge()) as session:
+                if args.command=='addin-connect':result=session.connect()
+                elif args.command=='addin-read':result=session.read(args.document_id)
+                else:result=session.append(args.document_id,args.input.read_text(),args.source_token)
+            print(json.dumps(result,indent=2,ensure_ascii=False));return 0
         if args.command=='first-run':
             from .first_run import run_cli
             return run_cli(args)
+        if args.command=='setup':
+            from .terminal_setup import run_setup
+            return run_setup(args)
+        if args.command=='draw-name':
+            from .native_names import draw_name
+            result=draw_name(Bridge(),name=args.name,output_dir=args.output,allow_network=args.allow_network,preset=args.preset,pixels=args.pixels)
+            print(json.dumps(result,indent=2,ensure_ascii=False));return 0
+        if args.command=='native-action':
+            b=Bridge()
+            imported=b.import_file(args.input)
+            result=b.native_action(imported['document']['document_id'],args.action,selection='all')
+            result['imported_copy']=imported
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+            return 1 if result['status']=='unavailable_for_selection' else 0
         if args.command=='make-lab-style':
             sections=json.loads(args.settings.read_text()) if args.settings else {}
             result=save_package(make_package(args.name,args.version,inspect_style_file(args.style)['preset'],**sections),args.output)
@@ -180,13 +284,19 @@ def main(argv=None):
             print(json.dumps(result,indent=2,ensure_ascii=False));return 0
         if args.command=='doctor':
             result=doctor(connect=not args.no_connect)
-            print(json.dumps(result,indent=2));return 0 if result['status'] in ('ready','basic_only') else 1
+            print(json.dumps(result,indent=2));return 0 if result['status'] in ('ready','local_ready','basic_only') else 1
         if args.command=='serve':
             from .server import main as serve
             serve(['--profile',args.profile]);return 0
         bridge=Bridge()
         transactions.enter_context(getattr(bridge,'lock',nullcontext()))
-        if args.command=='scope-job':result=build_scope_job(bridge,json.loads(args.manifest.read_text()),args.output)
+        if args.command=='produce':
+            from .harness import run_drawing
+            result=run_drawing(bridge,json.loads(args.request.read_text()),args.output,args.allow_network,args.presentation,document_id=args.document)
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+            return 0 if result['status']=='completed' else 2
+        elif args.command=='complex-draw':result=draw_complex(bridge,json.loads(args.recipe.read_text()),args.output,args.preset,args.pixels)
+        elif args.command=='scope-job':result=build_scope_job(bridge,json.loads(args.manifest.read_text()),args.output)
         elif args.command=='reaction-series':
             options=json.loads(args.manifest.read_text())
             if not isinstance(options,dict) or set(options)-{'schema_version','steps','preset','pixels','layout'}:raise ValueError('Invalid reaction series fields')
@@ -225,7 +335,7 @@ def main(argv=None):
             result=build_reaction(bridge,output_dir=args.output,**options)
         elif args.command=='draw':
             options=json.loads(args.manifest.read_text())
-            if not isinstance(options,dict) or set(options)-{'schema_version','structures','preset','columns','pixels','scaffold_smiles','layout','charge_style'}:raise ValueError('Invalid draw manifest fields')
+            if not isinstance(options,dict) or set(options)-{'schema_version','structures','preset','columns','pixels','scaffold_smiles','layout','charge_style','groups','frame','separators','scaffold_layout','presentation','document_id'}:raise ValueError('Invalid draw manifest fields')
             if type(options.get('schema_version',1)) is not int or options.pop('schema_version',1)!=1:raise ValueError('Unsupported draw manifest schema')
             if args.style:options['preset']=inspect_style_file(args.style)['preset']
             result=draw_structures(bridge,output_dir=args.output,**options)

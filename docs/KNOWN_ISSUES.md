@@ -1,10 +1,22 @@
 # Native drawing lessons and current limits
 
+## 2026-09-15: explicit metal-ion labels and zero-Z serialization
+
+In the explicit coordination writer, a single chemically interpreted `Cu2+` text run was imported by ChemDraw as a nested two-copper fragment. Multi-charge magnitudes must use their own superscript run (`face="64"`), following the working ordinary-ion writer's explicit charge encoding. The corrected native copper/ammine fixture retains one copper atom with formal charge +2 and all dative endpoints. The preservation validator still rejects nested fragments rather than accepting that misinterpretation.
+
+ChemDraw omits `xyz` on saving atoms whose supplied Z is zero. Compare this as the equivalent tuple (p.x, p.y, 0), not missing spatial information. The nonzero-Z fixtures retain `xyz`; losing those values fails preservation. See [explicit metal contract](METAL_COMPLEXES.md). No geometry or oxidation state is inferred.
+
 ## 2026-09-15: circled charge reassigned to a neighbouring carbon
 
 The four-ion drawing failed chemical validation after the charge pass. Inspection of retained before/after CDXML established the cause: ChemDraw changed the tetramethylammonium CirclePlus owner from nitrogen to a nearby methyl carbon, removing the nitrogen Charge attribute and reporting invalid valence. This was not an RDKit false-positive to bypass.
 
-Placement now requires the charge center to be uniquely nearest its intended atom by at least 0.25 pt, in addition to the existing glyph/label/bond clearance checks. The crowded reference now fails during planning before a charged copy is created. The current house-style nitrobenzene also has no accepted candidate under this conservative rule. Plain-charge versions preserve their graphs; less crowded circled-ion cases have separate native acceptance. Do not weaken graph verification or manually force a successful audit.
+Placement now requires the charge center to be uniquely nearest its intended atom by at least 0.25 pt, in addition to the existing glyph/label/bond clearance checks. The crowded tetramethylammonium reference fails during planning before a charged copy is created. A later regression established that the coarse search was missing a valid position for house-style nitrobenzene. Charge candidates now use 0.5 pt distance steps and 1.875 degree angular steps, retaining the same 10.5 pt handle span, approximately 1.58 pt visible stroke, clearance and nearest-owner rule. Native nitrobenzene saving preserves both formal charges and symbol owners. Plain-charge versions remain supported. Do not weaken graph verification or force a successful audit when no candidate fits.
+
+## 2026-09-15: cage drawings and crossing-bond caches
+
+Native MOL import of cubane emitted `CrossingBonds`, which the strict bond-attribute allowlist did not yet support. The property is now validated as a set of same-fragment bond references and remapped when structures are combined. Native saving can recompute the cache, including near-touching thick bond ink. Verification checks the relative `Z` ordering for every crossing reported or geometrically identified on either side, along with unchanged mapped chemistry and coordinates. A changed over/under order is rejected; cache array equality is not mistaken for chemical identity.
+
+Cubane, bullvalene and adamantane passed a serial native drawing test. This preserves supplied/native-cleaned projections, not measured 3D conformations. Format references: [CrossingBonds](https://iupac.github.io/IUPAC-FAIRSpec/cdx_sdk/properties/Bond_CrossingBonds.htm), [Z order](https://chemapps.stolaf.edu/iupac/cdx/sdk/properties/ZOrder.htm).
 
 ## 2026-09-15: black drawings disappear in GitHub dark mode
 
@@ -105,3 +117,8 @@ The editor verifies atom-mapped chemical identity, supported stereochemistry, at
 ## Delayed native open
 
 ChemDraw may accept an open before its document appears in the scripting document list. The bridge reconciles the exact working path with bounded read-only listing. It never repeats an uncertain open. Generic timeouts still require inspecting the application and recovery artifacts before retrying.
+## Spatial complexes: native import limits
+
+Development schema 2 uses black atoms by default, optional explicit colours, native front/back coordination displays and a compact corner charge annotation. The earlier slanted full-height charge bracket is replaced. Conventional order-1 donor-metal bonds can produce native donor-valence warnings; these remain visible and are recorded rather than suppressed.
+
+Ferrocene is currently a **refused regression fixture**, not a supported drawing. Native CDXML import on the development Mac changed aromatic `Order="1.5"` to single bonds. Preservation checks rejected the result. Real multicentre attachment lists survived; distributed charges on those nodes did not survive a separate probe. The installed native binary template can retain aromatic bonds, so future work should investigate the import boundary without weakening validation. See [metal contracts](METAL_COMPLEXES.md).

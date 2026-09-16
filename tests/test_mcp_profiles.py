@@ -16,7 +16,12 @@ CORE = {
     'chemdraw_list_documents', 'chemdraw_inspect_document',
     'chemdraw_import_file', 'chemdraw_create_document', 'chemdraw_clean',
     'chemdraw_apply_style', 'chemdraw_export', 'chemdraw_close_working_document',
+    'chemdraw_export_figure',
     'chemdraw_list_styles', 'chemdraw_doctor',
+    'chemdraw_draw_name',
+    'chemdraw_native_action',
+    'chemdraw_read_live_document', 'chemdraw_live_action',
+    'chemdraw_set_visibility', 'chemdraw_render_cdxml',
 }
 
 

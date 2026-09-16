@@ -1,8 +1,9 @@
-# Core MCP and drawing workflows
+# MCP, the drawing harness, and ChemDraw
 
-The native MCP server already exists and is independently usable. The additional
-development is a reusable drawing workflow layer, not a prerequisite for connecting
-an AI client to ChemDraw, and not a second language model.
+Your assistant interprets the request. MCP carries typed calls to this local
+server. The drawing harness validates and carries out complete drawing jobs.
+ChemDraw produces the editable document and native vector rendering. There is
+no language model inside this package.
 
 ```text
 Your natural-language request
@@ -14,10 +15,10 @@ MCP: discovers tools and carries structured calls/results
            +--> Core operations -----------------------+
            |    import, create, inspect, clean, export |
            |                                          v
-           +--> Optional drawing workflows ------> Native bridge
-                explicit graphs, style, layout,       |
-                preservation checks                    v
-                                                  ChemDraw
+           +--> Drawing harness ----------------> Native bridge
+                graphs, style, layout, validation      |
+                |                                      v
+Terminal CLI ---+                                    ChemDraw
                                              editable native output
 ```
 
@@ -27,6 +28,11 @@ directly, use a complete workflow, or combine several tools. The CLI calls the
 same implementation without requiring an AI client or MCP session.
 
 ## Choose the tool surface
+
+`--profile drawing` offers the focused drawing, diagnostics and
+physical-export surface. `full` includes the broader workflows and native
+operations. `core` is useful for direct native operations without the optional
+chemistry dependency. All three are views of one server.
 
 From an installed checkout:
 
@@ -63,6 +69,8 @@ choosing a profile are separate actions.
 | `chemdraw_import_file` | Open a private copy of supplied CDXML, CDX, MOL or SDF |
 | `chemdraw_create_document` | Open a new editable drawing from supplied CDXML |
 | `chemdraw_clean` | Run ChemDraw's own cleanup after a recovery export |
+| `chemdraw_native_action` | Direct native structure/reaction cleanup, six alignments, two distributions and label expansion/contraction on an owned working document |
+| `chemdraw_draw_name` | Native Name to Structure with explicit network consent; no RDKit seed or renderer |
 | `chemdraw_apply_style`, `chemdraw_list_styles` | List numerical presets or apply one to a copied document |
 | `chemdraw_export` | Export CDXML, CDX, SVG, PDF or PNG derived from native SVG |
 | `chemdraw_close_working_document` | Back up and close only a document owned by this server session |
@@ -73,17 +81,70 @@ request cleanup, and export SVG. It does not need the scope builder, molecule
 catalogue, reaction composer, a skill pack or RDKit to do that.
 
 Core is a bounded native automation bridge, not every command in ChemDraw's GUI.
-It does not currently expose native Name to Structure or arbitrary atom-level
-setters. Creating CDXML checks the accepted document format, not chemical truth.
+Toolbar drawing modes are not arbitrary atom-level setters. Native Name to
+Structure is available, but requires network consent because ChemDraw may use
+ChemACX and does not expose which lookup source it used. Creating CDXML checks
+the accepted document format, not chemical truth.
 Core export does not run the workflow layer's mapped stereochemistry or layout
 checks. Cleanup can change orientation. Unsupported native operations and
 uncertain writes must not be silently retried.
 
-An untitled drawing currently cannot be exported safely: the native save command
-would assign it a filename. The bridge refuses that export before saving. This
-also blocks workflows that need a preservation snapshot of an open untitled
-drawing. It is a known limitation, not a claim that all unsaved-document scenarios
-are supported.
+Untitled drawings are read through the desktop API without assigning a filename.
+Use `chemdraw_export_figure` for checked physical-scale output: CDXML from the
+live snapshot, SVG from native ChemDraw rendering, and DPI-tagged PNG pages from
+that SVG. Optional PDF is exported from an owned hidden copy so the original
+keeps its file binding. Legacy save-based exports can still refuse an untitled
+document; these two export routes have different contracts.
+
+## What the harness enforces
+
+`chemdraw_draw` is the front door for new molecule batches and explicit reaction
+requests. `harness.py` validates the request and routes supported work; it does
+not translate free text or predict chemistry. For shared molecule tables:
+
+1. Validate explicit identities and supported graph features. Resolve names only
+   with network consent and retained provenance.
+2. Read the active document, including unsaved edits. Identify verified shared
+   scaffold geometry and retain existing content.
+3. Plan a complete table at fixed bond scale. Measure visible molecule/caption
+   bounds in one hidden native copy and center them in common cells.
+4. Add the batch once to the same document. If necessary, add identical physical
+   pages rather than shrinking molecules or splitting into unrelated documents.
+5. Read the result and check graph/stereo, old content, geometry, style, page
+   placement, centres and caption baselines. Retain an audit and editable output.
+
+A snapshot token guards against stale source data. An uncertain native write is
+not retried automatically. These checks cannot prove that a supplied structure
+matches a paper, that a name was chemically intended, or that a reaction works.
+
+The CLI `produce` command calls this same harness. Direct native tools remain
+available for explicit lower-level work, and do not automatically acquire every
+harness validation gate.
+
+## Native connection and rendering
+
+The MCP client launches a local **stdio** server. Separately, a private authenticated
+loopback connection links that server to the installed ChemDraw JavaScript add-in.
+That localhost channel is not a remotely accessible MCP endpoint. Bounded
+AppleEvents handle other native commands and exports. The small modeless native
+add-in panel must remain available while its server is connected.
+
+RDKit validates supported graphs and supplies editable coordinates/CDXML seeds.
+ChemDraw renders native SVG/PDF; resvg turns the native SVG into PNG. No RDKit
+image is passed off as a ChemDraw export. Each route's native checks are scoped
+to its supported object types.
+
+Multiple assistants may be configured, but this version has one native endpoint
+owner at a time. The cooperative lock and stale-snapshot checks prevent some
+conflicting operations; they are not simultaneous multi-user collaboration.
+
+## Customization boundaries
+
+Assistant/project instructions express workflow preferences. Versioned lab-style
+JSON supplies supported numerical drawing settings. MCP profiles choose which
+tools are exposed. These are separate controls: none bypasses chemistry checks,
+grants network consent, or enables unsupported ChemDraw objects. See
+[examples and customization](GETTING_STARTED.md) and [lab styles](LAB_STYLE.md).
 
 ## What the workflow layer adds
 
@@ -124,7 +185,12 @@ chemistry is supported or using one successful example as proof of generality.
 ## Code map and acceptance
 
 `server.py` exposes typed MCP functions and selects the profile. `cli.py` dispatches
-terminal commands. `core.py` and `native.applescript` provide the native bridge.
+terminal commands. `harness.py` routes complete jobs; `api_drawing.py` plans and
+verifies shared tables. `addin.py`, `addin_client.js` and `shared.py` implement
+the private API transport and append contract. `core.py` and
+`native.applescript` provide the other native operations.
+`physical_export.py` retains physical scale; `terminal_setup.py` and the SwiftUI
+app share `desktop_setup.py` for guided connection setup.
 Modules such as `draw.py`, `workflow.py`, `reaction.py` and `symbols.py` implement
 reusable operations above that bridge. The workflow modules remain in the same
 package; this is a tool-surface separation, not a new microservice architecture.

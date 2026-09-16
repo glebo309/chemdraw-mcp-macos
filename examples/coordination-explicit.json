@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "label": "Explicit coordination fixture",
+  "atoms": [
+    {"id":"cu","element":"Cu","charge":2,"hydrogens":0,"position":[150,150,0]},
+    {"id":"n1","element":"N","charge":0,"hydrogens":3,"position":[95,150,0]},
+    {"id":"n2","element":"N","charge":0,"hydrogens":3,"position":[205,150,0]},
+    {"id":"n3","element":"N","charge":0,"hydrogens":3,"position":[150,95,20]},
+    {"id":"n4","element":"N","charge":0,"hydrogens":3,"position":[150,205,-20]}
+  ],
+  "bonds": [
+    {"begin":"n1","end":"cu","order":"dative"},
+    {"begin":"n2","end":"cu","order":"dative"},
+    {"begin":"n3","end":"cu","order":"dative"},
+    {"begin":"n4","end":"cu","order":"dative"}
+  ]
+}

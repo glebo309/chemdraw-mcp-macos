@@ -1,0 +1,242 @@
+{
+  "schema_version": 2,
+  "label": "Ferrocene",
+  "atoms": [
+    {
+      "id": "fe",
+      "element": "Fe",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        250,
+        250,
+        0
+      ]
+    },
+    {
+      "id": "cp0c0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        250,
+        189,
+        -18
+      ]
+    },
+    {
+      "id": "cp0c1",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        282.335922,
+        200.055728,
+        -5.562306
+      ]
+    },
+    {
+      "id": "cp0c2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        269.984699,
+        217.944272,
+        14.562306
+      ]
+    },
+    {
+      "id": "cp0c3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        230.015301,
+        217.944272,
+        14.562306
+      ]
+    },
+    {
+      "id": "cp0c4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        217.664078,
+        200.055728,
+        -5.562306
+      ]
+    },
+    {
+      "id": "cp1c0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        250,
+        279,
+        -18
+      ]
+    },
+    {
+      "id": "cp1c1",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        282.335922,
+        290.055728,
+        -5.562306
+      ]
+    },
+    {
+      "id": "cp1c2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        269.984699,
+        307.944272,
+        14.562306
+      ]
+    },
+    {
+      "id": "cp1c3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        230.015301,
+        307.944272,
+        14.562306
+      ]
+    },
+    {
+      "id": "cp1c4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        217.664078,
+        290.055728,
+        -5.562306
+      ]
+    }
+  ],
+  "bonds": [
+    {
+      "begin": "centre0",
+      "end": "fe",
+      "order": "haptic",
+      "display": "Solid"
+    },
+    {
+      "begin": "centre1",
+      "end": "fe",
+      "order": "haptic",
+      "display": "Solid"
+    },
+    {
+      "begin": "cp0c0",
+      "end": "cp0c1",
+      "order": "1.5",
+      "display": "Solid"
+    },
+    {
+      "begin": "cp0c1",
+      "end": "cp0c2",
+      "order": "1.5",
+      "display": "WedgeBegin"
+    },
+    {
+      "begin": "cp0c2",
+      "end": "cp0c3",
+      "order": "1.5",
+      "display": "Bold"
+    },
+    {
+      "begin": "cp0c3",
+      "end": "cp0c4",
+      "order": "1.5",
+      "display": "WedgeEnd"
+    },
+    {
+      "begin": "cp0c4",
+      "end": "cp0c0",
+      "order": "1.5",
+      "display": "Solid"
+    },
+    {
+      "begin": "cp1c0",
+      "end": "cp1c1",
+      "order": "1.5",
+      "display": "Solid"
+    },
+    {
+      "begin": "cp1c1",
+      "end": "cp1c2",
+      "order": "1.5",
+      "display": "WedgeBegin"
+    },
+    {
+      "begin": "cp1c2",
+      "end": "cp1c3",
+      "order": "1.5",
+      "display": "Bold"
+    },
+    {
+      "begin": "cp1c3",
+      "end": "cp1c4",
+      "order": "1.5",
+      "display": "WedgeEnd"
+    },
+    {
+      "begin": "cp1c4",
+      "end": "cp1c0",
+      "order": "1.5",
+      "display": "Solid"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "centre0",
+      "position": [
+        250,
+        205,
+        0
+      ],
+      "atoms": [
+        "cp0c0",
+        "cp0c1",
+        "cp0c2",
+        "cp0c3",
+        "cp0c4"
+      ],
+      "ellipse": [
+        40,
+        17
+      ]
+    },
+    {
+      "id": "centre1",
+      "position": [
+        250,
+        295,
+        0
+      ],
+      "atoms": [
+        "cp1c0",
+        "cp1c1",
+        "cp1c2",
+        "cp1c3",
+        "cp1c4"
+      ],
+      "ellipse": [
+        40,
+        17
+      ]
+    }
+  ],
+  "overall_charge": null
+}

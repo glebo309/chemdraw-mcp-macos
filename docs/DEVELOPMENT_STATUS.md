@@ -1,25 +1,47 @@
 # Experimental development snapshot
 
-Updated 2026-09-15. Package version 0.9.2 remains experimental, with native evidence limited to the development Mac and ChemDraw 23.0.1.11.
+Updated 2026-09-16. Current candidate: **0.10.0rc12**. The Git route has an
+`install.sh` entry point that installs locked dependencies and launches themed
+terminal setup. The Apple Silicon DMG includes the graphical helper and runtime.
+Shared native drawings support measured tables across physical pages and
+physical-scale exports. Fresh terminal testing corrected both Apple Terminal
+background colours and discovery of filename-suffixed add-in installations.
+
+The rc12 portable suite passes 1123 tests, with 90 opt-in skips. Native evidence
+is limited to the development Mac and ChemDraw 23.0.1.11. Another-Mac acceptance,
+Developer ID signing/notarization and transactional graphical updates remain
+open. See PROJECT_PROGRESS.md for exact candidate checks. The older rc2 feature
+record below is historical, not the current package version.
 
 ## Current checks
 
-- Full portable command: `uv run --locked --extra chemistry pytest -q`. Recorded result after first-run onboarding: 733 passed, 35 native tests skipped, no failures.
-- One-call `first-run` / `chemdraw_first_run` checks dependencies, draws a fixed native caffeine/aspirin example and returns editable exports plus a review and audit. Interactive CLI progress uses an ASCII molecular ring; MCP and JSON modes have no animation or browser launch. A fresh server exposes 38 tools. [First-run contract](FIRST_RUN.md), [desktop client setup](MCP_CLIENTS.md).
-- Targeted serial native acceptance after this increment passed 5 tests in 117.38 seconds, including actual stdio first-run and all four draw regressions. An isolated installed-wheel CLI run also passed, exercised the animation and browser launch, and was visually reviewed on white. This is additional same-Mac evidence, not a rerun of the full native suite or independent-Mac certification.
+Subsequent development (not a rebuilt rc2 archive): explicit targeted atom/H/charge
+and bond-order changes, supplied-fragment attachment and branch removal now have
+native MCP coverage. Placement checks include bounded attachment-angle search,
+hidden-carbon prevention and post-render measured-label clearance. Charge placement
+uses local bond widths and rechecks saved native clearance. Built-in presets now
+share custom-style verification, and simple reaction captions use visible spacing.
+Latest portable check: 873 passed, 64 skipped; separate native runs passed nine
+targeted cases and eleven drawing/style/symbol cases. See PROJECT_PROGRESS.md for
+exact reports and boundaries. The rc2 evidence below remains its historical snapshot.
+
+- Final portable suite: 773 passed, 39 native tests skipped in 6.35 s. Evidence: `local-validation/rc2-portable-final.xml`.
+- Before adding the separate metal endpoint, the full suite with native tests enabled passed 785 tests in 408.97 s. Evidence: `local-validation/rc1-native-full.xml`. After adding it, both metal native tests passed in 6.60 s, including the actual fresh stdio MCP transport. These are separate runs, not a claimed combined full-suite result.
+- One-call `first-run` / `chemdraw_first_run` checks dependencies and draws the fixed native caffeine/aspirin example. Interactive CLI now cycles through nine bundled native silhouettes, including alizarin instead of uric acid. Fixed geometry, no displayed names, ANSI16 colour and a continuous phase-weighted bar; completion follows passed checks. MCP and JSON remain animation-free. [First-run contract](FIRST_RUN.md), [desktop client setup](MCP_CLIENTS.md).
 - Per-user cross-process coordination is implemented, including reentrant native workflows and complete low-level create/import/close transactions. Busy contention is distinguished from uncertain native outcomes.
 - Opt-in `charge_style: "circled"` is available in draw and styled draw jobs. The default remains plain; returned `artifacts` points to the actual final CDXML/SVG/PNG.
-- The original native failure was a real charge reassignment from nitrogen to a nearby carbon. Placement now rejects a charge center closer to another atom. Crowded tetramethylammonium and nitrobenzene at the current house style remain refused in circled mode; plain-charge graphs are supported.
-- Full serial native acceptance passed all 34 tests in 441.91 seconds, including all four original plain-charge graphs and three circled charges across glycine zwitterion and benzoate. The actual CLI ionic demo also passed and its preview was visually inspected on white. Negative charges sit low beside the caption row, a remaining visual-refinement opportunity. Evidence paths are recorded in PROJECT_PROGRESS.md; interrupted runs are not counted as passes.
+- Denser bounded circled-charge placement passes native nitrobenzene with unchanged glyph size, stroke, owner and clearance checks. Crowded tetramethylammonium still fails safely at this house style; no claim of a universal collision solver.
+- Cage drawings retain valid crossing references and relative foreground order. Cubane, bullvalene and adamantane pass native rendering and preservation checks; their preview was inspected on white. Native crossing caches may be recomputed and absolute Z values renumbered.
+- Experimental `complex-draw` / `chemdraw_draw_complex` accepts explicit donor-to-metal dative bonds and supplied point XYZ coordinates in a separate workflow. Copper/ammine native direct and MCP tests pass. This preserves records and a 2D projection, not inferred stereochemistry or a 3D model. [Metal contract](METAL_COMPLEXES.md).
 - Opaque GitHub previews preserve the original transparent exports and every native drawing element. Marco DeCorti's acknowledgment is retained.
-- The 0.9.2 wheel and source archive build offline. Archive checks confirm the first-run module and licence notices, with local validation bundles and proprietary references excluded. Built packages are local, not published releases.
+- Release artifacts are built locally, not published to a package index. See [candidate handoff](ANOTHER_MAC_TEST.md) and the latest progress entry for archive and installed-wheel evidence. Marco DeCorti's acknowledgment and AGPL/upstream notices are retained.
 
 ## Next work
 
 1. Verify installation and native drawing on another Mac with its own licensed ChemDraw.
-2. Improve crowded circled-charge placement without weakening graph, stereo or owner checks. Current refusals are explicit limits, not solved layouts.
+2. Address remaining crowded-charge cases only with explicit geometry/style choices, never weakened owner checks or silently smaller symbols.
 3. Continue molecule-first usability and consistent styling. Reactions combine explicit molecules; charts and general figure composition are not the current priority.
-4. Investigate explicit coordination bonds and supplied spatial depictions for metal complexes. General metal-complex construction and 3D geometry are not implemented or certified.
+4. Expand metal fixtures and explicit spatial depiction deliberately. General complex construction, hapticity and 3D geometry prediction remain unsupported.
 5. Complete the remaining stable-release acceptance and distribution review. Original project code is now AGPL-3.0-only.
 
 The repository was made public with Glenn's approval on 2026-09-15 and subsequently licensed under AGPL-3.0-only at his request to make it open source. It includes source, tests, documentation and synthetic examples. It excludes local-validation bundles, virtual environments, built distributions, proprietary templates, application binaries and reference PDFs. Open-source licensing does not establish a stable release.

@@ -106,7 +106,8 @@ def prepare_steps(steps):
 
 
 def _layout_options(layout):
-    defaults={'gap':16.,'label_gap':10.,'condition_gap':10.,'row_gap':120.,'margin':36.}
+    from .lab_style import DEFAULTS
+    defaults=dict(DEFAULTS['reaction'])
     if layout is None:return defaults
     if not isinstance(layout,dict) or set(layout)-set(defaults):raise ValueError('Unknown reaction layout fields')
     result={**defaults,**layout}
@@ -163,6 +164,8 @@ def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None):
                 for comp in participant['components']:
                     f=copy.deepcopy(normalized[comp['canonical_smiles']].find('page/fragment'));mapping={e.get('id'):fresh() for e in f.iter() if e.get('id')}
                     for e in f.iter():
+                        from .crossings import remap_crossings
+                        remap_crossings(e, mapping)
                         for attr in ('id','B','E'):
                             if e.get(attr):e.set(attr,mapping[e.get(attr)])
                         for attr in ('AS','BondOrdering','BondCircularOrdering'):e.attrib.pop(attr,None)
@@ -325,6 +328,10 @@ def verify_series(expected,native,plan):
         'chemical_balance_certified':False,'steps':mapped['steps'],'median_bond_lengths_pt':medians}
 
 
+from .presentation import production_job
+
+
+@production_job
 def build_reaction_series(bridge,steps,output_dir,preset='house',pixels=3200,layout=None):
     out=Path(output_dir).expanduser()
     if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output requires an absolute new directory with existing parent')

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "preset": "house",
+  "columns": 3,
+  "pixels": 3200,
+  "presentation": "background",
+  "scaffold_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+  "scaffold_layout": "reference",
+  "layout": {"margin": 36, "h_gap": 16, "v_gap": 14, "label_gap": 8},
+  "frame": true,
+  "separators": true,
+  "groups": [
+    {"label": "Reference / alkyl / alkoxy", "compound_ids": ["1", "2", "3", "4", "5", "6"]},
+    {"label": "Electron-withdrawing", "compound_ids": ["7", "8", "9"]},
+    {"label": "Halogens", "compound_ids": ["10", "11", "12"]}
+  ],
+  "structures": [
+    {"compound_id": "1", "label": "C8-H (caffeine)", "smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O"},
+    {"compound_id": "2", "label": "C8-Me", "smiles": "Cn1c(=O)c2c(nc(C)n2C)n(C)c1=O"},
+    {"compound_id": "3", "label": "C8-Et", "smiles": "Cn1c(=O)c2c(nc(CC)n2C)n(C)c1=O"},
+    {"compound_id": "4", "label": "C8-iPr", "smiles": "Cn1c(=O)c2c(nc(C(C)C)n2C)n(C)c1=O"},
+    {"compound_id": "5", "label": "C8-tBu", "smiles": "Cn1c(=O)c2c(nc(C(C)(C)C)n2C)n(C)c1=O"},
+    {"compound_id": "6", "label": "C8-OMe", "smiles": "Cn1c(=O)c2c(nc(OC)n2C)n(C)c1=O"},
+    {"compound_id": "7", "label": "C8-CN", "smiles": "Cn1c(=O)c2c(nc(C#N)n2C)n(C)c1=O"},
+    {"compound_id": "8", "label": "C8-CF3", "smiles": "Cn1c(=O)c2c(nc(C(F)(F)F)n2C)n(C)c1=O"},
+    {"compound_id": "9", "label": "C8-NO2", "smiles": "Cn1c(=O)c2c(nc([N+](=O)[O-])n2C)n(C)c1=O"},
+    {"compound_id": "10", "label": "C8-F", "smiles": "Cn1c(=O)c2c(nc(F)n2C)n(C)c1=O"},
+    {"compound_id": "11", "label": "C8-Cl", "smiles": "Cn1c(=O)c2c(nc(Cl)n2C)n(C)c1=O"},
+    {"compound_id": "12", "label": "C8-Br", "smiles": "Cn1c(=O)c2c(nc(Br)n2C)n(C)c1=O"}
+  ]
+}

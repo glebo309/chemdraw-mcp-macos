@@ -271,6 +271,8 @@ def verify_native_edit(planned,native):
     if _mapped_smiles(planned,ids)!=_mapped_smiles(native,{mapping[k]:v for k,v in ids.items()}):
         raise ValueError('Native mapped chemistry or stereo differs from requested edit')
     p=_root(planned);n=_root(native)
+    from .crossings import verify_crossings
+    verify_crossings(p.find('page/fragment'), n.find('page/fragment'), mapping)
     # Rendered atom text is independent of Element in CDXML. Compare formula
     # tokens (NH2 and H2N agree, N2H does not), not just graph parsing.
     for old in p.findall('.//n'):
@@ -283,7 +285,7 @@ def verify_native_edit(planned,native):
     if sorted(''.join(t.itertext()).strip() for t in p.find('page').findall('t')) != sorted(''.join(t.itertext()).strip() for t in n.find('page').findall('t')):
         raise ValueError('Native captions differ from requested text')
     return {'atom_id_map':mapping,'maximum_displacement_pt':displacement,
-            'mapped_chemistry_verified':True,'native_labels_verified':True}
+            'mapped_chemistry_verified':True,'native_labels_verified':True,'crossing_order_verified':True}
 
 
 @native_transaction

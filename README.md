@@ -1,8 +1,84 @@
 # ChemDraw MCP for macOS
 
+Native, editable chemical drawings from your assistant or terminal.
+Read your unsaved ChemDraw edits, build aligned molecule tables in the same
+document, and export figures at a consistent chemical scale.
+
+![ChemDraw MCP graphical setup with molecular animation and pink, lavender and gold accents](assets/readme/setup.png)
+
+[Mac downloads](https://github.com/glebo309/chemdraw-mcp-macos/releases) ·
+[Terminal installation](docs/TERMINAL_INSTALL.md) ·
+[Examples and customization](docs/GETTING_STARTED.md) ·
+[Architecture](docs/ARCHITECTURE.md)
+
+## Install once
+
+| Route | Start here |
+| --- | --- |
+| **Graphical Mac installer** | Download the Apple Silicon `.dmg` from Releases, open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
+| **Terminal / Git** | Clone this repository and run `./install.sh`. It installs locked dependencies and automatically launches the animated terminal setup. Requires Git and uv. [Commands](docs/TERMINAL_INSTALL.md) |
+| **MCP bundle** | The `.mcpb` is an alternative for clients that import MCP bundles. Choose this or the DMG, not both. |
+
+All routes use the same native bridge. You do not need a separate installation
+for each model. Other local stdio MCP clients can use the server executable;
+each client's permissions and tool behavior still need testing. The graphical
+helper offers Claude Desktop and Codex local-client configuration. It does not
+install a remote connector into web ChatGPT.
+
+### Terminal quick start
+
+```sh
+git clone https://github.com/glebo309/chemdraw-mcp-macos.git
+cd chemdraw-mcp-macos
+./install.sh
+```
+
+Setup starts automatically after dependency installation. To connect assistants,
+use `./install.sh --client claude --client codex` instead. A Git clone alone does
+not execute anything. Checkout commands use `uv run`; no global shell command or
+PATH change is assumed. For an optional first drawing after setup:
+
+```sh
+uv run --locked --extra chemistry chemdraw-mac first-run
+```
+
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc12),
+open it, and open **ChemDraw MCP**. The graphical helper includes Python and
+dependencies, guides the ChemDraw add-in step, and connects selected local clients.
+It does not install or license ChemDraw itself.
+
+**Experimental candidate: 0.10.0rc12.** Requires your own licensed ChemDraw and a
+logged-in Mac desktop. Native tests have run on Apple Silicon, macOS 15.6,
+ChemDraw 23.0.1.11. The Mac app is ad-hoc signed, not Developer ID signed or
+notarized. Independent-Mac acceptance is still open. Only one assistant can own
+the native connection at a time. [Compatibility](docs/COMPATIBILITY.md) ·
+[Graphical setup](docs/DESKTOP_INSTALLER.md) · [Updates](docs/UPDATES.md)
+
+## Ask for the result
+
+> Draw caffeine in my current ChemDraw document.
+
+> Read my edited parent structure. Make an eight-member scope, align the common
+> scaffold, center the structures and captions, and add pages in this document
+> if needed. Do not invent yields.
+
+> Export this document as PDF and transparent 600-DPI PNGs, preserving molecular scale.
+
+The drawing harness checks explicit graphs, native output, layout and source
+preservation. Shared tables use measured ink centres and common caption
+baselines; complete batches can add physical pages without shrinking molecules.
+One hidden native copy measures the table before final insertion. Physical-scale
+SVG/PNG exports keep bond size consistent instead of fitting every molecule to
+the same image width. Native PDF retains paper pages. No HTML review is required
+for ordinary shared drawings or physical-scale exports.
+
+[Worked examples](docs/GETTING_STARTED.md) ·
+[Drawing request format](docs/DRAWING_HARNESS.md) ·
+[Export settings and limits](docs/PHYSICAL_EXPORT.md)
+
 Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create native structures and explicit reaction rows, import local styles, design mapped aromatic scopes, inspect identifiers, resolve names with explicit network opt-in, polish figures, add supported electron/charge symbols and curves, or batch-export finished drawings. Inspect native exports and keep editable output plus a chemical audit.
 
-**Native rendering, not simulated clicks.** AppleScript controls the installed application. ChemDraw renders SVG and other native exports; offline `resvg` rasterizes the unchanged native SVG for transparent PNG. Optional RDKit validates graphs, converts identifiers, constructs offline scope candidates and supplies the new-drawing workflow's MOL coordinate seeds. Desktop ChemDraw then imports, cleans and renders those structures; RDKit does not render the exported figure. Natural-language interpretation comes from your MCP client, not an LLM embedded in this server.
+**Native ChemDraw rendering.** The desktop JavaScript API reads and appends supported molecule batches; bounded AppleScript handles other native commands and exports. RDKit supplies validated graphs and coordinates through its ChemDraw CDXML writer, not images. ChemDraw renders SVG; offline `resvg` rasterizes that unchanged native SVG for transparent PNG. Explicit background workflows retain the older native import/cleanup pipeline. Natural-language interpretation comes from your MCP client, not an embedded LLM.
 
 Independent, open-source experimental project under [AGPLv3](LICENSE). Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 
@@ -18,6 +94,7 @@ interprets natural language and chooses the tools; there is no LLM inside this s
 | Mode | Launch command | Intended use |
 | --- | --- | --- |
 | Core | `chemdraw-mcp-macos --profile core` | Direct native document tools; no RDKit required |
+| Drawing | `chemdraw-mcp-macos --profile drawing` | Focused drawing, diagnostics and physical-export tools |
 | Full (default) | `chemdraw-mcp-macos --profile full` | Core plus drawing, reaction, scope and validation workflows |
 
 Both modes use the same native bridge. Full workflows accept structures and recipes,
@@ -25,6 +102,26 @@ not a fixed catalogue of molecules. Experimental metal-complex work is an additi
 capability, not something users must wait for before using the core MCP.
 See [architecture, installation and design principles](docs/ARCHITECTURE.md) and
 [client configuration](docs/MCP_CLIENTS.md#choose-core-or-full).
+
+## Existing document or background export
+
+`chemdraw_draw` and `chemdraw_draw_structures` reuse a visible working document in `auto` mode for supported
+molecules and captions. Untitled documents do not need saving first. Specify
+`presentation="shared", document_id=ID` when several documents are open. Native
+API insertion uses planned coordinates and preservation checks in the same
+document, without clipboard or keyboard movement. [Shared delivery requirements and limits](docs/USAGE.md).
+
+Use `live-read` and `live-action` to inspect and run supported native commands on
+the document already open in ChemDraw, without another working window or preview.
+Fresh snapshots detect changed content before dispatch. `visibility` shows/hides
+one document. `render --input drawing.cdxml --output /absolute/new-folder`
+exports supplied CDXML in a hidden window and closes that owned document after
+success. Both MCP profiles expose matching tools.
+
+This is on-request synchronization, not continuous collaborative editing.
+Arbitrary atom edits still use the separate copy workflow. Background rendering
+requires a logged-in licensed Mac desktop; it is not a display-free server mode.
+[Commands, evidence and limits](docs/LIVE_DOCUMENT.md)
 
 ## Acknowledgments
 
@@ -51,13 +148,18 @@ Every native workflow has an MCP counterpart and retains editable CDXML, native 
 
 ## First drawing in one command
 
-With [uv](https://docs.astral.sh/uv/getting-started/installation/), Git and your own activated ChemDraw installed on your Mac:
+After [terminal setup](docs/TERMINAL_INSTALL.md), open a blank ChemDraw document:
 
 ```sh
-uvx --from 'chemdraw-mcp-macos[chemistry] @ git+https://github.com/glebo309/chemdraw-mcp-macos@main' chemdraw-mac first-run
+chemdraw-mac first-run
 ```
 
-This runs the public development branch in an isolated tool environment, checks the local installation, draws caffeine and aspirin in desktop ChemDraw, validates the native exports and opens a local review. A small ASCII molecular ring animates while the native workflow runs. Dependency download/build progress comes from uv before the command starts. Nothing installs or licenses ChemDraw for you.
+This draws caffeine and aspirin in the active document and validates native
+exports. It is an optional drawing test, not the package installer. Interactive
+onboarding cycles through native molecular silhouettes with pink/lavender/gold
+accents. The bar tracks workflow phases and completes only after native checks
+pass. It does not claim an installation-time estimate. Nothing installs or
+licenses ChemDraw for you.
 
 Already in a checkout? Use `uv run --locked --extra chemistry chemdraw-mac first-run` instead for the committed dependency lock. Outputs go to a new uniquely named folder, the final drawing stays editable in ChemDraw, and pre-existing documents are preserved. Use `--json` for scripts or `--no-open --no-animation` for a quiet terminal. [First-run behavior and troubleshooting](docs/FIRST_RUN.md)
 
@@ -159,7 +261,7 @@ Add a rounded shadowed box, true dotted group dividers and optional headings to 
 
 ## From explicit structures to a native figure
 
-For supported ions, add `"charge_style": "circled"` to the draw manifest to create native circled charge symbols in the same job. [Try the ionic example](examples/ions-circled.json). The default remains `"plain"`. Crowded arrangements, including the current house-style tetramethylammonium/nitrobenzene examples, may have no safe circled-symbol position and are rejected; plain-charge drawing remains available. Returned `artifacts` points to the actual final CDXML/SVG/PNG, including the optional charge pass.
+For supported ions, add `"charge_style": "circled"` to the draw manifest to create native circled charge symbols in the same job. [Try the ionic example](examples/ions-circled.json). The default remains `"plain"`. The refined search supports the house-style nitrobenzene example without shrinking symbols or weakening owner checks. Crowded arrangements such as the current tetramethylammonium drawing still have no safe candidate and are rejected; plain-charge drawing remains available. Returned `artifacts` points to the actual final CDXML/SVG/PNG, including the optional charge pass.
 
 `draw` accepts a manifest of explicit `{compound_id, label, smiles}` records. It preserves the supplied chemical identity through MOL seeding, native import and native Clean Up Structure, then hands the measured native structures to the grid workflow:
 
@@ -242,7 +344,7 @@ The basic bridge does not require RDKit. Install with `uv sync --locked` for nat
 }
 ```
 
-Merge this entry into the client's existing configuration; do not replace unrelated entries. `chemdraw-mac serve` starts the same stdio server. A silent terminal waiting for a client is normal. No network listener is started; the opt-in resolver makes outbound HTTPS requests.
+Merge this entry into the client's existing configuration; do not replace unrelated entries. `chemdraw-mac serve` starts the same stdio server. A silent terminal waiting for a client is normal. API drawing starts a private authenticated loopback listener on demand; the opt-in resolver makes outbound HTTPS requests.
 
 Example requests:
 
@@ -276,9 +378,13 @@ style extraction and scope proposals are offline; only explicit resolver calls u
 | Tool | Behaviour |
 |---|---|
 | `chemdraw_doctor` | Reports installation, live connection and optional validator availability |
-| `chemdraw_first_run` | Checks setup, draws a fixed native example and returns editable files, review and audit |
+| `chemdraw_first_run` | Checks setup, draws a fixed native example and returns editable files and JSON checks without HTML |
+| `chemdraw_draw_complex` | Experimental [explicit coordination drawing](docs/METAL_COMPLEXES.md): supplied XYZ, front/back chelate bonds, black default labels and corner charge annotation; checked after native saving, no geometry prediction. Ferrocene remains a refused regression fixture. |
 | `chemdraw_list_documents` | Native document IDs, names, paths, modified flags and molecule counts |
 | `chemdraw_inspect_document` | Native molecule indices/bounds and document settings |
+| `chemdraw_inspect_targets`, `chemdraw_prepare_selection`, `chemdraw_edit_targets` | Snapshot-bound atom/H/charge and bond-order edits, supplied-fragment attachment, branch removal, wedges, rings and native subset alignment; bounded placement search and native clearance checks in new copies. [Recipes and limits](docs/TARGETED_EDITING.md) |
+| `chemdraw_native_action` | Direct ChemDraw cleanup, alignment, distribution and label commands on owned working copies; [selection and availability limits](docs/USAGE.md#direct-native-actions) |
+| `chemdraw_draw_name` | ChemDraw's own Name to Structure, with explicit network consent and native review exports; no RDKit seed or renderer |
 | `chemdraw_analyze_document` | Exports a snapshot and reports supported object geometry plus a top-level source token; editable single molecules also receive atom/bond IDs |
 | `chemdraw_polish_document` | Makes a normalized copy, optional explicit row layout, native review exports, recipe and audit |
 | `chemdraw_edit_document` | Makes an analogue copy from explicit atom/H and bond-order edits; checks the expected source token, mapped product chemistry, coordinates and CDXML labels |
@@ -323,7 +429,7 @@ Both CLI and MCP call the same workflow implementation. [Usage and recipe refere
 - Backups remain local and contain chemical data. Only explicit `resolve` calls with network permission send queries to PubChem; other workflows stay local. Connected AI clients have separate privacy policies.
 - Updated CLI/MCP clients share a per-user process lock, including native working-copy workflows. A competing call waits at most two seconds before returning busy without dispatching its native operation. Manual GUI edits, older clients and other automation software do not honor this lock. [Coordination contract](docs/NATIVE_COORDINATION.md)
 - An AppleEvent timeout has an uncertain outcome and is not retried automatically. Inspect ChemDraw before retrying.
-- No raw AppleScript, arbitrary menu, clipboard or quit tool is exposed. Native Name-to-Structure and unrestricted molecular editing are not implemented.
+- No raw AppleScript, arbitrary menu, clipboard or quit tool is exposed. Native commands are allowlisted; unrestricted molecular editing is not implemented.
 
 ## Development and provenance
 
@@ -337,7 +443,7 @@ Native tests are opt-in and require an available licensed application. [Contribu
 
 The geometry layer adapts `Box`, `find_overlaps` and `grid_positions` from Michael Leitch's MIT-licensed [live-chemdraw-mcp](https://github.com/MALeitch/live-chemdraw-mcp), not its Windows COM bridge. See [third-party notices](THIRD_PARTY_NOTICES.md), [pinned upstream sources](upstream-sources.json), [research](docs/UPSTREAM_RESEARCH.md) and [roadmap](docs/ROADMAP.md).
 
-Offline identifiers are documented in [the identifier contract](docs/IDENTIFIERS.md); the separate opt-in PubChem interface is documented in [resolver semantics](docs/RESOLVER.md). Other providers and native Name-to-Structure remain outside the implementation. [Layout and workflow research](docs/LAYOUT_WORKFLOW_RESEARCH.md) records the scope-grid motivation and further improvements. Use this README and the usage reference for interfaces, and [project progress](PROJECT_PROGRESS.md) for actual validation evidence.
+Offline identifiers are documented in [the identifier contract](docs/IDENTIFIERS.md); the separate opt-in PubChem interface is documented in [resolver semantics](docs/RESOLVER.md). [Native Name to Structure](docs/USAGE.md#native-name-to-structure) uses ChemDraw's lookup rather than the PubChem resolver. [Layout and workflow research](docs/LAYOUT_WORKFLOW_RESEARCH.md) records the scope-grid motivation and further improvements. Use this README and the usage reference for interfaces, and [project progress](PROJECT_PROGRESS.md) for actual validation evidence.
 
 ## License and collaboration
 

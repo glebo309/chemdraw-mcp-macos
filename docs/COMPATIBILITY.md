@@ -1,6 +1,35 @@
 # Compatibility and limits
 
+2026-09-16 rc10: shared molecule tables support up to 20 identical vertical
+physical pages in one document. Native addCDXML expansion of HeightPages and
+BoundingBox was verified while retaining existing objects. One hidden measuring
+copy supplies native ink bounds; centers and caption baselines are checked after
+final insertion. The retained 17-member LSD panel passed, including preservation
+of a pre-existing reference. This supersedes single-page limits for shared tables
+only, not legacy polish/grid/reactions. Arbitrary paper resizing is not exposed.
+The physical export tool preserves point scale, tags PNG DPI, splits vertical
+documents into page images and optionally exports native paginated PDF. It does
+not normalize inconsistent source drawings. See PHYSICAL_EXPORT.md.
+
 Updated 2026-09-15. Source inspection and application discovery are not native compatibility tests.
+
+2026-09-16 addition: the experimental desktop JavaScript API bridge passed real
+MCP acceptance on ChemDraw 23.0.1 / API 1.6 for untitled reads and two successive
+exact-coordinate CDXML additions (five structures, then one), with Finder in
+front during insertion. No clipboard or intermediate drawing documents are used
+by these new calls. Initial connection-panel opening activates ChemDraw once.
+Ordinary molecule drawing has since migrated to this backend: a parent plus eight
+analogues passed in one untitled canvas with intermediate imports forbidden.
+A mixed native batch also retained charges, isotopes, explicit H and stereo. See
+[desktop add-in setup and limits](DESKTOP_ADDIN.md).
+
+Latest shared-planner follow-up: substituent replacement can use a whole supplied
+common ring core anchored to the live parent, and automatic panels select a plain
+shared grid without a decoration rejection. Portable regressions pass, including
+the retained ten-analogue user case. Candidate 0.10.0rc3 passes six native shared
+API/first-run tests, including caption counts and replacement-core coordinates.
+Equal envelope centres are portable-tested; native previews were visually reviewed.
+This does not establish pixel-perfect visible-ink centring for every molecule.
 
 | Component | Current evidence |
 |---|---|
@@ -8,13 +37,38 @@ Updated 2026-09-15. Source inspection and application discovery are not native c
 | macOS/processor combinations | No cross-version or cross-architecture certification matrix yet |
 | Python | Package requires 3.11 or newer; use the locked environment |
 | MCP SDK | Dependency constrained to `>=1.27.1,<2`; no SDK v2 claim |
-| Interface | AppleScript/AppleEvents through the installed application; no simulated clicks |
+| Interface | Desktop JavaScript API for shared molecule insertion/live reads; bounded AppleScript/AppleEvents for other native commands and SVG exports |
 | Windows/Linux | No native backend here; portable tests do not establish native application support |
-| RDKit | Optional for basic bridge; required for offline identifiers/proposals, draw coordinate seeds and high-level graph validation; installed version follows the selected environment |
+| RDKit | Optional for basic bridge; chemistry extra requires >=2026.3.3,<2027. API drawing additionally checks compiled ChemDraw CDXML writer support |
 
 Opt-in native tests exercise the stdio MCP bridge, bounded native polish, analogue edits for oxygen-to-sulfur, oxygen-to-nitrogen, carbonyl formation and a remote halogen change retaining tetrahedral stereo, plus scope grids and a disconnected sodium/chloride compound. These tests check preservation of pre-existing document state. See [project progress](../PROJECT_PROGRESS.md) for current run results. Rerun tests when modifying native behavior or upgrading ChemDraw; future compatibility claims need exact environment records and reproducible tests.
 
 ## Supported operations
+
+The [live-document interface](LIVE_DOCUMENT.md) adds fresh reads and token-checked
+native actions on explicitly addressed existing documents. Hidden-window native
+rendering of supplied CDXML is available through CLI and both MCP profiles, with
+no preview page. It needs a logged-in licensed desktop; a brief opening flash is
+possible. General in-place atom editing and continuous change subscriptions are
+not implemented. Older high-level workflows remain copy-based.
+
+The separate [targeted editor](TARGETED_EDITING.md) supports explicit atom/H/unit-charge
+changes, plain bond-order changes, supplied-fragment attachment, branch removal,
+directed solid/hashed wedges, saturated 3 through 8-membered attached carbon rings,
+and native alignment/distribution of selected whole molecules in copied sheets.
+It does not broaden the older analogue editor. Individual native UI selection
+assignment failed on the tested Mac; selections are explicit snapshot records,
+not visible GUI highlights. Attachments offer bounded 12-angle search and post-render
+measured-label checks. Ring fusion/spiro, arbitrary atom insertion/deletion,
+universal collision-free placement and general stereochemical editing remain
+outside this bounded interface. Symbol placement now uses local bond stroke and
+conservative multiple-bond/wedge envelopes and rechecks native saved clearance.
+Built-in presets now receive the same local-override replacement and native style
+verification as custom presets; explicit style packages remain supported.
+
+The 0.10.0 candidate adds native-tested nitrobenzene circled-charge placement, cage crossing-order preservation (cubane, bullvalene and adamantane), and a separate experimental [explicit coordination workflow](METAL_COMPLEXES.md). The latter preserves supplied atom/bond records and XYZ point coordinates; it does not broaden ordinary organic validators or predict 3D geometry. Full and targeted acceptance run boundaries are listed in [development status](DEVELOPMENT_STATUS.md).
+
+Subsequent development schema 2 adds explicit spatial chelates and a compact corner charge annotation. Black atom labels remain the default; per-atom colour is opt-in. Native donor-valence warnings remain visible and recorded. The aromatic ferrocene fixture fails native CDXML preservation and is not supported output; the multicentre format work does not establish general metallocene compatibility. The pre-existing rc2 test archive is unchanged.
 
 One-call first-run onboarding reuses the existing native draw workflow with fixed caffeine/aspirin inputs. It checks dependencies, connection, final audit and required exports, leaving visual review explicitly required. It has actual stdio and installed-wheel evidence on the development Mac only. CLI animation/browser behavior is separate from the silent MCP workflow. [First-run details](FIRST_RUN.md), [desktop connection instructions](MCP_CLIENTS.md).
 
@@ -47,7 +101,11 @@ Polish rejects grouped drawings, nested abbreviations, polymers, atom/bond queri
 
 The v0.9 additions provide complete explicitly approved scope jobs, up to three explicit reaction rows on one page, ownership-sidecar movement, bounded route proposals and portable numerical lab styles. See [scope jobs](SCOPE_JOB.md), [expanded reactions](REACTION_EXPANDED.md), [ownership/routes](OWNERSHIP.md) and [lab styles](LAB_STYLE.md). These are independently bounded workflows, not blanket support for all ChemDraw objects.
 
-Not implemented: native Name-to-Structure, additional name providers, unrestricted atom editing or insertion/deletion in existing ChemDraw documents, arbitrary substituent attachment, automatic common-core inference, automatic sugar reorientation, general collision-free charge placement, chemical radical-state editing, native manual-drag arrow attachment, multipage layout or inferred reaction sequences. Route suggestions require explicit anchors and selection; they do not infer mechanisms or certify native arrowhead ink. The scope proposers attach only curated groups to supported parents; symbol placement uses bounded conservative checks rather than a general collision solver. ChemDraw being able to display an object does not mean a workflow can safely transform it.
+Native Name to Structure is available through `draw-name` / `chemdraw_draw_name`, without RDKit depiction. It requires explicit network consent because ChemDraw may use ChemACX without exposing its lookup source. Two live naming fixtures passed independent graph checks, including one specified R stereocentre. This is not runtime identity certification or general name coverage; native caption placement can leave substantial whitespace.
+
+Direct `native-action` / `chemdraw_native_action` exposes allowlisted native cleanup, alignment, distribution and label commands on owned working copies. Live acceptance covers six alignments, both distributions, structure cleanup, recognized single-step reaction cleanup and an unavailable reaction case. Label expansion/contraction have portable dispatch tests only. These calls do not infer caption ownership or certify chemical preservation at runtime. See [selection boundaries](USAGE.md#direct-native-actions).
+
+Not implemented: additional name providers, unrestricted atom editing or insertion/deletion in existing ChemDraw documents, arbitrary substituent attachment, automatic common-core inference, automatic sugar reorientation, general collision-free charge placement, chemical radical-state editing, native manual-drag arrow attachment, multipage layout or inferred reaction sequences. Route suggestions require explicit anchors and selection; they do not infer mechanisms or certify native arrowhead ink. The scope proposers attach only curated groups to supported parents; symbol placement uses bounded conservative checks rather than a general collision solver. ChemDraw being able to display an object does not mean a workflow can safely transform it.
 
 Analogue editing is narrower than polish: one molecular fragment plus optional captions, no reaction, multiple fragments or molecular graphics. Atom edits support neutral C/N/O/F/P/S/Cl/Br/I targets with explicit hydrogen counts; isotope-labelled or charged target atoms are rejected. Bond-order edits require plain nonaromatic, nonstereo bonds. Existing stereocentres cannot be edited, and changes that create/remove potential tetrahedral or alkene stereo fail closed. Every caption requires an explicit replacement, retention or removal. Live-document recipes require the source token returned by current analysis. This is copied-CDXML editing, not a native atom-setter API.
 
@@ -112,4 +170,4 @@ Annotation verification checks mapped source chemistry and atom coordinates, sup
 
 Licensing, Automation permission, modal dialogs and competing clients can still interrupt native operations. Timeouts are not blindly retried. The tool does not activate licenses, change permissions, dismiss arbitrary dialogs or expose a network control endpoint.
 
-Offline identifier conversion remains provider-free. The separate [PubChem resolver](RESOLVER.md) sends only its explicitly supplied query after per-call opt-in, returns at most 20 candidate records and never automatically selects a match. CAS checksum validation is not Registry certification. Redirects, retries and provider fallback are disabled. See its contract for response limits, ambiguity and timeout behavior. Additional providers and native naming commands remain unimplemented.
+Offline identifier conversion remains provider-free. The separate [PubChem resolver](RESOLVER.md) sends only its explicitly supplied query after per-call opt-in, returns at most 20 candidate records and never automatically selects a match. CAS checksum validation is not Registry certification. Redirects, retries and provider fallback are disabled in that resolver. Native Name to Structure has a separate opt-in contract: ChemDraw controls lookup and fallback, which are not observable through this bridge.
