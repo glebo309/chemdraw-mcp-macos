@@ -134,3 +134,16 @@ def test_checkout_completion_prints_runnable_first_run_command(tmp_path, monkeyp
     assert run_setup(arguments(), session=Session(), home=tmp_path,
                      input_fn=lambda _: '', stream=out) == 0
     assert 'uv run --locked --extra chemistry chemdraw-mac first-run' in out.getvalue()
+
+
+def test_bundled_setup_uses_shared_terminal_launchers(tmp_path, monkeypatch):
+    import sys
+    import shlex
+    from chemdraw_macos.terminal_setup import run_setup
+    monkeypatch.setattr(sys, 'frozen', True, raising=False)
+    out = io.StringIO()
+    assert run_setup(arguments(), session=Session(), home=tmp_path,
+                     input_fn=lambda _: '', stream=out) == 0
+    executable = tmp_path/'Library/Application Support/ChemDraw MCP/bin/chemdraw-mac'
+    assert shlex.join([str(executable), 'first-run']) in out.getvalue()
+    assert 'uv run' not in out.getvalue()

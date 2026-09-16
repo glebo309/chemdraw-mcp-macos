@@ -19,6 +19,27 @@ def test_frozen_app_has_native_finder_icon():
     assert icon.read_bytes().startswith(b'icns')
 
 
+def test_frozen_terminal_cli_needs_no_python_uv_or_source_checkout(tmp_path):
+    result = subprocess.run([RUNTIME, '--cli', 'identify', '--value', 'CCO'],
+                            capture_output=True, text=True, cwd=tmp_path,
+                            env={'PATH': '/usr/bin:/bin'}, timeout=30)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)['formula'] == 'C2H6O'
+    help_result = subprocess.run([RUNTIME, '--cli', 'first-run', '--help'],
+                                capture_output=True, text=True, cwd=tmp_path,
+                                env={'PATH': '/usr/bin:/bin'}, timeout=30)
+    assert help_result.returncode == 0, help_result.stderr
+    assert '--no-animation' in help_result.stdout
+    from chemdraw_macos.client_install import install_and_connect
+    installed = install_and_connect(Path(RUNTIME).resolve().parents[3], ['bundle'], home=tmp_path)
+    terminal = subprocess.run(['/bin/zsh', '-ic', 'chemdraw-mac identify --value CCO'],
+                              capture_output=True, text=True, cwd=tmp_path,
+                              env={'ZDOTDIR': str(tmp_path), 'PATH': '/usr/bin:/bin'}, timeout=30)
+    assert terminal.returncode == 0, terminal.stderr
+    assert json.loads(terminal.stdout)['formula'] == 'C2H6O'
+    assert Path(installed['terminal_command']).is_file()
+
+
 def test_frozen_runtime_needs_no_system_python_or_shell_profile(tmp_path):
     result = subprocess.run([RUNTIME, '--self-check'], capture_output=True, text=True,
                             cwd=tmp_path, env={'HOME': str(tmp_path), 'PATH': '/usr/bin:/bin'}, timeout=30)
