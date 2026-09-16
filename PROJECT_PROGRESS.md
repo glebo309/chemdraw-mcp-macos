@@ -1,5 +1,15 @@
 # Project progress
 
+## Published experimental release
+
+Version 0.10.0rc12 is public on GitHub at
+https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc12.
+The tag targets source commit 8e70db8000f62aa4b08500e80dbdddd54d76b866.
+DMG, MCPB, wheel, source archive and SHA256SUMS are uploaded; GitHub's asset
+digests match the local checksums. The live README includes the setup screenshot,
+Git install.sh quick start and graphical download route. The executable install
+script and screenshot were verified through the public repository API.
+
 ## 2026-09-16: rc12 Git installer and public distribution candidate
 
 Glenn approved updating GitHub and distributing the graphical and terminal routes.
