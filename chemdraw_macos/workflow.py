@@ -63,15 +63,26 @@ def remap_ids(before, after):
 @native_transaction
 def analyze_document(bridge, document_id):
     snapshot=bridge._new_path('.cdxml','backups')
-    bridge.export(document_id,str(snapshot),'cdxml')
+    document=bridge.inspect(document_id)['document']
+    from .core import Bridge
+    if isinstance(bridge,Bridge):
+        from .addin import get_backend
+        snapshot.write_text(get_backend(bridge).read(document_id)['cdxml'])
+    elif document.get('file')=='':
+        from .shared import clipboard
+        snapshot.write_text(clipboard(bridge,document_id)['cdxml'])
+    else:
+        bridge.export(document_id,str(snapshot),'cdxml')
     from .editing import inspect_editable,source_token
     try:editing=inspect_editable(snapshot.read_text())
     except (ValueError,RuntimeError,ImportError) as exc:editing={'unsupported':str(exc)}
+    from .api_drawing import inspect_graphs
     return {**analyze_cdxml(snapshot.read_text()), 'snapshot':str(snapshot),
+            'molecular_graphs':inspect_graphs(snapshot.read_text()),
             'source_token':source_token(snapshot.read_text()),
             'editing':editing,
             'document':bridge.inspect(document_id)['document'],
-            'note':'IDs belong to this snapshot. Pass these IDs in polish caption/condition maps.'}
+            'note':'IDs belong to this live snapshot, including unsaved edits. Use molecular_graphs for identity; captions are not molecular identities.'}
 
 
 def _file_hash(document):
@@ -135,6 +146,9 @@ def polish_document(bridge, document_id, output_dir, preset='house', layout='pre
             bridge.export(nid,str(measured),'cdxml');native=measured.read_text()
             if chemical_signature(native)!=signature:
                 raise ValueError('Native normalization changed chemistry; output rejected')
+            if 'CrossingBonds=' in normalized or 'CrossingBonds=' in native:
+                from .batch import _verify
+                _verify(normalized,native)
             from .styles import verify_custom_style
             verify_custom_style(normalized,native,preset)
             planned=native
@@ -153,6 +167,9 @@ def polish_document(bridge, document_id, output_dir, preset='house', layout='pre
             if style_check is not None:audit['custom_style_verification']=style_check
             if chemical_signature(final_text)!=signature:
                 raise ValueError('Final native export changed chemistry; output rejected')
+            if 'CrossingBonds=' in planned or 'CrossingBonds=' in final_text:
+                from .batch import _verify
+                _verify(planned,final_text)
             report=analyze_cdxml(final_text)
             target=float(preset_settings(preset)['BondLength'])
             medians=[m['median_bond_pt'] for m in report['molecules'] if m['median_bond_pt'] is not None]

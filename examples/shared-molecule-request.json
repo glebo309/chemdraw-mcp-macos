@@ -1,0 +1,6 @@
+{
+  "molecules": [
+    {"value": "CC(=O)Oc1ccccc1C(=O)O", "format": "smiles", "label": "Aspirin"}
+  ],
+  "panel": "plain"
+}

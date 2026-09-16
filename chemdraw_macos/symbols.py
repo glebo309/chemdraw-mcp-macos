@@ -109,6 +109,52 @@ def _replace_charge_suffix(atom,charge):
     if not last.text:label.remove(last)
 
 
+def _placement_obstacles(root):
+    page=root.find('page');bounds=numbers(page.get('BoundingBox'),4)
+    atoms={n.get('id'):n for n in root.findall('page/fragment/n')}
+    positions={k:numbers(n.get('p'),2) for k,n in atoms.items()}
+    parents={child:parent for parent in root.iter() for child in parent}
+    def inherited(e,key,default):
+        while e is not None:
+            if e.get(key) is not None:return float(e.get(key))
+            e=parents.get(e)
+        return default
+    boxes=[];segments=[]
+    for t in root.findall('page/fragment/n/t')+root.findall('page/t'):
+        if not t.get('BoundingBox'):raise ValueError('Native measured label bounds required before symbol placement')
+        x,y,xx,yy=numbers(t.get('BoundingBox'),4);boxes.append((min(x,xx),min(y,yy),max(x,xx),max(y,yy)))
+    for b in root.findall('page/fragment/b'):
+        a,e=positions[b.get('B')],positions[b.get('E')];width=inherited(b,'LineWidth',.6)/2
+        if b.get('Order','1') in ('2','3','1.5'):width+=math.dist(a,e)*inherited(b,'BondSpacing',18)/100
+        if 'Wedge' in b.get('Display','') or 'Wedged' in b.get('Display',''):width=max(width,inherited(b,'BoldWidth',2))
+        segments.append((a,e,width))
+    for obj in list(page.findall('arrow'))+list(page.findall('curve')):
+        pts=numbers(obj.get('CurvePoints')) if obj.tag=='curve' else numbers(obj.get('BoundingBox'),4)
+        boxes.append((min(pts[::2]),min(pts[1::2]),max(pts[::2]),max(pts[1::2])))
+    return bounds,atoms,positions,boxes,segments
+
+
+def _primitive_free(primitive,bounds,positions,boxes,segments,occupied,clearance):
+    px,py,pr=primitive;q=(px,py);r=pr+clearance
+    return (bounds[0]+r<=px<=bounds[2]-r and bounds[1]+r<=py<=bounds[3]-r
+        and not any(math.hypot(max(b[0]-px,0,px-b[2]),max(b[1]-py,0,py-b[3]))<r for b in boxes)
+        and not any(math.dist(q,pt)<r for pt in positions.values())
+        and not any(_distance_segment(q,a,b)<r+width for a,b,width in segments)
+        and not any(math.dist(q,(ox,oy))<r+orr for ox,oy,orr in occupied))
+
+
+def verify_symbol_clearance(text,symbol_ids,clearance):
+    root,_,_=_split(text);bounds,atoms,positions,boxes,segments=_placement_obstacles(root)
+    graphics={g.get('id'):g for g in root.findall('page/fragment/graphic')}
+    for sid in symbol_ids:
+        if sid not in graphics:raise ValueError('Native symbol missing during clearance check')
+        occupied=[p for gid,g in graphics.items() if gid!=sid for p in symbol_primitives(g,root.get('LineWidth','.6'))]
+        for p in symbol_primitives(graphics[sid],root.get('LineWidth','.6')):
+            if not _primitive_free(p,bounds,positions,boxes,segments,occupied,clearance):raise ValueError('Native symbol clearance collision: '+sid)
+    return {'verified':True,'count':len(symbol_ids),'clearance_pt':clearance,
+            'scope':'measured labels, atoms, conservative bond envelopes, symbols and page/arrow bounds'}
+
+
 def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
     root,_,_=_split(text);symbol_inventory(text)
     if not isinstance(symbols,list) or not 1<=len(symbols)<=50:raise ValueError('Supply 1 through 50 explicit symbols')
@@ -116,16 +162,7 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
     line_width=float(root.get('LineWidth','.6')) if line_width is None else line_width
     for value,lo,hi in ((span,2,24),(line_width,.2,3),(clearance,1,12)):
         if type(value) not in (int,float) or not math.isfinite(value) or not lo<=value<=hi:raise ValueError('Invalid symbol span, line width or clearance')
-    page=root.find('page');bounds=numbers(page.get('BoundingBox'),4)
-    atoms={n.get('id'):n for n in root.findall('page/fragment/n')};positions={k:numbers(n.get('p'),2) for k,n in atoms.items()}
-    boxes=[];segments=[];occupied=[]
-    for t in root.findall('page/fragment/n/t')+root.findall('page/t'):
-        if not t.get('BoundingBox'):raise ValueError('Native measured label bounds required before symbol placement')
-        x,y,xx,yy=numbers(t.get('BoundingBox'),4);boxes.append((min(x,xx),min(y,yy),max(x,xx),max(y,yy)))
-    for b in root.findall('page/fragment/b'):segments.append((positions[b.get('B')],positions[b.get('E')]))
-    for obj in list(page.findall('arrow'))+list(page.findall('curve')):
-        pts=numbers(obj.get('CurvePoints')) if obj.tag=='curve' else numbers(obj.get('BoundingBox'),4)
-        boxes.append((min(pts[::2]),min(pts[1::2]),max(pts[::2]),max(pts[1::2])))
+    page=root.find('page');bounds,atoms,positions,boxes,segments=_placement_obstacles(root);occupied=[]
     for g in root.findall('page/fragment/graphic'):occupied.extend(symbol_primitives(g,root.get('LineWidth','.6')))
     next_id=max(int(e.get('id')) for e in root.iter() if e.get('id'))+1;keys=set();records=[]
     for req in symbols:
@@ -151,10 +188,16 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
         handle_span=span if kind=='charge' else span/3 if kind=='lone_pair' else span*2/3
         raw_width=line_width/.8
         radius=span*4/9+line_width if kind=='charge' else handle_span*2/9 if kind=='lone_pair' else handle_span/9
-        # Nearest outward candidates first, then progressively wider alternatives.
-        for distance in range(math.ceil(radius+clearance+2),37):
-            for turn in (0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6,7,-7,8):
-                a=angle+turn*math.pi/8;p=(x+distance*math.cos(a),y+distance*math.sin(a))
+        # A coarse angular grid missed narrow, valid spaces around nitro N.
+        # Refine charge candidates only; keep size, clearance and owner checks.
+        distances=([i/2 for i in range(math.ceil((radius+clearance+2)*2),73)]
+                   if kind=='charge' else range(math.ceil(radius+clearance+2),37))
+        turns=([0]+[sign*i for i in range(1,97) for sign in (1,-1)] if kind=='charge'
+               else (0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6,7,-7,8))
+        angle_step=math.pi/(96 if kind=='charge' else 8)
+        for distance in distances:
+            for turn in turns:
+                a=angle+turn*angle_step;p=(x+distance*math.cos(a),y+distance*math.sin(a))
                 # ChemDraw may replace an explicit Charge association with a
                 # nearby atom on save. Never place a charge in another atom's
                 # nearest-owner region, even if its circle has no ink collision.
@@ -168,14 +211,7 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
                 else:ends=(p[0],p[1],p[0]-handle_span,p[1])
                 probe=ET.Element('graphic',{'SymbolType':symbol,'LineWidth':str(raw_width),'BoundingBox':' '.join(map(str,ends))})
                 primitives=symbol_primitives(probe)
-                def free(primitive):
-                    px,py,pr=primitive;q=(px,py);r=pr+clearance+.05
-                    return (bounds[0]+r<=px<=bounds[2]-r and bounds[1]+r<=py<=bounds[3]-r
-                        and not any(math.hypot(max(b[0]-px,0,px-b[2]),max(b[1]-py,0,py-b[3]))<r for b in boxes)
-                        and not any(math.dist(q,pt)<r for pt in positions.values())
-                        and not any(_distance_segment(q,aa,bb)<r+line_width/2 for aa,bb in segments)
-                        and not any(math.dist(q,(ox,oy))<r+orr for ox,oy,orr in occupied))
-                if not all(free(primitive) for primitive in primitives):continue
+                if not all(_primitive_free(p,bounds,positions,boxes,segments,occupied,clearance+.05) for p in primitives):continue
                 chosen=p;break
             if chosen:break
         if chosen is None:raise ValueError('No collision-free symbol position within the bounded search')
@@ -225,6 +261,9 @@ def symbols_document(bridge,document_id,output_dir,symbols,expected_source_token
             # working document only after those exports have completed.
             for fmt in ('svg','png','cdxml'):_native(bridge.export,created,str(out/f'figure.{fmt}'),fmt,pixels)
             verification=verify_symbols(planned,(out/'figure.cdxml').read_text());audit['checks'].update(verification['checks']);audit['native_verification']=verification
+            native_ids=[verification['id_map'][s['symbol_id']] for s in plan['symbols']]
+            audit['native_clearance']=verify_symbol_clearance((out/'figure.cdxml').read_text(),native_ids,clearance)
+            audit['checks']['native_symbol_clearance']=True
             check=bridge._new_path('.cdxml','backups');_native(bridge.export,document_id,str(check),'cdxml')
             if source_token(check.read_text())!=expected_source_token or _native(bridge.inspect,document_id)['document']!=baseline or _file_hash(baseline)!=disk_hash:raise ValueError('Source changed during symbol creation')
             audit['checks']['source_document_unchanged']=True;audit['status']='checks_passed'

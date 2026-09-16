@@ -1,0 +1,687 @@
+{
+  "schema_version": 2,
+  "label": "Tris(2,2'-bipyridine)ruthenium(II)",
+  "atoms": [
+    {
+      "id": "ru",
+      "element": "Ru",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        250,
+        250,
+        0
+      ]
+    },
+    {
+      "id": "l0s0a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        218.823085,
+        286,
+        15
+      ]
+    },
+    {
+      "id": "l0s0a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        218.823085,
+        268,
+        20
+      ]
+    },
+    {
+      "id": "l0s0a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        203.234628,
+        259,
+        30
+      ]
+    },
+    {
+      "id": "l0s0a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        187.646171,
+        268,
+        35
+      ]
+    },
+    {
+      "id": "l0s0a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        187.646171,
+        286,
+        30
+      ]
+    },
+    {
+      "id": "l0s0a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        203.234628,
+        295,
+        20
+      ]
+    },
+    {
+      "id": "l0s1a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        234.411543,
+        295,
+        5
+      ]
+    },
+    {
+      "id": "l0s1a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        250,
+        286,
+        0
+      ]
+    },
+    {
+      "id": "l0s1a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        265.588457,
+        295,
+        -10
+      ]
+    },
+    {
+      "id": "l0s1a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        265.588457,
+        313,
+        -15
+      ]
+    },
+    {
+      "id": "l0s1a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        250,
+        322,
+        -10
+      ]
+    },
+    {
+      "id": "l0s1a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        234.411543,
+        313,
+        0
+      ]
+    },
+    {
+      "id": "l1s0a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        234.411543,
+        205,
+        -5
+      ]
+    },
+    {
+      "id": "l1s0a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        250,
+        214,
+        0
+      ]
+    },
+    {
+      "id": "l1s0a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        265.588457,
+        205,
+        10
+      ]
+    },
+    {
+      "id": "l1s0a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        265.588457,
+        187,
+        15
+      ]
+    },
+    {
+      "id": "l1s0a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        250,
+        178,
+        10
+      ]
+    },
+    {
+      "id": "l1s0a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        234.411543,
+        187,
+        0
+      ]
+    },
+    {
+      "id": "l1s1a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        218.823085,
+        214,
+        -15
+      ]
+    },
+    {
+      "id": "l1s1a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        218.823085,
+        232,
+        -20
+      ]
+    },
+    {
+      "id": "l1s1a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        203.234628,
+        241,
+        -30
+      ]
+    },
+    {
+      "id": "l1s1a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        187.646171,
+        232,
+        -35
+      ]
+    },
+    {
+      "id": "l1s1a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        187.646171,
+        214,
+        -30
+      ]
+    },
+    {
+      "id": "l1s1a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        203.234628,
+        205,
+        -20
+      ]
+    },
+    {
+      "id": "l2s0a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        296.765372,
+        259,
+        10
+      ]
+    },
+    {
+      "id": "l2s0a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        281.176915,
+        268,
+        20
+      ]
+    },
+    {
+      "id": "l2s0a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        281.176915,
+        286,
+        40
+      ]
+    },
+    {
+      "id": "l2s0a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        296.765372,
+        295,
+        50
+      ]
+    },
+    {
+      "id": "l2s0a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        312.353829,
+        286,
+        40
+      ]
+    },
+    {
+      "id": "l2s0a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        312.353829,
+        268,
+        20
+      ]
+    },
+    {
+      "id": "l2s1a0",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        296.765372,
+        241,
+        -10
+      ]
+    },
+    {
+      "id": "l2s1a1",
+      "element": "N",
+      "charge": 0,
+      "hydrogens": 0,
+      "position": [
+        281.176915,
+        232,
+        -20
+      ]
+    },
+    {
+      "id": "l2s1a2",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        281.176915,
+        214,
+        -40
+      ]
+    },
+    {
+      "id": "l2s1a3",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        296.765372,
+        205,
+        -50
+      ]
+    },
+    {
+      "id": "l2s1a4",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        312.353829,
+        214,
+        -40
+      ]
+    },
+    {
+      "id": "l2s1a5",
+      "element": "C",
+      "charge": 0,
+      "hydrogens": 1,
+      "position": [
+        312.353829,
+        232,
+        -20
+      ]
+    }
+  ],
+  "bonds": [
+    {
+      "begin": "l0s0a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "WedgeEnd"
+    },
+    {
+      "begin": "l0s0a0",
+      "end": "l0s0a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a1",
+      "end": "l0s0a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a2",
+      "end": "l0s0a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a3",
+      "end": "l0s0a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a4",
+      "end": "l0s0a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a5",
+      "end": "l0s0a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a0",
+      "end": "l0s1a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a1",
+      "end": "l0s1a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a2",
+      "end": "l0s1a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a3",
+      "end": "l0s1a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a4",
+      "end": "l0s1a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s1a5",
+      "end": "l0s1a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l0s0a0",
+      "end": "l0s1a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a0",
+      "end": "l1s0a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a1",
+      "end": "l1s0a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a2",
+      "end": "l1s0a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a3",
+      "end": "l1s0a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a4",
+      "end": "l1s0a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a5",
+      "end": "l1s0a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "WedgedHashEnd"
+    },
+    {
+      "begin": "l1s1a0",
+      "end": "l1s1a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a1",
+      "end": "l1s1a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a2",
+      "end": "l1s1a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a3",
+      "end": "l1s1a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a4",
+      "end": "l1s1a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s1a5",
+      "end": "l1s1a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l1s0a0",
+      "end": "l1s1a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "WedgeEnd"
+    },
+    {
+      "begin": "l2s0a0",
+      "end": "l2s0a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a1",
+      "end": "l2s0a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a2",
+      "end": "l2s0a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a3",
+      "end": "l2s0a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a4",
+      "end": "l2s0a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a5",
+      "end": "l2s0a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a1",
+      "end": "ru",
+      "order": "coordination",
+      "display": "WedgedHashEnd"
+    },
+    {
+      "begin": "l2s1a0",
+      "end": "l2s1a1",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a1",
+      "end": "l2s1a2",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a2",
+      "end": "l2s1a3",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a3",
+      "end": "l2s1a4",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a4",
+      "end": "l2s1a5",
+      "order": "2",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s1a5",
+      "end": "l2s1a0",
+      "order": "1",
+      "display": "Solid"
+    },
+    {
+      "begin": "l2s0a0",
+      "end": "l2s1a0",
+      "order": "1",
+      "display": "Solid"
+    }
+  ],
+  "attachments": [],
+  "overall_charge": 2
+}

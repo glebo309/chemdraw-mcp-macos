@@ -1,8 +1,29 @@
 # Desktop assistant setup
 
+## Graphical installation
+
+The **ChemDraw MCP for Mac** disk image offers Claude Desktop and Codex local
+client checkboxes. Choose either or both; Finish installs one shared runtime and
+registers only those choices. Restart selected assistants afterwards. No Terminal
+or manual config editing is required. The optional neutral MCPB is for hosts
+which support bundle installation, not a separate runtime for each model.
+See [graphical installer details and acceptance limits](DESKTOP_INSTALLER.md).
+
+The source/terminal path below remains independently usable and keeps the existing
+terminal animation. It does not open the graphical setup app. Other local MCP
+clients can use the same executable over stdio; their individual installation and
+tool-call behavior must still be tested. Multiple registered clients currently
+need sequential native access: disconnect the other ChemDraw server if busy.
+
 The CLI and MCP server call the same native workflow code. A local assistant can ask ChemDraw to make an editable drawing without the user typing individual terminal commands. The MCP server must run on the Mac with licensed ChemDraw and the relevant Automation permission. This project exposes local stdio, not a remotely reachable HTTP service.
 
 ## Install the server once
+
+For the guided terminal route, use [terminal installation](TERMINAL_INSTALL.md).
+`chemdraw-mac setup --client codex` (and/or `--client claude`) prepares the add-in,
+tests a live read and registers the installed executable with preserved settings.
+The manual examples below are alternatives, not extra servers to add alongside
+the helper's `glecko_chemdraw` entry.
 
 In a checkout:
 
@@ -79,12 +100,12 @@ Claude Desktop supports local MCP servers; see [Anthropic's local-server guide](
 }
 ```
 
-Use the client's developer configuration entry point and restart/reload it after changes. Preserve unrelated server entries. This repository does not yet distribute a one-click desktop-extension bundle. Organization policy may restrict local servers.
+Use the client's developer configuration entry point and restart/reload it after changes. Preserve unrelated server entries. A local graphical `.mcpb` test bundle is now available; see [desktop installer](DESKTOP_INSTALLER.md) for its current signing and acceptance limits. Organization policy may restrict local servers.
 
 ## Check the connection
 
-First ask the assistant to call `chemdraw_doctor`, a diagnostic check. When you want an actual drawing, ask it to call `chemdraw_first_run`. That call creates the fixed caffeine/aspirin example and returns editable CDXML, native SVG/PNG, a review page and machine checks. The final drawing remains open in ChemDraw.
+Generate and install this Mac's private API add-in first using [the test-on-Mac guide](TEST_ON_MAC.md). Open a blank ChemDraw document, then ask the assistant to call `chemdraw_doctor`. It checks an actual RDKit CDXML roundtrip and a live API read, reporting missing setup, a busy endpoint or no document separately. When you want an actual drawing, call `chemdraw_first_run`. It appends caffeine and aspirin and returns editable CDXML, native SVG/PNG and JSON checks. No HTML review or browser; the drawing remains open in ChemDraw.
 
-MCP calls produce no terminal animation and do not automatically launch the browser. Whether a preview is displayed inline depends on the client; the returned local review/file paths remain available. These setup instructions establish the local connection route, not a claim that every desktop app/version has undergone end-to-end acceptance testing here.
+MCP calls produce no terminal animation and do not launch the browser. Whether a preview is displayed inline depends on the client; returned local file paths remain available. Test clients one at a time, with the same server version, full tool profile and instructions. These setup instructions do not claim that every desktop app/version has undergone end-to-end acceptance here.
 
 Web-only sessions do not gain access to this Mac just because the local server is configured. Do not expose the desktop bridge to the public network as a workaround.

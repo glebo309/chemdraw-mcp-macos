@@ -163,14 +163,13 @@ def inspect_style_file(path):
 def verify_custom_style(expected, native, preset):
     """Check native saved custom settings, independently of graph/layout checks.
 
-    Builtin presets retain their existing policy and return no verification
-    claim. Font IDs may change. Text runs may split. Caption profiles preserve
+    Builtin and custom presets use the same verification. Font IDs may change.
+    Text runs may split. Caption profiles preserve
     intentional sizes, for example a reaction's larger plus signs. Chemical
     superscript/subscript bits are not overwritten or certified by this check.
     """
-    if not isinstance(preset,dict):return None
-    from .core import validate_cdxml
-    spec=validate_style(preset);old=validate_cdxml(expected);new=validate_cdxml(native)
+    from .core import validate_cdxml, preset_settings
+    spec=validate_style(preset_settings(preset));old=validate_cdxml(expected);new=validate_cdxml(native)
     # ChemDraw stores font sizes in twentieths of a point, and native XML
     # measurements commonly use two decimals. Report these tolerances honestly.
     tolerances={key:(.050001 if key in ('LabelSize','CaptionSize') else .010001) for key in LIMITS}

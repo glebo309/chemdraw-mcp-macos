@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 import uuid
 
 from .batch import NativeUncertain
@@ -15,6 +16,7 @@ from .core import Bridge
 from .diagnostics import doctor
 from .draw import draw_structures
 from .native_lock import NativeBusy
+from .welcome import frame as welcome_frame, load_molecules, phase_progress
 
 
 DEMO_STRUCTURES = (
@@ -52,10 +54,12 @@ def run_first_run(output_dir=None, *, bridge_factory=None, progress=None):
             if out.exists() or out.is_symlink():
                 raise FileExistsError('Output already exists; choose a new directory')
         environment = doctor(connect=False)
-        if environment['status'] not in ('ready', 'basic_only'):
+        if environment['status'] not in ('ready', 'local_ready', 'basic_only'):
             raise RuntimeError(environment.get('error', 'ChemDraw installation unavailable'))
         if not environment.get('chemistry_validator_available'):
             raise RuntimeError('RDKit is missing. From the checkout run: uv sync --locked --extra chemistry')
+        if not environment.get('cdxml_writer_available'):
+            raise RuntimeError('RDKit CDXML writer is unavailable. From the checkout run: uv sync --locked --extra chemistry')
         if not environment.get('rasterizer_available'):
             raise RuntimeError('SVG rasterizer is missing. From the checkout run: uv sync --locked --extra chemistry')
         b = bridge_factory() if bridge_factory is not None else Bridge(app_path=Path(environment['app']))
@@ -73,19 +77,22 @@ def run_first_run(output_dir=None, *, bridge_factory=None, progress=None):
             phase('exports', 'Checking editable and preview files')
             audit = drawing['audit']
             checks = audit.get('checks', {})
-            if audit.get('status') != 'checks_passed' or not checks or any(v is not True for v in checks.values()):
+            failed = [key for key, value in checks.items() if value is not True
+                      and not (key == 'page_unchanged' and value is False
+                               and checks.get('page_expansion_verified') is True)]
+            if audit.get('status') != 'checks_passed' or not checks or failed:
                 raise ValueError('Native drawing checks did not all pass; inspect the drawing audit')
             for name in ('cdxml', 'svg', 'png'):
                 _require_artifact(drawing['artifacts'][name], out)
-            _require_artifact(drawing['review'], out)
             result = {'status': 'checks_passed', 'environment': environment,
                       'output_dir': str(out), 'report': str(out / 'first-run.json'),
-                      'document': drawing['document'], 'review': drawing['review'],
+                      'document': drawing['document'],
                       'artifacts': drawing['artifacts'], 'checks': checks,
                       'audit': str(out / 'audit.json'), 'visual_review': 'required',
                       'scope': 'Fixed caffeine/aspirin smoke test, not general compatibility certification.'}
             with (out / 'first-run.json').open('x') as handle:
                 json.dump(result, handle, indent=2, ensure_ascii=True)
+            phase('complete', 'Native smoke test passed')
             return result
     except (Exception, KeyboardInterrupt) as exc:
         status = ('interrupted' if isinstance(exc, KeyboardInterrupt) else 'busy' if isinstance(exc, NativeBusy)
@@ -135,10 +142,14 @@ class TerminalProgress:
         self.stop = threading.Event()
         self.guard = threading.Lock()
         self.thread = None
+        self.stage = 'installation'
+        self.started = self.phase_started = time.monotonic()
 
     def __enter__(self):
         if self.enabled:
-            self.stream.write('\n' * 5)
+            load_molecules()
+            self.started = self.phase_started = time.monotonic()
+            self.stream.write('\x1b[0m\x1b[40m\x1b[?1049h\x1b[?25l\x1b[2J')
             self.stream.flush()
             self.thread = threading.Thread(target=self._animate, daemon=True)
             self.thread.start()
@@ -147,30 +158,28 @@ class TerminalProgress:
     def update(self, stage, label):
         with self.guard:
             self.label = label
+            if stage != self.stage:
+                self.stage = stage
+                self.phase_started = time.monotonic()
 
     def _animate(self):
-        index = 0
         while not self.stop.is_set():
             with self.guard:
-                frame = ring_frame(index, self.label)
-                self.stream.write('\x1b[5A' + ''.join('\r\x1b[2K' + line + '\n' for line in frame.splitlines()))
+                now = time.monotonic()
+                size = shutil.get_terminal_size((80, 29))
+                frame = welcome_frame(max(10, size.columns - 1), max(10, size.lines - 1),
+                                      now - self.started, self.stage, self.label,
+                                      phase_progress(self.stage, now - self.phase_started))
+                self.stream.write('\x1b[H' + '\r\n'.join(frame.splitlines()))
                 self.stream.flush()
-            index += 1
-            self.stop.wait(.16)
+            self.stop.wait(.06)
 
     def __exit__(self, *exc):
         self.stop.set()
         if self.thread is not None:
             self.thread.join()
-            self.stream.write('\x1b[5A' + '\r\x1b[2K\n' * 5)
+            self.stream.write('\x1b[0m\x1b[?25h\x1b[?1049l')
             self.stream.flush()
-
-
-def open_review(path):
-    p = Path(path)
-    if not p.is_absolute() or not p.is_file():
-        raise ValueError('Review must be an existing absolute file')
-    subprocess.run(['/usr/bin/open', str(p)], check=True, capture_output=True, timeout=10)
 
 
 def run_cli(args):
@@ -193,16 +202,11 @@ def run_cli(args):
                   'error': 'First run interrupted; a native operation may still have completed.',
                   'help': 'Inspect ChemDraw and workspace backups before another write. No retry or extra close attempted.'}
     passed = result['status'] == 'checks_passed'
-    if passed and interactive and not args.no_open:
-        try:
-            open_review(result['review'])
-        except (OSError, ValueError, subprocess.SubprocessError) as exc:
-            print('Drawing passed; browser launch failed. Open the review link below. ' + _terminal_text(exc), file=sys.stderr)
     if machine:
         print(json.dumps(result, indent=2, ensure_ascii=True))
     elif passed:
+        print('Natural language → ChemDraw\n')
         print('ChemDraw is ready. Native smoke test passed.\n')
-        print('Review:   ' + _terminal_text(result['review']))
         print('Editable: ' + _terminal_text(result['artifacts']['cdxml']))
         print('Report:   ' + _terminal_text(result['report']))
         print('\nThe final drawing stays open in ChemDraw. Please inspect the visual result.')

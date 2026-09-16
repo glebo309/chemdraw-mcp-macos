@@ -115,6 +115,9 @@ def _hash(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _document_content(bridge,document_id):
+    if getattr(bridge,'_shared_document_id',None)==document_id:
+        from .shared import clipboard,fingerprint
+        return fingerprint(_native(clipboard,bridge,document_id)['cdxml'])
     path=bridge._new_path('.cdxml','backups')
     _native(bridge.export,document_id,str(path),'cdxml')
     root=validate_cdxml(path.read_text())

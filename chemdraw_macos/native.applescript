@@ -27,6 +27,28 @@ end documentRow
 on run argv
     set operation to item 1 of argv
     tell application __APP__
+        if operation is "active_document" then
+            if (count of documents) is 0 then return "null"
+            return ((id of document 1) as integer) as text
+        end if
+        if operation is "addin_available" then
+            set addinPath to item 2 of argv
+            if (name of every command) contains addinPath then return "true"
+            return "false"
+        end if
+        if operation is "addin_open" then
+            set addinPath to item 2 of argv
+            activate
+            do command addinPath
+            return "true"
+        end if
+        if operation is "visible_documents" then
+            set visibleIDs to {}
+            repeat with d in documents
+                if visible of window of d then set end of visibleIDs to ((id of d) as integer)
+            end repeat
+            return my jsonText(visibleIDs)
+        end if
         if operation is "list" then
             set rows to {}
             repeat with d in documents
@@ -44,6 +66,9 @@ on run argv
                 end try
             end repeat
             if (count of matches) is not 1 then error "Could not identify the imported document uniquely"
+            if (count of argv) > 2 then
+                if item 3 of argv is "false" then set visible of window of (item 1 of matches) to false
+            end if
             return my jsonText(my documentRow(item 1 of matches))
         end if
         set wantedID to (item 2 of argv) as integer
@@ -52,7 +77,14 @@ on run argv
             if ((id of candidate) as integer) is wantedID then set targetDoc to contents of candidate
         end repeat
         if targetDoc is missing value then error "Document ID is stale or absent; list documents again"
-        if operation is "inspect" then
+        if operation is "visibility" then
+            set desiredVisible to (item 3 of argv is "true")
+            set visible of window of targetDoc to desiredVisible
+            return my jsonText({my documentRow(targetDoc), visible of window of targetDoc})
+        else if operation is "live_state" then
+            set countsRow to {count of atoms of selection of targetDoc, count of bonds of selection of targetDoc, count of molecules of selection of targetDoc, count of captions of selection of targetDoc}
+            return my jsonText({my documentRow(targetDoc), visible of window of targetDoc, bounds of selection of targetDoc, countsRow})
+        else if operation is "inspect" then
             set moleculeRows to {}
             repeat with i from 1 to (count of molecules of targetDoc)
                 set end of moleculeRows to {i as integer, bounds of molecule i of targetDoc}
@@ -64,10 +96,31 @@ on run argv
             try
                 set diskPath to my pathOfFile(file of targetDoc)
             end try
-            if diskPath is "" then error "Untitled document cannot be exported safely: native save would assign a filename. No save dispatched."
             set targetPath to item 3 of argv
             set targetFormat to item 4 of argv
+            if diskPath is "" and targetFormat is not "Scalable Vector Graphics (SVG)" then error "Untitled document cannot be exported safely in this format: native save would assign a filename. No save dispatched."
             save targetDoc in (my fileReference(targetPath)) as targetFormat
+            return my jsonText(my documentRow(targetDoc))
+        else if operation is "native_action" then
+            if (id of document 1) is not wantedID then error "Native action requires the owned front document; no command dispatched"
+            set nativeCommand to item 3 of argv
+            set selectionMode to item 4 of argv
+            set supportedCommands to {"cleanStructure", "cleanReaction", "alignLeftEdges", "alignRightEdges", "alignTopEdges", "alignBottomEdges", "alignLeftRightCenters", "alignTopBottomCenters", "distributeObjectsHorizontally", "distributeObjectsVertically", "expandLabel", "contractLabel"}
+            if nativeCommand is not in supportedCommands then error "Unsupported native command"
+            if selectionMode is not in {"current", "all"} then error "Unsupported native selection mode"
+            if selectionMode is "all" then do command "selectAll"
+            if not (enabled of command nativeCommand) then return my jsonText({my documentRow(targetDoc), false})
+            do command nativeCommand
+            if (id of document 1) is not wantedID then error "Front document changed during native action; inspect ChemDraw"
+            return my jsonText({my documentRow(targetDoc), true})
+        else if operation is "convert_name" then
+            if (id of document 1) is not wantedID then error "Name conversion requires the owned front document; no command dispatched"
+            if (count of molecules of targetDoc) is not 0 then error "Name conversion requires a caption-only document"
+            if (count of captions of targetDoc) is not 1 then error "Name conversion requires exactly one caption"
+            do command "selectAll"
+            if not (enabled of command "convertNameToStructure") then error "Native name conversion is unavailable"
+            do command "convertNameToStructure"
+            if (id of document 1) is not wantedID then error "Front document changed during native name conversion; inspect ChemDraw"
             return my jsonText(my documentRow(targetDoc))
         else if operation is "clean" then
             set wantedMolecule to item 3 of argv

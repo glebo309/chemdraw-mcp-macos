@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chemdraw-mcp-macos"
-version = "0.9.2"
+version = "0.10.0rc12"
 description = "Native ChemDraw automation for macOS over MCP"
 license = "AGPL-3.0-only"
 license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "licenses/*.txt"]
@@ -12,7 +12,7 @@ requires-python = ">=3.11"
 dependencies = ["mcp>=1.27.1,<2", "defusedxml>=0.7.1", "resvg-py==0.5.0"]
 
 [project.optional-dependencies]
-chemistry = ["rdkit>=2024.9,<2027"]
+chemistry = ["rdkit>=2026.3.3,<2027"]
 
 [project.scripts]
 chemdraw-mcp-macos = "chemdraw_macos.server:main"

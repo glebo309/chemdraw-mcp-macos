@@ -150,6 +150,10 @@ def arrange_scope_groups(text,cells,groups,columns=4,layout=None,frame=True,sepa
     return arranged,{'layout':layout,'decoration_groups':decoration_groups,'group_bands':group_layout}
 
 
+from .presentation import production_job
+
+
+@production_job
 def build_scope_job(bridge,job,output_dir):
     plan = plan_scope_job(job)
     if plan['selection_required']:raise ValueError('Explicit selection or accept_all=true is required before native creation.')

@@ -4,6 +4,10 @@
 
 ## One command
 
+New installation? Complete [terminal setup](TERMINAL_INSTALL.md) first.
+`chemdraw-mac setup` prepares the private add-in and verifies a read without
+drawing. `first-run` below is the optional drawing demonstration.
+
 Prerequisites: macOS, your own installed and activated ChemDraw, and [uv](https://docs.astral.sh/uv/getting-started/installation/). The direct Git command also needs Git and network access to download source and dependencies.
 
 Without a checkout:
@@ -20,17 +24,21 @@ From an existing checkout, use the committed dependency lock:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-uv handles dependency installation first, showing its own progress. Once Python starts, an ASCII ring animates beside the actual native workflow stage. There is no invented percentage or claim that an uncompleted check has passed.
+uv handles dependency installation first, showing its own progress. Once Python starts, an interactive terminal cycles through bundled silhouettes from native ChemDraw exports with the tagline “Natural language → ChemDraw.” Structures stay geometrically fixed while a gold reveal passes across them, with pink and lavender accents matching graphical setup. Names are hidden. The continuous bar uses weighted workflow phases, approaches the current phase ceiling while work is pending, and reaches completion only after all native checks pass. It is not an elapsed-time estimate or a download percentage. The actual phase is always shown beneath it.
+
+The sequence is caffeine, azulene, saccharin, 5-MeO-DMT, urea, aspirin, vanillin, alizarin and dopamine. These are precomputed decorative silhouettes, not additional compounds drawn during setup. No name lookup, image library, installed font or extra network request is needed to animate them. Provenance and native SVG hashes are in `chemdraw_macos/data/welcome.json`. Unicode braille cells represent rasterized native strokes; they are not the scientific output.
+
+The animation runs only during interactive `first-run`, never ordinary drawing commands or MCP calls. It stops with the actual workflow, restores the cursor/screen on failure, and never adds a minimum artificial delay. Re-running `first-run` deliberately replays onboarding and creates another smoke-test drawing.
 
 ## What happens
 
 1. Check application discovery, RDKit and the SVG rasterizer without contacting ChemDraw.
 2. Acquire the cooperative native-operation lock and check the application connection.
-3. Draw the fixed caffeine/aspirin graphs through the existing native import, cleanup, grid and validation workflow.
-4. Verify that the drawing audit passed and that editable CDXML, native SVG, PNG and HTML review files exist inside the output bundle.
-5. Save `first-run.json`, report the paths and leave the final working drawing open. In an interactive CLI only, open the review in the default browser.
+3. Append the fixed caffeine/aspirin graphs once to the active canvas through the desktop API, with house style, grid and validation. Open a blank document first for an isolated test.
+4. Verify the drawing audit and editable CDXML, native SVG and PNG files inside the output bundle.
+5. Save `first-run.json`, report the paths and leave the drawing open in ChemDraw. No HTML review is generated or required, and no browser is launched.
 
-The graphs are explicit software-test fixtures, not online name-resolution results. RDKit validates and supplies coordinate seeds; ChemDraw imports, cleans and renders. PNG is rasterized from that native SVG. Passing this fixture does not certify arbitrary chemistry, another application version or a human visual review.
+The graphs are explicit software-test fixtures, not online name-resolution results. RDKit validates and supplies editable coordinates; ChemDraw renders the single API addition. PNG is rasterized from that native SVG. Passing this fixture does not certify arbitrary chemistry, another application version or a human visual review. Install and enable the locally generated desktop add-in first, following [the add-in guide](DESKTOP_ADDIN.md).
 
 Default output is a unique child of `~/ChemDraw-MCP-Output/first-runs/`, or of the workspace selected by `CHEMDRAW_MCP_WORKSPACE`. Supply `--output /absolute/existing/parent/new-folder` for another destination. An existing destination is rejected before native work. Source snapshots and audit data remain local; do not attach unreviewed bundles containing private drawings to public issues.
 
@@ -40,11 +48,11 @@ Default output is a unique child of `~/ChemDraw-MCP-Output/first-runs/`, or of t
 | --- | --- |
 | `--json` | JSON on stdout; no animation or browser launch, including errors |
 | Redirected/non-terminal stdout | Same machine-readable mode automatically |
-| `--no-open` | Keep interactive output but do not open the browser |
+| `--no-open` | Accepted for compatibility; browser launch has been removed |
 | `--no-animation` | Plain stage messages in an interactive terminal |
 | Narrow terminal, `TERM=dumb` or `CI` | No animation |
 
-Exit status is 0 for passed checks, 1 for failure/busy/uncertain results and 130 for interruption. Browser launch failure is a warning, not a failed drawing. Errors retain the failing stage and available output path. The combined drawing/validation stage is intentionally not split into fake substeps.
+Exit status is 0 for passed checks, 1 for failure/busy/uncertain results and 130 for interruption. Errors retain the failing stage and available output path. The combined drawing/validation stage is intentionally not split into fake substeps.
 
 ## From an assistant app
 

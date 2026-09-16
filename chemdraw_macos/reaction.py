@@ -134,6 +134,8 @@ def _remap(recipe,mapping):
 
 def arrange_reaction(native_text,recipe):
     """Use measured ink and the existing row planner, failing on page overflow."""
+    from .lab_style import DEFAULTS
+    spacing=DEFAULTS['reaction']
     root=supported_root(native_text);page=root.find('page');region=_region(page)
     for e in _visible(page):
         if not e.get('BoundingBox'):raise ValueError('Native measured bounds required for every reaction object')
@@ -149,10 +151,19 @@ def arrange_reaction(native_text,recipe):
                 bb=list(numbers(g.get('BoundingBox'),4));bb[0]+=delta;g.set('BoundingBox',encode(bb))
     source=ET.tostring(root,encoding='unicode');last_error=None
     # Equal main-component gaps grow together when captions require more room.
-    for gap in range(24,121,6):
+    for step in range(18):
+        gap=spacing['gap']+step*6
         try:
-            arranged,layout=layout_row(source,recipe['caption_map'],recipe['condition_map'],gap=gap,label_gap=14.,width=region[2]-region[0])
+            arranged,layout=layout_row(source,recipe['caption_map'],recipe['condition_map'],gap=gap,label_gap=spacing['condition_gap'],width=region[2]-region[0])
             final=supported_root(arranged);fp=final.find('page');visible=_visible(fp)
+            # Match grid/series semantics: label_gap measures empty visible space,
+            # not the distance to a text baseline whose ascent varies by font.
+            objects={e.get('id'):e for e in fp}
+            captions=[objects[tid] for tid in recipe['caption_map'].values()]
+            bottom=max(bounds(objects[i]).bottom for i in recipe['component_ids'])
+            ascent=max(numbers(t.get('p'),2)[1]-bounds(t).top for t in captions)
+            baseline=bottom+spacing['label_gap']+ascent
+            for t in captions:transform(t,dy=baseline-numbers(t.get('p'),2)[1])
             left=min(bounds(e).left for e in visible);top=min(bounds(e).top for e in visible)
             for e in fp:
                 if e.tag!='scheme':transform(e,dx=region[0]-left,dy=region[1]-top)
@@ -163,7 +174,7 @@ def arrange_reaction(native_text,recipe):
                 raise ValueError('Measured reaction labels/conditions overlap')
             output=ET.tostring(final,encoding='unicode')
             baseline=numbers(fp.find(f't[@id="{next(iter(recipe["caption_map"].values()))}"]').get('p'),2)[1]
-            return output,{**copy.deepcopy(recipe),'gap_pt':gap,'region':region,'caption_baseline_pt':baseline,
+            return output,{**copy.deepcopy(recipe),'gap_pt':gap,'label_gap_pt':spacing['label_gap'],'region':region,'caption_baseline_pt':baseline,
                            'layout':layout}
         except ValueError as exc:last_error=exc
     raise ValueError(f'Reaction does not fit without overlap: {last_error}')
@@ -207,6 +218,10 @@ def verify_reaction(expected,native,plan):
             'roles':actual['roles'],'median_bond_lengths_pt':medians,'gaps_pt':gaps,'region':region}
 
 
+from .presentation import production_job
+
+
+@production_job
 def build_reaction(bridge,reactants,products,output_dir,conditions_above='',conditions_below='',preset='house',pixels=3200,scaffold_smiles=None,layout=None):
     # Preserve the original connected-structure route; expanded inputs have a
     # reaction-specific validator, never a relaxed general draw validator.

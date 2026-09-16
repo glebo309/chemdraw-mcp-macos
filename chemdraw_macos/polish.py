@@ -69,13 +69,15 @@ def supported_root(text):
                 raise ValueError('Unsupported atom query, abbreviation or enhanced stereo')
         for b in f.findall('b'):
             allowed_bond={'id','B','E','Order','Display','Display2','Z','color','bgcolor',
-                          'LineWidth','BoldWidth','BondSpacing','DoublePosition','BS','BondOrdering','BondCircularOrdering'}
+                          'LineWidth','BoldWidth','BondSpacing','DoublePosition','BS','BondOrdering','BondCircularOrdering','CrossingBonds','Warning'}
             if set(b.attrib)-allowed_bond:
                 raise ValueError('Unsupported bond attributes: '+', '.join(sorted(set(b.attrib)-allowed_bond)))
             if b.get('B') not in ids or b.get('E') not in ids:
                 raise ValueError('Dangling bond endpoint')
             if b.get('Order', '1') not in ('1', '2', '3', '1.5'):
                 raise ValueError('Unsupported bond order/query')
+        from .crossings import validate_crossings
+        validate_crossings(f)
     return root
 
 

@@ -222,6 +222,10 @@ def verify_scope(expected,native,plan):
             'median_bond_lengths_pt':medians,'cells':mapped,'molecule_checks':molecules}
 
 
+from .presentation import production_job
+
+
+@production_job
 def grid_document(bridge,document_id,output_dir,cells,expected_source_token,preset='house',
                   columns=None,width=None,height=None,margin=36.,h_gap=18.,v_gap=24.,label_gap=10.,pixels=3200):
     from .styles import require_style_fonts
@@ -295,6 +299,7 @@ def grid_document(bridge,document_id,output_dir,cells,expected_source_token,pres
             raise
 
 
+@production_job
 def grid_file(bridge,path,output_dir,cells,expected_source_token=None,**options):
     import hashlib
     out=Path(output_dir).expanduser()

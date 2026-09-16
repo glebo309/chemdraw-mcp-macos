@@ -25,6 +25,20 @@ def source():
 REQUESTS=[{'key':'br-charge','kind':'charge','atom_id':'1100'},
           {'key':'i-charge','kind':'charge','atom_id':'4114'}]
 
+def test_crowded_nitro_charges_fit_without_smaller_symbols_or_changed_owners():
+    import math
+    from chemdraw_macos.draw import charge_requests
+    text=(Path(__file__).parent/'fixtures/nitrobenzene-measured.cdxml').read_text()
+    planned,plan=plan_symbols(text,charge_requests(text))
+    assert plan['span_pt']==10.5 and plan['line_width_pt']==1.58
+    root=ET.fromstring(planned)
+    atoms={n.get('id'):tuple(map(float,n.get('p').split())) for n in root.findall('page/fragment/n')}
+    assert len(plan['symbols'])==2
+    for symbol in plan['symbols']:
+        p=symbol['center_pt'];aid=symbol['atom_id']
+        assert all(math.dist(p,atoms[aid])+.25<=math.dist(p,q) for k,q in atoms.items() if k!=aid)
+    assert verify_symbols(planned,planned)['checks']['mapped_chemistry_preserved']
+
 def test_charge_placement_keeps_owner_uniquely_nearest():
     import math
     # Native tetramethylammonium geometry: a clear circle can still be nearer
