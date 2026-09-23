@@ -4,18 +4,19 @@ Native, editable chemical drawings from your assistant or terminal.
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
-![ChemDraw MCP graphical setup with molecular animation and pink, lavender and gold accents](assets/readme/setup.png)
-
-[Mac downloads](https://github.com/glebo309/chemdraw-mcp-macos/releases) ·
+**[Download for Mac (Apple Silicon)](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg)** ·
+[Release notes](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc15) ·
 [Terminal installation](docs/TERMINAL_INSTALL.md) ·
 [Examples and customization](docs/GETTING_STARTED.md) ·
 [Architecture](docs/ARCHITECTURE.md)
+
+![ChemDraw MCP graphical setup with molecular animation and pink, lavender and gold accents](assets/readme/setup.png)
 
 ## Install once
 
 | Route | Start here |
 | --- | --- |
-| **Graphical Mac installer** | Download the Apple Silicon `.dmg` from Releases, open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
+| **Graphical Mac installer** | [Download the Apple Silicon DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg), open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
 | **Terminal / Git** | Clone this repository and run `./install.sh`. It installs locked dependencies and automatically launches the animated terminal setup. Requires Git and uv. [Commands](docs/TERMINAL_INSTALL.md) |
 | **MCP bundle** | The `.mcpb` is an alternative for clients that import MCP bundles. Choose this or the DMG, not both. |
 
@@ -42,7 +43,7 @@ PATH change is assumed. For an optional first drawing after setup:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc15),
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg),
 open it, and open **ChemDraw MCP**. The graphical helper includes Python and
 dependencies, guides the ChemDraw add-in step, and connects selected local clients.
 It does not install or license ChemDraw itself.
