@@ -16,8 +16,8 @@ def test_native_nitro_charges_keep_size_and_owners(tmp_path):
     try:
         result = draw_structures(bridge, [
             {'compound_id': 'nitro', 'label': 'Nitrobenzene', 'smiles': 'O=[N+]([O-])c1ccccc1'},
-        ], str(tmp_path / 'nitro'), charge_style='circled')
-        final = result['document']['document_id']
+        ], str(tmp_path / 'nitro'), charge_style='circled', presentation='background')
+        final = None if result.get('document_closed') else result['document']['document_id']
         assert result['audit']['status'] == 'checks_passed'
         root = ET.parse(result['artifacts']['cdxml']).getroot()
         graphics = root.findall('page/fragment/graphic')

@@ -143,6 +143,14 @@ def _primitive_free(primitive,bounds,positions,boxes,segments,occupied,clearance
         and not any(math.dist(q,(ox,oy))<r+orr for ox,oy,orr in occupied))
 
 
+def _owner_ink_distance(point,atom):
+    label=atom.find('t')
+    if label is None:return math.dist(point,numbers(atom.get('p'),2))
+    x,y,xx,yy=numbers(label.get('BoundingBox'),4)
+    return math.hypot(max(min(x,xx)-point[0],0,point[0]-max(x,xx)),
+                      max(min(y,yy)-point[1],0,point[1]-max(y,yy)))
+
+
 def verify_symbol_clearance(text,symbol_ids,clearance):
     root,_,_=_split(text);bounds,atoms,positions,boxes,segments=_placement_obstacles(root)
     graphics={g.get('id'):g for g in root.findall('page/fragment/graphic')}
@@ -184,7 +192,7 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
             if aid in (b.get('B'),b.get('E')):neighbors.append(positions[b.get('E') if b.get('B')==aid else b.get('B')])
         vx=sum(x-p[0] for p in neighbors);vy=sum(y-p[1] for p in neighbors)
         angle=math.atan2(vy,vx) if math.hypot(vx,vy)>.01 else -math.pi/4
-        chosen=None
+        chosen=None;anchor_candidate=None
         handle_span=span if kind=='charge' else span/3 if kind=='lone_pair' else span*2/3
         raw_width=line_width/.8
         radius=span*4/9+line_width if kind=='charge' else handle_span*2/9 if kind=='lone_pair' else handle_span/9
@@ -212,8 +220,17 @@ def plan_symbols(text,symbols,span=None,line_width=None,clearance=2):
                 probe=ET.Element('graphic',{'SymbolType':symbol,'LineWidth':str(raw_width),'BoundingBox':' '.join(map(str,ends))})
                 primitives=symbol_primitives(probe)
                 if not all(_primitive_free(p,bounds,positions,boxes,segments,occupied,clearance+.05) for p in primitives):continue
+                # Prefer the owner's visible label as well as its anchor.
+                # Some native-tested crowded layouts have no such candidate;
+                # retain the anchor-safe candidate and require native ownership
+                # verification in either case, never infer chemistry from distance.
+                if kind=='charge' and any(_owner_ink_distance(p,atom)+.25>_owner_ink_distance(p,other)
+                                          for other_id,other in atoms.items() if other_id!=aid):
+                    if anchor_candidate is None:anchor_candidate=(p,ends,primitives)
+                    continue
                 chosen=p;break
             if chosen:break
+        if chosen is None and anchor_candidate is not None:chosen,ends,primitives=anchor_candidate
         if chosen is None:raise ValueError('No collision-free symbol position within the bounded search')
         cx,cy=chosen;sid=str(next_id);next_id+=1
         g=ET.SubElement(fragment,'graphic',{'id':sid,'GraphicType':'Symbol','SymbolType':symbol,'LineWidth':str(raw_width),

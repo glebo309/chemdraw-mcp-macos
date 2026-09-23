@@ -25,6 +25,29 @@ def source():
 REQUESTS=[{'key':'br-charge','kind':'charge','atom_id':'1100'},
           {'key':'i-charge','kind':'charge','atom_id':'4114'}]
 
+
+def test_nitro_charge_is_closest_to_owner_label_not_only_atom_anchor():
+    import math
+    # Native-measured left-facing nitro group. An anchor-only nearest test
+    # accepted a plus that ChemDraw reassociated to the upper oxygen on save.
+    text='''<CDXML BondLength="18" LabelSize="14" LineWidth="1.58"><page id="1" BoundingBox="0 0 300 300"><fragment id="2">
+    <n id="3" p="64 95.18" Element="8" NumHydrogens="0"><t p="58.68 100.30" BoundingBox="59.22 90.07 68.79 100.53"><s>O</s></t></n>
+    <n id="4" p="73 79.59" Element="7" Charge="1" NumHydrogens="0"><t p="67.95 84.75" BoundingBox="69.03 69.76 83.85 84.75"><s>N+</s></t></n>
+    <n id="5" p="64 64.01" Element="8" Charge="-1" NumHydrogens="0"><t p="73.40 69.12" BoundingBox="59.21 53.89 72.88 69.35"><s>O-</s></t></n>
+    <n id="6" p="91.01 79.59"/>
+    <b id="7" B="4" E="3" Order="2"/><b id="8" B="4" E="5"/><b id="9" B="4" E="6"/>
+    </fragment></page></CDXML>'''
+    planned,plan=plan_symbols(text,[{'key':'n','kind':'charge','atom_id':'4'}])
+    p=plan['symbols'][0]['center_pt']
+    def distance(node):
+        label=node.find('t')
+        if label is None:return math.dist(p,tuple(map(float,node.get('p').split())))
+        a,b,c,d=map(float,label.get('BoundingBox').split())
+        return math.hypot(max(a-p[0],0,p[0]-c),max(b-p[1],0,p[1]-d))
+    atoms=ET.fromstring(planned).findall('page/fragment/n')
+    owner=next(n for n in atoms if n.get('id')=='4')
+    assert all(distance(owner)+.25<=distance(n) for n in atoms if n is not owner)
+
 def test_crowded_nitro_charges_fit_without_smaller_symbols_or_changed_owners():
     import math
     from chemdraw_macos.draw import charge_requests

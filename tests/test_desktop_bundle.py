@@ -220,5 +220,9 @@ async def test_frozen_complete_reaction_through_mcp(tmp_path):
             assert result['status']=='completed',result
             assert result['planning']['paper']['name']=='A4 landscape'
             assert all(result['checks'].values()) and len(result['plan']['provenance'])==4
+            assert result['checks']['native_charge_clearance']
+            assert result['checks']['native_charge_ownership']
+            import xml.etree.ElementTree as ET
+            assert len(ET.parse(result['artifacts']['cdxml']).findall('page/fragment/graphic'))==4
             assert Image.open(result['artifacts']['png']).info['dpi']==pytest.approx((600,600),abs=.02)
     assert owner.documents()==baseline

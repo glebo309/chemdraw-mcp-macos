@@ -164,6 +164,8 @@ def run_reaction_batch(bridge,steps,out,*,preset='house',paper='auto',presentati
     from .physical_export import physical_svg,physical_png
     from .styles import require_style_fonts,verify_custom_style
     from .placement import collision_pairs
+    from .symbols import plan_symbols, verify_symbols, verify_symbol_clearance
+    from .annotations import _core as molecular_core
     if presentation not in ('auto','background','interactive'):raise ValueError('Reactions require a separate output document')
     out=Path(out)
     if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output requires an absolute new folder with existing parent')
@@ -183,6 +185,21 @@ def run_reaction_batch(bridge,steps,out,*,preset='house',paper='auto',presentati
             snap=out/'measured.cdxml';_native(bridge.export,did,str(snap),'cdxml')
             native=snap.read_text();_verify(planned,native)
             recipe=remap_series(plan,remap_ids(planned,native))
+            charges=[{'key':'charge_'+n.get('id'),'kind':'charge','atom_id':n.get('id')}
+                     for n in ET.fromstring(native).findall('page/fragment/n')
+                     if n.get('Charge','0') in ('1','-1')]
+            if charges:
+                charged,charge_plan=plan_symbols(native,charges)
+                (out/'charges-planned.cdxml').write_text(charged)
+                audit['charge_plan']=charge_plan
+                _native(bridge.close,did);owned.remove(did)
+                created=_native(bridge.create,charged,visible=False);did=created['document']['document_id'];owned.append(did)
+                snap=out/'charges-measured.cdxml';_native(bridge.export,did,str(snap),'cdxml')
+                native=snap.read_text()
+                charge_verification=verify_symbols(charged,native)
+                verify_symbol_clearance(native,[charge_verification['id_map'][s['symbol_id']]
+                                               for s in charge_plan['symbols']],2)
+                recipe=remap_series(recipe,remap_ids(charged,native))
             arranged,plan=_measured_layout(native,recipe,paper)
             _native(bridge.close,did);owned.remove(did)
             timer.mark('native_batch_measurement')
@@ -191,8 +208,15 @@ def run_reaction_batch(bridge,steps,out,*,preset='house',paper='auto',presentati
             figure=out/'figure';figure.mkdir();cdxml=figure/'figure.cdxml'
             _native(bridge.export,did,str(cdxml),'cdxml');native=cdxml.read_text()
             verification=verify_series(arranged,native,plan)
+            if charges:
+                charge_verification=verify_symbols(arranged,native)
+                native_symbols=[g.get('id') for g in ET.fromstring(native).findall('page/fragment/graphic')]
+                audit['native_charge_clearance']=verify_symbol_clearance(native,native_symbols,2)
+                verification['checks'].update(native_charge_clearance=True,native_charge_ownership=True)
             _verify_paper(native,plan['paper'])
-            verify_custom_style(arranged,native,preset)
+            # Native charge glyphs use a calibrated 1/0.8 width; their own
+            # verifier checks that width. Molecular bonds/text use the preset.
+            verify_custom_style(molecular_core(arranged),molecular_core(native),preset)
             collisions=collision_pairs(native,measured=True)
             if collisions:raise ValueError('Delivered placement collision candidates: '+repr(sorted(collisions)[:8]))
             verification['checks'].update(native_style=True,no_placement_collision_candidates=True,physical_paper=True)
@@ -216,14 +240,16 @@ def run_reaction_batch(bridge,steps,out,*,preset='house',paper='auto',presentati
             result={'status':'completed','stage':'delivery','artifacts':{fmt:str(figure/('preview.png' if fmt=='preview' else 'figure.'+fmt)) for fmt in ('cdxml','svg','png','preview')},
                 'checks':checks,'audit':audit,'planning':plan,'timings':timer.report(),'visual_review':'required',
                 'document':created['document'],'document_closed':True,
-                'presentation':{'mode':'background','intermediates':'one whole-reaction measuring document'},
+                'presentation':{'mode':'background','measurement_documents':2 if charges else 1,
+                                'intermediates':'whole-reaction measurements; charge ink included when present'},
                 'note':'Native desktop rendering, not display-free. No per-participant imports or mouse control. Original documents are unchanged.'}
             if presentation=='interactive':
                 shown=_native(bridge.create,native,visible=False);shown_id=shown['document']['document_id'];owned.append(shown_id)
                 check=out/'presented.cdxml';_native(bridge.export,shown_id,str(check),'cdxml')
                 _verify(native,check.read_text())
                 _native(bridge.set_visibility,shown_id,True)
-                result.update(document=shown['document'],document_closed=False,presentation={'mode':'interactive','intermediates':'one whole-reaction measuring document'})
+                result.update(document=shown['document'],document_closed=False,
+                              presentation={**result['presentation'],'mode':'interactive'})
             _write_json(out/'audit.json',audit);_write_json(out/'result.json',result)
             return result
         except NativeUncertain as exc:

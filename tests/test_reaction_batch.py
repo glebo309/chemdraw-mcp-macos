@@ -209,3 +209,58 @@ def test_single_nitro_group_has_clear_charge_quadrant_without_graph_changes():
             anchor=next(a for a in neighbors if a.get('Element','6')=='6')
             x,y=map(float,n.get('p').split());xx,yy=map(float,anchor.get('p').split())
             assert xx>x and yy==pytest.approx(y,abs=.001)
+
+
+class ChargedBatchBridge(BatchBridge):
+    def create(self,text,visible=False):
+        from chemdraw_macos.symbols import symbol_primitives
+        result=super().create(text,visible=visible);did=result['document']['document_id']
+        root=ET.fromstring(self.docs[did])
+        # The legacy fake measures only atoms/text. Native ChemDraw additionally
+        # includes displayed charge circles in the molecular ink bounds.
+        for f in root.findall('page/fragment'):
+            b=bounds(f);boxes=[(b.left,b.top,b.right,b.bottom)]
+            for g in f.findall('graphic'):
+                boxes.extend((x-r,y-r,x+r,y+r) for x,y,r in symbol_primitives(g))
+            f.set('BoundingBox',' '.join(map(str,(min(b[0] for b in boxes),min(b[1] for b in boxes),
+                                                 max(b[2] for b in boxes),max(b[3] for b in boxes)))))
+        self.docs[did]=ET.tostring(root,encoding='unicode')
+        return result
+
+
+def test_reaction_circles_existing_charges_and_checks_native_clearance(tmp_path):
+    from chemdraw_macos.reaction_batch import run_reaction_batch
+    from chemdraw_macos.symbols import verify_symbol_clearance
+    steps=[{'step_id':'charged','reactants':[item('a','Acetate','CC(=O)[O-]')],
+            'products':[item('b','Methylammonium','C[NH3+]')]}]
+    b=ChargedBatchBridge(tmp_path/'work');original=b.docs.copy()
+    result=run_reaction_batch(b,steps,tmp_path/'out')
+    root=ET.parse(result['artifacts']['cdxml']).getroot()
+    symbols=root.findall('page/fragment/graphic')
+    assert {g.get('SymbolType') for g in symbols}=={'CirclePlus','CircleMinus'}
+    assert len(symbols)==2
+    assert result['checks']['native_charge_clearance']
+    assert result['checks']['native_charge_ownership']
+    assert result['presentation']['measurement_documents']==2
+    verify_symbol_clearance(ET.tostring(root,encoding='unicode'),[g.get('id') for g in symbols],2)
+    assert b.docs==original
+    assert len([e for e in b.events if e[0]=='create'])==3
+
+
+def test_circled_reaction_rejects_a_native_symbol_moved_onto_a_bond(tmp_path):
+    from pathlib import Path
+    from chemdraw_macos.reaction_batch import run_reaction_batch
+    class CollidingCharge(ChargedBatchBridge):
+        def export(self,did,path,fmt,pixels=3200):
+            super().export(did,path,fmt,pixels)
+            if fmt=='cdxml' and Path(path).name=='figure.cdxml':
+                root=ET.parse(path).getroot()
+                symbol=root.find('page/fragment/graphic')
+                if symbol is not None:symbol.set('BoundingBox','0 0 10.5 0')
+                Path(path).write_text(ET.tostring(root,encoding='unicode'))
+    steps=[{'step_id':'charged','reactants':[item('a','Acetate','CC(=O)[O-]')],
+            'products':[item('b','Acetic acid','CC(=O)O')]}]
+    b=CollidingCharge(tmp_path/'work')
+    with pytest.raises(ValueError,match='charge|symbol|collision'):
+        run_reaction_batch(b,steps,tmp_path/'out')
+    assert not any(e[0]=='export' and e[2]=='svg' for e in b.events)

@@ -2,6 +2,23 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc18: circled reaction charges
+
+Ordinary batched reactions display existing unit formal charges as native
+circled symbols. Placement prefers the owning atom's measured label as well
+as its coordinate. Native saving must retain charge ownership and a 2 pt
+clearance from measured labels, conservative bond envelopes and other symbols.
+One additional whole-document measurement includes the circles in row layout.
+
+Validation: 1,187 portable tests passed, 98 optional tests skipped. The complete
+glycoside reaction passed native validation with four circled charges, unchanged
+graphs and pre-existing documents, and physical-scale exports. Its white native
+preview was visually inspected. Four batch-reaction/paper native tests and the
+separate nitrobenzene circled-charge regression passed serially. All 13 executed
+packaging checks passed, including the full circled-charge reaction through the
+frozen MCP and plain ZIP extraction. Two add-in-specific tests were not run.
+Independent-Mac acceptance remains open.
+
 ## 0.10.0rc17: complete reaction batching
 
 - Ordinary explicit reactions use local whole-document assembly, one native

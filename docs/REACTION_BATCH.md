@@ -30,7 +30,9 @@ every image to an identical width would change the apparent molecular scale.
 ## Native operations
 
 The complete explicit graph batch is assembled locally. ChemDraw opens one
-hidden measuring document, then one hidden final document. There are no separate
+hidden measuring document, then one hidden final document. Reactions with unit
+formal charges add one whole-document measurement for the circled-charge ink.
+There are no separate
 native imports or cleanup calls for each participant. `background` and `auto`
 close the owned documents after verification. `interactive` additionally opens
 a verified presentation copy. Existing documents are not edited or closed.
@@ -63,6 +65,16 @@ Fresh seeds with exactly one explicit carbon-bound nitro group receive a rigid
 orientation that leaves space for the nitrogen charge. Atom distances, graph,
 stereo and scale are preserved and checked after native import. This is not
 general charge-placement repair or a change to existing user drawings.
+
+From rc18, ordinary batched reactions display existing +1/-1 atom charges as
+native editable circled symbols. Placement uses measured labels, conservative
+bond envelopes and atom ownership. The saved native result must preserve every
+charge association and at least 2 pt clearance from bonds, labels and other
+symbols. Native circled-symbol bounds are measured before final row layout, so
+caption centring and paper fit include the circles. No safe placement is a
+failure, not permission to overlap a bond or silently remove the circles.
+Other charge magnitudes retain their native labels. Existing user documents and
+the older explicit `reaction`/`reaction-series` workflows are not restyled.
 
 The advanced `reaction` and `reaction-series` tools retain their older supported
 subsets and page behavior. Electron-flow annotations remain separate operations.

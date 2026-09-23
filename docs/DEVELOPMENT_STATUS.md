@@ -1,6 +1,6 @@
 # Development status
 
-Current experimental release: **0.10.0rc16**.
+Current experimental release: **0.10.0rc18**.
 
 Graphical and terminal setup use the same native bridge. The DMG includes its runtime and terminal commands; the Git route installs locked dependencies through `install.sh`. Both setup routes retain diagnostic reports.
 
@@ -14,11 +14,13 @@ changing the orientation of live references. [Measured performance](DRAWING_PERF
 
 ## Validation
 
-The rc16 portable suite passed 1,168 tests with 93 optional skips. Seven serial
-native tests passed, including delivery modes, unchanged originals, mixed
-chemistry, shared alignment, pagination and physical exports. Native evidence is
-limited to ChemDraw 23.0.1.11 on the development Mac. All 14 packaged checks
-passed, including a live read and native drawing from the frozen candidate.
+The rc18 portable suite passed 1,187 tests with 98 optional skips. Five serial
+native tests passed: the full glycoside reaction with circled charges, three
+physical-paper round-trips and the separate crowded nitrobenzene regression.
+Native evidence is limited to ChemDraw 23.0.1.11 on the development Mac.
+All 13 executed packaging checks passed, including the circled-charge reaction
+through the frozen MCP and plain ZIP extraction. Two add-in-specific tests were
+not run. White native previews were visually inspected.
 Earlier focused results are
 listed separately in [release history](../PROJECT_PROGRESS.md).
 

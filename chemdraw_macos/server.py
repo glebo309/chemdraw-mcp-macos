@@ -150,7 +150,10 @@ def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False
     timings measures server work, not model reasoning or client-side image review.
     Reactions in auto/background assemble the complete reaction locally, select
     reaction_paper=auto at unchanged scale, then use one whole-reaction measuring
-    document and one final export document. Editable CDXML, physical-scale SVG,
+    document and one final export document. Unit formal charges are circled by
+    default, with one additional whole-document measurement for their ink. Saved
+    charge ownership and bond/label clearance must pass; never omit failed circles.
+    Editable CDXML, physical-scale SVG,
     600-DPI transparent PNG and a white preview are returned. Background documents
     are closed; interactive opens an additional verified presentation copy of the
     output. No per-participant native imports or cleanup. An active untitled original

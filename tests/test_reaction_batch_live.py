@@ -25,6 +25,15 @@ def test_complete_glycoside_native_batch(tmp_path):
     assert record[11]-record[9]==paper['width_pt']
     assert record[10]-record[8]==paper['height_pt']
     assert native.find('page').get('WidthPages')==native.find('page').get('HeightPages')=='1'
+    symbols=native.findall('page/fragment/graphic')
+    assert len(symbols)==4
+    assert {g.get('SymbolType') for g in symbols}=={'CirclePlus','CircleMinus'}
+    assert result['checks']['native_charge_clearance']
+    assert result['checks']['native_charge_ownership']
+    for g in symbols:
+        atom=native.find(f'.//n[@id="{g[0].get("object")}"]')
+        assert atom.get('Charge')==('1' if g.get('SymbolType')=='CirclePlus' else '-1')
+        assert atom.get('Element')==('7' if g.get('SymbolType')=='CirclePlus' else '8')
     assert Image.open(result['artifacts']['png']).info['dpi']==pytest.approx((600,600),abs=.02)
     report={'seconds':time.perf_counter()-started,'result':result}
     (tmp_path/'native-result.json').write_text(json.dumps(report,indent=2))
