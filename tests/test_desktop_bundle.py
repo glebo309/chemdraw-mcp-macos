@@ -80,6 +80,7 @@ async def test_frozen_real_mcp_initialize_discovery_and_offline_chemistry(tmp_pa
             assert 'page_policy' in str(draw.inputSchema)
             assert 'exports' in str(draw.inputSchema)
             assert 'refresh_identifiers' in str(draw.inputSchema)
+            assert 'reaction_paper' in str(draw.inputSchema)
             result = await session.call_tool('chemdraw_identify', {'value': 'CCO', 'input_format': 'smiles'})
             assert not result.isError
             assert 'C2H6O' in str(result)
@@ -195,3 +196,29 @@ async def test_frozen_drawing_preview_and_upright_caffeine(tmp_path):
             assert abs(conf.GetAtomPosition(a).x - conf.GetAtomPosition(b).x) < .002
     owner.close(did)
     assert owner.documents() == baseline
+
+
+@pytest.mark.skipif(os.environ.get('CHEMDRAW_LIVE_TEST') != '1', reason='Requires exclusive native ChemDraw')
+@pytest.mark.asyncio
+async def test_frozen_complete_reaction_through_mcp(tmp_path):
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    from test_reaction_batch import glycoside_reaction
+    from PIL import Image
+    from chemdraw_macos.core import Bridge
+    step=glycoside_reaction()[0];owner=Bridge();baseline=owner.documents()
+    request={'molecules':[{'format':'smiles','value':p['smiles'],'label':p['label']} for p in step['reactants']],
+             'products':[{'format':'smiles','value':p['smiles'],'label':p['label']} for p in step['products']],
+             'conditions_above':step['conditions_above'],'conditions_below':step['conditions_below']}
+    params=StdioServerParameters(command=RUNTIME,args=['--cli','serve','--profile','full'],env=dict(os.environ))
+    async with stdio_client(params) as (reader,writer):
+        async with ClientSession(reader,writer) as session:
+            await session.initialize()
+            response=await session.call_tool('chemdraw_draw',{'request':request,'output_dir':str(tmp_path/'reaction'),'presentation':'background'})
+            assert not response.isError,response
+            result=response.structuredContent or json.loads(response.content[0].text)
+            assert result['status']=='completed',result
+            assert result['planning']['paper']['name']=='A4 landscape'
+            assert all(result['checks'].values()) and len(result['plan']['provenance'])==4
+            assert Image.open(result['artifacts']['png']).info['dpi']==pytest.approx((600,600),abs=.02)
+    assert owner.documents()==baseline

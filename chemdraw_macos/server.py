@@ -34,6 +34,8 @@ INSTRUCTIONS = (
     'or chemdraw_draw_structures with presentation=shared. Auto and interactive molecule '
     'drawing reuse the active ChemDraw canvas through one API insertion. No per-molecule windows. '
     'Do not repeat a whole drawing job merely to change labels or numbering. '
+    'Do not use mouse or keyboard automation to bypass a rejected drawing, page-fit check or unsaved-document guard. '
+    'Do not remove participants or change supplied labels/conditions to force a reaction to fit. '
     'Read molecular_graphs from read_live_document or analyze_document after human edits. '
     'Unsaved edits are included. Captions such as Caffeine may be stale and are NEVER molecular identities. '
     'Keep the house preset unless the user explicitly requests a different style. Do not use a guessed '
@@ -146,10 +148,18 @@ def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False
     Validated name/CAS results are cached in this process for five minutes;
     refresh_identifiers=true forces a new lookup. Permission/ambiguity rules remain.
     timings measures server work, not model reasoning or client-side image review.
-    Shared reactions/decorated panels/arbitrary graphics are not supported yet:
-    explicitly use background for a legacy separate export workflow.
-    These modes hide intermediates but require the licensed desktop, not a headless
-    renderer. Output_dir must not already exist: the tool creates it.
+    Reactions in auto/background assemble the complete reaction locally, select
+    reaction_paper=auto at unchanged scale, then use one whole-reaction measuring
+    document and one final export document. Editable CDXML, physical-scale SVG,
+    600-DPI transparent PNG and a white preview are returned. Background documents
+    are closed; interactive opens an additional verified presentation copy of the
+    output. No per-participant native imports or cleanup. An active untitled original
+    can be preserved through the add-in read; do not save or close it to bypass checks.
+    Shared reactions and decorated panels are not supported; never silently redirect
+    an explicit same-document request. This requires the licensed desktop, not a
+    display-free renderer; native window opening can briefly flash. Output_dir must
+    not already exist: the tool creates it. On rejection inspect the returned reason;
+    do not retry with changed chemistry or UI control.
     Only completed means required gates passed; visual review remains required.
     Never retry uncertain writes or substitute another renderer.
     Submit a requested table as ONE complete batch, not independent rows.

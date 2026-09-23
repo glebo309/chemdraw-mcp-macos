@@ -4,8 +4,8 @@ Native, editable chemical drawings from your assistant or terminal.
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
-**[Download for Mac (Apple Silicon)](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg)** ·
-[Release notes](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc16) ·
+**[Download for Mac (Apple Silicon)](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc17/ChemDraw-MCP-Apple-Silicon.dmg)** ·
+[Release notes](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc17) ·
 [Terminal installation](docs/TERMINAL_INSTALL.md) ·
 [Examples and customization](docs/GETTING_STARTED.md) ·
 [Architecture](docs/ARCHITECTURE.md)
@@ -16,7 +16,7 @@ document, and export figures at a consistent chemical scale.
 
 | Route | Start here |
 | --- | --- |
-| **Graphical Mac installer** | [Download the Apple Silicon DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg), open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
+| **Graphical Mac installer** | [Download the Apple Silicon DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc17/ChemDraw-MCP-Apple-Silicon.dmg), open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
 | **Terminal / Git** | Clone this repository and run `./install.sh`. It installs locked dependencies and automatically launches the animated terminal setup. Requires Git and uv. [Commands](docs/TERMINAL_INSTALL.md) |
 | **MCP bundle** | The `.mcpb` is an alternative for clients that import MCP bundles. Choose this or the DMG, not both. |
 
@@ -43,7 +43,7 @@ PATH change is assumed. For an optional first drawing after setup:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg),
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc17/ChemDraw-MCP-Apple-Silicon.dmg),
 open it, and open **ChemDraw MCP**. The graphical helper includes Python and
 dependencies, guides the ChemDraw add-in step, and connects selected local clients.
 It does not install or license ChemDraw itself.
@@ -53,7 +53,7 @@ macOS zsh Terminal window and run `chemdraw-mac --help` or `chemdraw-mac first-r
 No second download, Python or uv installation is needed. Setup preserves and
 backs up existing shell settings before adding its PATH entry.
 
-**Experimental candidate: 0.10.0rc16.** Requires your own licensed ChemDraw and a
+**Experimental candidate: 0.10.0rc17.** Requires your own licensed ChemDraw and a
 logged-in Mac desktop. Native tests have run on Apple Silicon, macOS 15.6,
 ChemDraw 23.0.1.11. The Mac app is ad-hoc signed, not Developer ID signed or
 notarized. Independent-Mac acceptance is still open. Only one assistant can own
@@ -82,7 +82,12 @@ for ordinary shared drawings or physical-scale exports.
 [Drawing request format](docs/DRAWING_HARNESS.md) ·
 [Export settings and limits](docs/PHYSICAL_EXPORT.md)
 
-Version rc16 includes lighter native previews, optional canvas-only delivery,
+Version rc17 batches complete explicit reactions, measures their native ink once,
+and selects A4 or A3 paper without shrinking molecules or removing participants.
+Reaction exports include physical-scale SVG, 600-DPI transparent PNG and a white
+preview. [Reaction workflow and limits](docs/REACTION_BATCH.md).
+
+Version rc16 introduced lighter native previews, optional canvas-only delivery,
 per-stage timings and validated name-lookup reuse. Fresh regular six-membered
 rings are axis-aligned; a live scaffold reference still takes precedence.
 [Delivery choices](docs/DRAWING_HARNESS.md#drawing-speed-and-export-choices) ·
@@ -90,7 +95,7 @@ rings are axis-aligned; a live scaffold reference still takes precedence.
 
 Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create native structures and explicit reaction rows, import local styles, design mapped aromatic scopes, inspect identifiers, resolve names with explicit network opt-in, polish figures, add supported electron/charge symbols and curves, or batch-export finished drawings. Inspect native exports and keep editable output plus a chemical audit.
 
-**Native ChemDraw rendering.** The desktop JavaScript API reads and appends supported molecule batches; bounded AppleScript handles other native commands and exports. RDKit supplies validated graphs and coordinates through its ChemDraw CDXML writer, not images. ChemDraw renders SVG; offline `resvg` rasterizes that unchanged native SVG for transparent PNG. Explicit background workflows retain the older native import/cleanup pipeline. Natural-language interpretation comes from your MCP client, not an embedded LLM.
+**Native ChemDraw rendering.** The desktop JavaScript API reads and appends supported molecule batches; bounded AppleScript handles other native commands and exports. RDKit supplies validated graphs and coordinates through its ChemDraw CDXML writer, not images. ChemDraw renders SVG; offline `resvg` rasterizes its unchanged artwork for transparent PNG. Ordinary explicit reactions use whole-document batching; advanced legacy workflows retain native import/cleanup. Natural-language interpretation comes from your MCP client, not an embedded LLM.
 
 Independent, open-source experimental project under [AGPLv3](LICENSE). Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 

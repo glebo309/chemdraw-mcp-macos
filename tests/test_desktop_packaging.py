@@ -60,9 +60,9 @@ def test_speed_candidate_package_versions_are_consistent():
     import tomllib
     root = Path(__file__).parents[1]
     version = tomllib.loads((root / 'pyproject.toml').read_text())['project']['version']
-    assert version == '0.10.0rc16'
+    assert version == '0.10.0rc17'
     build = (root / 'scripts/build_desktop.py').read_text()
-    assert "'CFBundleVersion': '16'" in build
-    assert "extension_manifest('0.10.0-rc.16', arch)" in build
+    assert "'CFBundleVersion': '17'" in build
+    assert "extension_manifest('0.10.0-rc.17', arch)" in build
     lock = tomllib.loads((root / 'uv.lock').read_text())
     assert next(p['version'] for p in lock['package'] if p['name'] == 'chemdraw-mcp-macos') == version

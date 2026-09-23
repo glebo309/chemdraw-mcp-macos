@@ -29,6 +29,15 @@ Name lookup is excluded because the comparison supplies an explicit graph.
 
 ## What changed
 
+The rc17 frozen executable completed an explicit four-participant glycoside
+hydrolysis in 5.758 seconds, including native measurement, layout, all exports
+and preservation checks. It retained the full labels and conditions on A4
+landscape. This is one measured run, not a median or a speedup factor against
+the older failing workflow. Name lookup was excluded by supplying explicit
+graphs. Reproduce with `tests/test_reaction_batch_live.py`; the packaged MCP
+case is in `tests/test_desktop_bundle.py`. Both require `CHEMDRAW_LIVE_TEST=1`;
+the packaged case also requires `CHEMDRAW_DESKTOP_RUNTIME`.
+
 - Post-read document identity and metadata share one native process invocation.
   Before/after target checks remain, including a document switch during metadata
   collection. Current document snapshots are never cached.

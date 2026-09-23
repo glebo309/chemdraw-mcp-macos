@@ -31,8 +31,9 @@ class DrawingRequest(BaseModel):
     conditions_below: str = Field(default='',max_length=120)
     panel: Literal['auto','plain'] = Field(default='auto',description='Auto may group supported related panels; plain omits category grouping. Shared tables retain verified common-ring orientation in either mode.')
     page_policy: Literal['add_pages','keep'] = Field(default='add_pages',description='For shared molecule tables, append identical physical pages inside the same document when needed; keep refuses overflow. Never shrink molecules.')
-    exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto: shared molecules get native SVG plus a white 1200-pixel review preview; background/reactions retain full exports. Full: transparent 3200-pixel PNG. Canvas: shared molecules only, editable CDXML and native checks without image export; review in ChemDraw. Use export_figure later for physical-scale publication files.')
+    exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto: shared molecules get native SVG plus a white 1200-pixel review preview; reactions get physical-scale SVG, 600-DPI transparent PNG and preview. Full: transparent 3200-pixel PNG for molecules, 600-DPI PNG for reactions. Canvas: shared molecules only, editable CDXML and native checks without image export; review in ChemDraw. Use export_figure later for molecule publication files.')
     refresh_identifiers: bool = Field(default=False,description='Bypass the five-minute in-memory validated name/CAS cache. Network permission is still required on every name/CAS request.')
+    reaction_paper: Literal['auto','A4 portrait','A4 landscape','A3 landscape'] = Field(default='auto',description='Separate reaction output only: bounded staging preflight followed by the smallest paper fitting native measurements, at unchanged bond scale. Explicit paper refuses estimated overflow before native production and rechecks actual ink.')
 
 
 class NeedsInput(ValueError):
@@ -73,6 +74,8 @@ def _resolve(items,allow_network,start=1,*,refresh_identifiers=False):
 def plan_request(request,allow_network=False,*,shared=False):
     if type(allow_network) is not bool:raise ValueError('allow_network must be a boolean')
     model=DrawingRequest.model_validate(request)
+    if model.products is None and model.reaction_paper!='auto':
+        raise ValueError('reaction_paper requires products')
     if model.exports in ('preview','canvas') and (not shared or model.products is not None):
         raise ValueError('preview/canvas exports require the shared molecule workflow')
     structures,provenance=_resolve(model.molecules,allow_network,refresh_identifiers=model.refresh_identifiers)
@@ -85,6 +88,7 @@ def plan_request(request,allow_network=False,*,shared=False):
         expanded=any('.' in r['smiles'] or Chem.MolFromSmiles(r['smiles']).GetNumAtoms()==1 for r in structures+products)
         return {'workflow':'reaction','reactants':structures,'products':products,'preset':'house',
                 'expanded_reaction':expanded,
+                'reaction_paper':model.reaction_paper,
                 'conditions_above':model.conditions_above,'conditions_below':model.conditions_below,
                 'provenance':provenance+product_provenance}
     if model.conditions_above or model.conditions_below:
@@ -178,6 +182,15 @@ def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_i
                           isinstance(bridge,Bridge) and presentation in ('auto','interactive'))
         plan=plan_request(request,allow_network,shared=shared_molecules)
         timer.mark('input_resolution_and_planning')
+        if plan['workflow']=='reaction' and presentation!='shared' and document_id is None:
+            from .reaction_batch import run_reaction_batch
+            stage='reaction_batch'
+            result=run_reaction_batch(bridge,[{'step_id':'reaction','reactants':plan['reactants'],
+                'products':plan['products'],'conditions_above':plan['conditions_above'],
+                'conditions_below':plan['conditions_below']}],out,preset=plan['preset'],
+                paper=plan['reaction_paper'],presentation=presentation)
+            result['plan']=plan
+            return result
         if presentation=='shared' or document_id is not None:
             from .shared import run_shared
             stage='shared_execution'

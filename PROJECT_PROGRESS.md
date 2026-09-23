@@ -2,6 +2,29 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc17: complete reaction batching
+
+- Ordinary explicit reactions use local whole-document assembly, one native
+  measuring copy and one final export copy. No per-participant native imports
+  or cleanup calls; no mouse-control fallback or content-shortening retries.
+- Native measured layout selects supported A4/A3 paper at unchanged bond scale.
+  Saved physical paper records are checked independently of drawing bounds.
+- Full glycoside hydrolysis retains water, both products, all labels and the
+  complete conditions line. A bounded nitro orientation avoids charge crowding.
+- Reaction exports include physical-scale SVG, 600-DPI transparent PNG and a
+  white review preview. Input-resolution provenance and timings are retained.
+
+Validation: 1,184 portable tests passed, 98 optional tests skipped. Four serial
+native tests passed: complete glycoside hydrolysis and round-trips for A4 portrait,
+A4 landscape and A3 landscape. All 13 executed packaging checks passed, including
+the complete reaction through the frozen executable's actual MCP interface;
+two add-in-specific checks were skipped because another client retained that
+connection. The frozen reaction completed in 5.758 seconds with four participants
+on A4 landscape. Its white native preview was visually inspected; the pre-existing
+document inventory and content remained unchanged. This candidate's native runs
+used a named original, not an untitled original. Separate-Mac acceptance remains
+open. [Workflow, physical paper and limitations](docs/REACTION_BATCH.md).
+
 ## 0.10.0rc16: faster shared drawing and upright ring orientation
 
 - Shared drawing defaults to native SVG plus a white 1200-pixel review preview;

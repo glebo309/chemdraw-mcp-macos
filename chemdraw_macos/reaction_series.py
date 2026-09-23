@@ -134,7 +134,7 @@ def _region(page,margin):
     return x+margin,y+margin,r-margin,b-margin
 
 
-def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None):
+def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None,*,text_width_factor=1.):
     """Combine checked connected native components with explicit salt ownership."""
     options=_layout_options(layout);spec=preset_settings(preset);all_parts=[c for s in prepared_steps for side in ('reactants','products') for p in s[side] for c in p['components']]
     normalized={}
@@ -207,6 +207,16 @@ def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None):
                     run.set('face',str(int(spec.get('LabelFace','0'))&3))
     text=ET.tostring(styled,encoding='unicode')
     if chemical_signature(text)!=sorted(c['canonical_smiles'] for c in all_parts):raise ValueError('Composed reaction identity changed')
+    if not isinstance(text_width_factor,(int,float)) or not 0<text_width_factor<=1:
+        raise ValueError('Invalid staging text-width estimate')
+    # Staging estimates are not native measurements. The batch path measures the
+    # entire document once and recomputes the final paper/layout from actual ink.
+    if text_width_factor!=1:
+        for t in styled.findall('page/t'):
+            x,y,r,b=numbers(t.get('BoundingBox'),4);cx=(x+r)/2
+            half=(r-x)*text_width_factor/2
+            t.set('BoundingBox',f'{cx-half} {y} {cx+half} {b}')
+        text=ET.tostring(styled,encoding='unicode')
     return arrange_series(text,recipe,require_measured=False)
 
 

@@ -29,7 +29,9 @@ preview plus native SVG and editable CDXML. Set request `exports` to `full` for
 the transparent 3200-pixel PNG bundle, or `canvas` for checked insertion without
 image exports. Publication files remain available separately through
 `export-figure`. The advanced `draw` interface and background/reaction workflows
-retain full exports. [Delivery choices and stage timings](DRAWING_HARNESS.md#drawing-speed-and-export-choices).
+retain full exports. Ordinary reactions now include physical-scale SVG, 600-DPI
+transparent PNG and a white preview through the [batch reaction path](REACTION_BATCH.md).
+[Delivery choices and stage timings](DRAWING_HARNESS.md#drawing-speed-and-export-choices).
 
 CLI and MCP share the same workflow implementations. Natural-language interpretation comes from a connected assistant; the server itself is not an LLM. The separate `resolve` interface contacts PubChem only when the caller explicitly enables network access. Native `draw-name` also requires explicit network consent because ChemDraw may use an online naming fallback.
 
@@ -38,7 +40,9 @@ CLI and MCP share the same workflow implementations. Natural-language interpreta
 drawings to that same document, including an untitled document. `auto` and
 `interactive` use the active ChemDraw canvas, or create one if none exists.
 Supply its document ID to bind the target explicitly. `background` retains the
-older separate export workflow, including temporary native imports.
+older separate export workflow for molecules. Explicit reactions use two hidden
+whole-document stages, not per-participant imports. Native opening can briefly
+flash; this is desktop automation, not a display-free renderer.
 
 The advanced `chemdraw_draw_structures` entry point follows the same routing and
 accepts `document_id`. CLI `draw` accepts `presentation` and `document_id` in its

@@ -8,7 +8,9 @@ The default molecule path now uses the [desktop API](DESKTOP_ADDIN.md): one
 preplanned insertion into the active canvas, including untitled drawings. It
 validates native chemistry, coordinates, typography/strokes, object ink bounds,
 page fit and exports. It does not run per-molecule native imports or cleanup.
-The separate background/reaction pipelines retain their original gates below.
+Ordinary reactions use the [batch reaction path](REACTION_BATCH.md), with bounded
+physical-paper selection and native measured layout. Advanced legacy workflows
+retain their original contracts.
 
 For clients that should not choose among low-level tools:
 
@@ -67,7 +69,8 @@ PNG. Do not convert it again just to inspect it on white. Use
 SVG/PNG and optional PDF, without redrawing. Chemistry, stereo, source preservation,
 style, page fit and table alignment checks remain mandatory in every mode.
 Canvas mode does not claim that an SVG export or image review occurred.
-Background/reaction workflows keep full exports; explicit `preview` and `canvas`
+Reaction full exports use physical SVG and 600-DPI PNG, plus a white review image.
+Other background workflows keep full exports; explicit `preview` and `canvas`
 requests on those paths are rejected before native changes. The advanced
 `chemdraw_draw_structures` interface keeps its existing full-export default.
 
@@ -156,14 +159,17 @@ creating one working document only if none exists. `shared` with `document_id`
 binds an explicit active document. Multi-molecule tables use one hidden native
 measuring copy, closed after successful measurement; no second final document
 is created for overflow.
-Explicit `background` retains separate exports and native temporary imports.
+Explicit `background` retains separate exports. Reactions use two hidden
+whole-document stages; legacy molecule exports still use temporary imports.
 All modes require a licensed logged-in desktop, not a display-free engine.
 
 The chosen shared document may be untitled: the desktop API reads it without
 assigning a filename, and checked insertion leaves it unsaved and open. Shared
-reads and writes do not select all objects or use the clipboard. Background/separate-document
-production still blocks on other untitled documents because its preservation
-snapshot path has not been converted. It does not save or close them implicitly.
+reads and writes do not select all objects or use the clipboard. The batch
+reaction path uses the same read-only add-in snapshot to preserve an active
+untitled original. It needs the add-in connection for that read; it never saves
+or closes the original as a workaround. Other legacy separate workflows retain
+their existing untitled-document limits.
 
 ## Current acceptance scope
 
