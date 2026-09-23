@@ -12,6 +12,13 @@ probes below remain evidence, not currently enabled alternatives.
 Capability investigation, 2026-09-15. This is evidence and a proposed direction,
 not an implemented headless backend or general collaborative editor.
 
+## Requirements
+
+The goal is headless native rendering where possible. If desktop ChemDraw
+must run, the desired interactive mode is one persistent document shared by the
+human and assistant. A stream of opened/closed intermediate windows is not an
+acceptable substitute. Existing human edits must remain intact.
+
 ## Installed desktop application
 
 Inspected ChemDraw 23.0.1's installed scripting dictionary, application bundle
@@ -99,12 +106,16 @@ before changing production behavior.
 For interactive use, prefer a persistent document/session contract rather than
 the batch renderer's document lifecycle. Existing read/cleanup/alignment tools
 cover part of it; arbitrary insertion and atom editing are still missing. A
-controlled native clipboard/paste experiment is a possible next route, but needs
-explicit approval under the project's no-clipboard/no-GUI-fallback boundary.
+controlled native clipboard/paste experiment is a possible research route.
 It must preserve/restore clipboard data, verify the target document and chemistry,
 respect concurrent edits, and establish undo/recovery before being called safe.
 
-## 2026-09-16: authorized clipboard experiment
+## 2026-09-16: clipboard experiment
+
+The shared-document clipboard experiment used disposable probes; no production clipboard endpoint was
+installed yet. The local probe is local-validation/probe_clipboard.js. A Swift
+prototype failed to compile against the local SDK before touching the clipboard;
+the working experiment uses the system JavaScript/Objective-C bridge instead.
 
 Native CDX data using the observed com.revvity.chemdraw.cdx-clipboard pasteboard
 type inserted editable chemistry into the same existing document without opening
@@ -124,6 +135,13 @@ Copy As CDXML Text can read the selected drawing without saving a file or openin
 a window. The experiment selected all to obtain the whole drawing. Preserving a
 human's previous arbitrary selection has not been solved, so this is not yet a
 drop-in read-only replacement for live-read.
+
+Direct SMILES paste produced an incorrect aromatic readback. Direct MOL paste
+caused an oversized-layout prompt requesting a document 39 pages tall and yielded
+incorrect chemistry in an earlier completed trial. The second MOL trial was
+cancelled rather than expanding the document.
+These text/MOL routes are disabled at probe entry before any clipboard operation.
+Do not retry them, accept the expansion prompt or describe them as supported.
 
 The final MOL trial completed its undo and clipboard restoration. Readback confirmed
 the original graph and all atom positions were restored, with page dimensions
@@ -146,9 +164,9 @@ fails with -10000. Changing the CDX document framing rectangle did not change th
 observed page-centered paste placement. This is not a supported positioning method.
 
 The acceptance test in tests/test_shared_native.py explicitly checks position and
-Undo and remains failing; portable tests do not substitute for that test. Approval
-was requested for narrowly scoped keyboard placement, and no keyboard events have
-been sent. Manual page 106 describes one-point arrow-key object movement.
+Undo and was failing at this stage; portable tests do not substitute for that test.
+Keyboard placement had not yet been tested. The native manual describes one-point
+arrow-key object movement.
 
 Implementation detail: uninitialized Objective-C error references caused one
 osascript crash. shared.js now catches errors inside AppleScript and passes a null

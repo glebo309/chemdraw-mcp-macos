@@ -1,6 +1,6 @@
 # Minimal compatibility or drawing report
 
-Copy this template into a private report or, after public release is authorized, a repository issue. Do not upload confidential structures, unpublished results, proprietary templates, fonts, licences or whole workspace folders. Prefer a small public or invented chemical example that reproduces the behavior.
+Copy this template into a repository issue. Do not upload confidential structures, unpublished results, proprietary templates, fonts, licences or whole workspace folders. Prefer a small public or invented chemical example that reproduces the behavior.
 
 ## Environment
 

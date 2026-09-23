@@ -2,7 +2,7 @@
 
 Working plan, updated 2026-09-17. The repository is public and experimental, not a stable release. The current README and test results describe implemented support.
 
-## Generation speed, requested 2026-09-17
+## Generation speed
 
 - [ ] Benchmark end-to-end generation for one molecule, a full analogue table,
   a reaction and an electron-pushing mechanism. Separate assistant/tool-selection
@@ -45,7 +45,7 @@ Working plan, updated 2026-09-17. The repository is public and experimental, not
 These are product ideas and future acceptance examples, not implemented features.
 Keep arbitrary explicitly specified reactions available beyond the reference set.
 
-## Next user-facing work, requested 2026-09-16
+## Installation and documentation
 
 - [x] Implement guided terminal setup and verify an isolated package installation, live connection read and animated drawing. Fresh-Mac Add-in Manager import remains an independent acceptance gate. [Terminal guide](TERMINAL_INSTALL.md)
 - [ ] Design and test graphical updates: detect installed version, retain client settings and private add-in credentials, replace the shared runtime safely, explain any client restart, and recover the prior version on failure. Choose an explicit update action before considering automatic updates.
@@ -54,6 +54,11 @@ Keep arbitrary explicitly specified reactions available beyond the reference set
 - [x] Explain the MCP/harness/native-renderer responsibilities and supported profiles. [Architecture](ARCHITECTURE.md)
 - [x] Add customization instructions with numerical style and assistant-instruction boundaries. [Customization](GETTING_STARTED.md#customize-the-drawing-style)
 - [x] Add worked prompts for a first molecule, edited-parent scope, paged table and physical-scale exports. [Examples](GETTING_STARTED.md)
+
+The rc10 same-document vertical-page table and physical-scale export work is
+implemented and locally native-tested; exact evidence is in PROJECT_PROGRESS.md.
+The README refresh and linked guides are included in rc12. Automatic graphical
+updating is not implemented.
 
 ## Current molecule-first priorities
 
@@ -73,7 +78,7 @@ All four approved increments are implemented through CLI and MCP: complete expli
 
 The scope job produces actual category bands. Reaction series retain supplied components and coefficients without balance or mechanism prediction. Ownership sidecars govern tool-controlled moves, not manual dragging; reaction schemes reject vertical movement because native role inference can discard reactants. Route proposals require explicit anchors and selection. Style packages lock actual supported workflow settings and retain their hash with each result.
 
-The remaining broad capabilities below are not silently included: arbitrary nested/multipage editing, native manual-drag arrow attachment, automatic scaffold/chemistry inference and an additional naming provider. Independent-Mac acceptance and package publication remain pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for handoff preparation.
+Remaining capabilities include arbitrary nested/multipage editing, native manual-drag arrow attachment, general scaffold/chemistry inference and additional naming providers. Independent-Mac acceptance remains pending. Use the [demo](DEMO_WALKTHROUGH.md), [release checklist](RELEASE_CHECKLIST.md), and [report template](BUG_REPORT_TEMPLATE.md) for reproducible testing.
 
 ## First deliverable: repair an existing figure safely
 
@@ -135,4 +140,4 @@ Version 0.8 also implements optional scope framing and group dividers as a separ
 
 ## Collaboration direction
 
-Propose shared fixtures, geometry contracts and compatible capability descriptions to Windows maintainers after the Mac implementation has reproducible evidence. Prefer contributing small portable improvements upstream over forking an entire tool suite. Contacts, commits, public releases and licensing are separate owner-approved actions; none are authorized by this roadmap itself.
+Potential upstream contributions include shared fixtures, geometry contracts and compatible capability descriptions. Prefer small portable improvements over a fork of an entire tool suite.

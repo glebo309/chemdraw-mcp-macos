@@ -1,3 +1,7 @@
+# Standard substrate scope: request and implemented boundary
+
+Given a parent aromatic substrate, propose electronic, positional and steric variants for a substrate-scope study. A bounded offline proposer is callable through CLI and MCP, distinct from native drawing and scope-grid layout. Candidates are not experimental results and yields are not invented. [Proposal usage](SCOPE_DESIGN_USAGE.md) defines the implemented subset; broader ideas below remain design proposals.
+
 ## The request it should answer
 
 "Make a standard scope for this substrate: the usual electron-withdrawing and donating substituents, bulky cases, and methyl in ortho, meta and para positions."

@@ -1,3 +1,5 @@
+# Graphical ChemDraw MCP setup
+
 ## rc15: diagnostics for graphical and terminal setup
 
 On a failed setup check, **Save diagnostics** offers a visible `.txt` extension
@@ -96,6 +98,11 @@ README and FIRST_RUN. The existing terminal animation remains, with no graphical
 installer launch. This source route requires uv and Git; the graphical download
 does not. There is no separate runtime per model or assistant.
 
+The interface uses pink, lavender and soft yellow accents,
+with lighter plum-charcoal surfaces, fine-line corner marks and a small tricolor
+rule. The native molecule animation, compact dimensions and minimal final page
+remain. No new decorative screens or post-finish page were added.
+
 **Limits:** multiple assistants may be registered, but the existing native API
 endpoint still has one process owner. Test drawing clients one at a time and
 disconnect the other ChemDraw server if diagnostics reports it busy. This build
@@ -156,10 +163,10 @@ Existing files trigger instructions to enable the existing entry, avoiding a
 duplicate import. The source package lives outside the installation destination
 so replacing that folder cannot delete the archive being imported.
 
-The reported friend's invalid-ZIP file is not available for inspection. These
-changes fix demonstrated setup hazards, not a claim to have reproduced that exact
-remote ChemDraw error. Local generated ZIPs validate; native Add-in Manager import
-on the friend's Mac still needs a retest. Do not share the generated private add-in.
+These changes fix reproduced setup hazards. A separately reported invalid-ZIP
+failure remains unverified without the affected package. Local generated ZIPs
+validate; independent-Mac import acceptance remains open. Do not share the
+generated private add-in.
 
 ## Package contents and build
 
@@ -192,6 +199,27 @@ legacy duplicate for these builds; no installed toolchain file was changed.
 Do not ship it as an end-user requirement.
 
 ## Evidence and remaining gates
+
+- Portable setup tests cover readiness, application validation, endpoint release,
+  private settings, unknown commands and strict JSON protocol.
+- Actual frozen executable checks cover clean PATH/no system Python, chemistry
+  CDXML roundtrip, rasterization worker, setup protocol and real stdio MCP
+  initialization/discovery/offline chemistry.
+- The frozen setup helper passed an actual live document read without drawing
+  writes on this Mac. Welcome and add-in instruction screens were rendered from
+  the real SwiftUI view and visually inspected.
+- Anthropic MCPB CLI 2.1.2 validates the manifest.
+- An rc6 installation test reached Connected to ChemDraw and
+  passed the live document read. rc7 adds compiled Swift regression tests for the
+  three-page flow, completion-close action and all nine molecule bounds. Actual
+  SwiftUI welcome, installation and connected views were rendered and inspected.
+  Automated tests do not substitute for a fresh rc7 click-through in Claude.
+- The current app has an ad-hoc signature only. This Mac has no Developer ID
+  signing identity. Developer ID signing plus notarization is required before
+  claiming a smooth public-download installation. Do not disable Gatekeeper.
+- Another-Mac installation, Claude-side Automation permission and actual first
+  drawing from that client remain acceptance gates. Organization policy may block
+  custom extensions.
 
 Format and installation reference: [Claude MCPB documentation](https://claude.com/docs/connectors/building/mcpb).
 Bundling reference: [PyInstaller feature notes](https://pyinstaller.org/en/stable/feature-notes.html).

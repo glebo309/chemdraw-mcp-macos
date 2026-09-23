@@ -149,7 +149,7 @@ The v0.9 workflow layer connects the individual tools into callable jobs:
 - **Owned movement and routes:** `build-ownership` / `move-owned` carry explicit captions, symbols and internal curves with their molecules. `suggest-routes` / `apply-route` propose and render a selected obstacle-checked cubic path. Reaction-scheme vertical moves and one-sided cross-owner curve moves are refused; manual dragging is not covered. [Guide](docs/OWNERSHIP.md)
 - **Shared styles:** `make-lab-style` / `styled-job` use versioned, hashed numerical settings and reject conflicting recipe overrides. Each output retains its exact style package. [Starting package](examples/publication-bold.lab-style.json) · [Guide](docs/LAB_STYLE.md)
 
-Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Another-Mac acceptance and package publication remain pending in the [release checklist](docs/RELEASE_CHECKLIST.md).
+Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Experimental packages are available on GitHub Releases; independent-Mac acceptance remains open in the [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## First drawing in one command
 

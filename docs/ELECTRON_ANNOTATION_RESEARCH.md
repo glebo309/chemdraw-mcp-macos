@@ -1,8 +1,14 @@
+# Electron and mechanism annotation: working reference
+
+Historical design notes, reviewed 2026-09-15. The current README and usage guide define the implemented annotation, symbol and routing tools. Native manual-drag attachment remains unverified.
+
 ## Start from the working drawing
+
+The [SN2 input](../examples/sn2-annotation-input.cdxml) and [annotation recipe](../examples/sn2-annotation-recipe.json) provide a reproducible two-arrow example. Curves are native CDXML objects rendered by ChemDraw, not mouse-drawn overlays.
 
 The saved curves have `CurveType="8"`, `ArrowheadHead="Full"`, `LineWidth="0.90"` and six coordinate pairs in `CurvePoints`: start, start, first control point, second control point, end, end. The nucleophile-to-carbon and bond-to-iodine curves are already working visual examples. Their source and target are described in the recipe, but the curves do not encode atom/bond ownership. Existing audit checks identity and curve count, not endpoint clearance, saved arrowhead geometry or attachment behavior.
 
-Do not copy the legacy exporter: it saves the front document. Use this project's explicit document IDs and owned working-copy bridge. Do not overwrite or regenerate the reference folder during development.
+Export by explicit document ID through the owned working-copy bridge, not by whichever document happens to be frontmost.
 
 ## Native object support
 

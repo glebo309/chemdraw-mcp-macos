@@ -1,3 +1,5 @@
+# Native drawing lessons and current limits
+
 ## 2026-09-15: explicit metal-ion labels and zero-Z serialization
 
 In the explicit coordination writer, a single chemically interpreted `Cu2+` text run was imported by ChemDraw as a nested two-copper fragment. Multi-charge magnitudes must use their own superscript run (`face="64"`), following the working ordinary-ion writer's explicit charge encoding. The corrected native copper/ammine fixture retains one copper atom with formal charge +2 and all dative endpoints. The preservation validator still rejects nested fragments rather than accepting that misinterpretation.
@@ -93,6 +95,10 @@ A graph decoder can read an oxygen atom correctly even if its displayed CDXML te
 The first batch native test failed atom-coordinate decoding because its validation helper created a fresh bare CDXML root for each fragment. That discarded the source document settings used by the decoder. The established scope helper keeps the original root and page settings, removing only unrelated page children. Batch now follows that working pattern. The actual source and native exports were not chemically changed; the validation wrapper was wrong.
 
 ChemDraw may also add reaction-scheme metadata when importing a drawing with an arrow but no supplied scheme. Batch checks explicit source scheme roles when supplied. It does not certify ChemDraw's newly inferred reaction roles as chemically correct. Neither issue justifies dropping a supplied scheme or weakening atom-mapped chemistry checks.
+
+## 2026-09-15: existing SN2 mechanism reference
+
+The checked-in [SN2 recipe](../examples/sn2-annotation-recipe.json) demonstrates native editable electron-pair arrows. Annotations have their own supported curve/circled-charge subset and native verification. Other high-level workflows do not inherit that support. See [electron annotation research](ELECTRON_ANNOTATION_RESEARCH.md) and the current usage reference.
 
 ## 2026-09-15: pre-reversed chemical labels in a generated fixture
 
