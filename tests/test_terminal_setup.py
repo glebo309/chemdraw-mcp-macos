@@ -147,3 +147,38 @@ def test_bundled_setup_uses_shared_terminal_launchers(tmp_path, monkeypatch):
     executable = tmp_path/'Library/Application Support/ChemDraw MCP/bin/chemdraw-mac'
     assert shlex.join([str(executable), 'first-run']) in out.getvalue()
     assert 'uv run' not in out.getvalue()
+
+
+def test_terminal_failure_saves_private_shareable_report(tmp_path):
+    from chemdraw_macos.terminal_setup import run_setup
+    class FailedRead(Session):
+        def dispatch(self, request):
+            if request['action'] == 'test':
+                from chemdraw_macos.desktop_setup import present_diagnostic
+                return present_diagnostic({'status': 'unavailable', 'native_connection': 'responding',
+                    'error': 'Add-in response timed out; native state uncertain; no retry',
+                    'documents': [{'name': 'SECRET DRAWING'}], 'secret': 'PRIVATE KEY'})
+            return super().dispatch(request)
+    out = io.StringIO()
+    assert run_setup(arguments(), session=FailedRead(), home=tmp_path,
+                     input_fn=lambda _: '', stream=out) == 1
+    reports = list((tmp_path/'Library/Logs/ChemDraw MCP').glob('*.txt'))
+    assert len(reports) == 1
+    text = reports[0].read_text()
+    assert 'addin_timeout' in text and 'timestamp' in text and 'terminal' in text
+    assert 'SECRET DRAWING' not in text and 'PRIVATE KEY' not in text
+    assert str(reports[0]) in out.getvalue()
+    assert reports[0].stat().st_mode & 0o077 == 0
+
+
+def test_terminal_report_write_failure_keeps_copyable_report(tmp_path):
+    from chemdraw_macos.terminal_setup import run_setup
+    # An existing non-directory makes the report destination unusable.
+    (tmp_path/'Library').write_text('untouched')
+    out = io.StringIO()
+    assert run_setup(arguments(), session=Session(busy=True), home=tmp_path,
+                     input_fn=lambda _: '', stream=out) == 1
+    assert 'Could not save diagnostics' in out.getvalue()
+    assert 'BEGIN CHEMDRAW DIAGNOSTICS' in out.getvalue()
+    assert '"status": "busy"' in out.getvalue()
+    assert (tmp_path/'Library').read_text() == 'untouched'

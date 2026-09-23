@@ -5,8 +5,10 @@ import shutil
 import shlex
 import sys
 import tempfile
+import json
+from datetime import datetime, timezone
 
-from .desktop_setup import SetupSession
+from .desktop_setup import SetupSession, diagnostic_details
 from .terminal_screen import SetupScreen
 
 
@@ -32,10 +34,25 @@ def run_setup(args, *, session=None, home=None, input_fn=None, stream=None, exec
 
     screen = SetupScreen(stream, enabled=animate)
     outcome = ''
+    events = []
+    action = 'startup'
+
+    def record(status, details):
+        events.append({'timestamp': datetime.now(timezone.utc).isoformat(),
+                       'action': action, 'status': status, 'details': details})
+
+    def dispatch(request):
+        nonlocal action
+        action = request['action']
+        value = session.dispatch(request)
+        # SetupSession supplies shareable details; never record request paths,
+        # exported add-in contents, raw messages or private credentials.
+        record(value.get('status', 'error'), value.get('details', {}))
+        return value
 
     def stage(action, label, phase):
         screen.show(label)
-        return session.dispatch({'action': action})
+        return dispatch({'action': action})
 
     try:
         screen.__enter__()
@@ -43,7 +60,7 @@ def run_setup(args, *, session=None, home=None, input_fn=None, stream=None, exec
         if not animate:
             print('CHEMDRAW / MCP\nTerminal setup\nCreated by Glenn Bojanov\n', file=stream)
         if args.app:
-            session.dispatch({'action': 'choose_app', 'path': args.app})
+            dispatch({'action': 'choose_app', 'path': args.app})
         checked = stage('check', 'Checking installed software', 'installation')
         if checked['status'] != 'local_ready':
             raise ValueError(checked.get('message', 'Software check failed. Run doctor --no-connect.'))
@@ -58,7 +75,7 @@ def run_setup(args, *, session=None, home=None, input_fn=None, stream=None, exec
         target = folder/'ChemDraw MCP Native API.chemdrawaddin'
         with target.open('xb'):
             target.chmod(0o600)
-        session.dispatch({'action': 'export_installer', 'path': str(target)})
+        dispatch({'action': 'export_installer', 'path': str(target)})
         screen.show('Connect ChemDraw', [
             '1. Open ChemDraw > Add-ins > Add-in Manager.',
             'Enable ChemDraw MCP Native API if listed.',
@@ -96,6 +113,21 @@ def run_setup(args, *, session=None, home=None, input_fn=None, stream=None, exec
         return 130
     except Exception as exc:
         outcome = f'Setup needs attention: {exc}'
+        record('error', diagnostic_details({'status': 'error'}, exception=exc))
+        report = 'ChemDraw MCP terminal setup diagnostics\nNo drawings or connection keys are included.\n\n'
+        report += json.dumps({'schema_version': 1, 'route': 'terminal', 'events': events}, indent=2)+'\n'
+        try:
+            logs = home/'Library/Logs/ChemDraw MCP'
+            if logs.is_symlink() or any(p.is_symlink() for p in logs.parents if p != home.parent):
+                raise ValueError('Diagnostic folder must not be a symbolic link')
+            logs.mkdir(parents=True, exist_ok=True, mode=0o700)
+            fd, name = tempfile.mkstemp(prefix='setup-', suffix='.txt', dir=logs)
+            with os.fdopen(fd, 'w') as handle:
+                handle.write(report)
+            outcome += '\nDiagnostics saved. Share this report:\n'+name
+        except (OSError, ValueError):
+            outcome += '\nCould not save diagnostics. Copy the report below instead.\n'
+            outcome += 'BEGIN CHEMDRAW DIAGNOSTICS\n'+report+'END CHEMDRAW DIAGNOSTICS'
         return 1
     finally:
         screen.__exit__()

@@ -1,6 +1,38 @@
 import Foundation
 import CoreGraphics
 
+struct SetupDiagnostics {
+    private(set) var events: [[String: Any]] = []
+
+    mutating func record(action: String, status: String, details: [String: Any]) {
+        events.append(["timestamp": ISO8601DateFormatter().string(from: Date()),
+                       "action": action, "status": status, "details": details])
+        if events.count > 50 { events.removeFirst(events.count - 50) }
+    }
+
+    var text: String {
+        let report: [String: Any] = ["schema_version": 1,
+            "helper_build": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "development",
+            "macos": ProcessInfo.processInfo.operatingSystemVersionString, "events": events]
+        let header = "ChemDraw MCP setup diagnostics\nNo drawings or connection keys are included. Raw error text and personal paths are omitted.\n\n"
+        do {
+            let bytes = try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
+            return header + String(decoding: bytes, as: UTF8.self) + "\n"
+        } catch {
+            return header + "Diagnostic report encoding failed.\n"
+        }
+    }
+}
+
+enum DiagnosticExport {
+    static func save(_ report: String, to url: URL) -> Result<URL, Error> {
+        Result {
+            try report.write(to: url, atomically: true, encoding: .utf8)
+            return url
+        }
+    }
+}
+
 struct ClientSelection {
     var bundle = false
     var claude = false

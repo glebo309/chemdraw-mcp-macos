@@ -42,7 +42,7 @@ PATH change is assumed. For an optional first drawing after setup:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc13),
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc15),
 open it, and open **ChemDraw MCP**. The graphical helper includes Python and
 dependencies, guides the ChemDraw add-in step, and connects selected local clients.
 It does not install or license ChemDraw itself.
@@ -52,7 +52,7 @@ macOS zsh Terminal window and run `chemdraw-mac --help` or `chemdraw-mac first-r
 No second download, Python or uv installation is needed. Setup preserves and
 backs up existing shell settings before adding its PATH entry.
 
-**Experimental candidate: 0.10.0rc13.** Requires your own licensed ChemDraw and a
+**Experimental candidate: 0.10.0rc15.** Requires your own licensed ChemDraw and a
 logged-in Mac desktop. Native tests have run on Apple Silicon, macOS 15.6,
 ChemDraw 23.0.1.11. The Mac app is ad-hoc signed, not Developer ID signed or
 notarized. Independent-Mac acceptance is still open. Only one assistant can own

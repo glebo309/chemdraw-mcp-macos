@@ -1,3 +1,21 @@
+## rc15: diagnostics for graphical and terminal setup
+
+On a failed setup check, **Save diagnostics** offers a visible `.txt` extension
+and defaults to Downloads. Successful writes show the saved path and a Show in
+Finder button. Failed writes show the error and offer Copy report. The separate
+**Copy diagnostics** button works without opening a save dialog.
+
+Reports contain up to fifty timestamped setup events, version/dependency checks,
+connection status and classified native error codes. They exclude document data,
+connection keys, personal paths and raw exception text. An unknown error remains
+unclassified rather than being labelled a permission denial. The helper does not
+save reports automatically or upload them. Copy or save before closing setup.
+
+This candidate improves troubleshooting; it does not establish the cause of the
+reported second-Mac disconnection or change macOS permissions. The rc15 release
+includes these fixes and terminal
+setup failure reports, described in [terminal troubleshooting](TERMINAL_INSTALL.md).
+
 ## rc13: terminal access included
 
 Finish also installs `chemdraw-mac` and `chemdraw-mcp-macos` launchers, using the
@@ -12,7 +30,7 @@ Symlinked shell configuration is refused rather than overwriting its target.
 Other shells can use the absolute commands in
 `~/Library/Application Support/ChemDraw MCP/bin/` or add that directory to PATH.
 No terminal theme or unrelated settings are changed. Download the
-[rc13 experimental release](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc13).
+[rc15 experimental release](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc15).
 
 ## rc10: explicit install route on every preparation screen
 

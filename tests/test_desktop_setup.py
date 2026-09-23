@@ -171,3 +171,46 @@ def test_export_installer_checks_zip_and_keeps_credentials_private(tmp_path):
 def test_export_cannot_write_into_install_destination(tmp_path):
     with pytest.raises(ValueError, match='installation folder'):
         setup.export_installer(tmp_path/'source', tmp_path/'Native/pkg.chemdrawaddin', tmp_path/'Native')
+
+
+@pytest.mark.parametrize('error,kind,code', [
+    ('ChemDraw automation failed: Not authorized to send Apple events. (-1743)', 'automation_denied', -1743),
+    ('Add-in response timed out; native state uncertain; no retry', 'addin_timeout', None),
+    ('ChemDraw automation timed out, possibly due to a dialog.', 'automation_timeout', None),
+    ('ChemDraw automation failed: event failed (-2700)', 'native_error', -2700),
+    ('unexpected private information', 'unclassified_error', None),
+])
+def test_exported_diagnostics_keep_failure_category_without_private_text(error, kind, code):
+    report = {'status': 'unavailable', 'error': error + ' /Users/secret/private.cdxml token=PRIVATE',
+              'documents': [{'name': 'SECRET DRAWING'}], 'cdxml': '<CDXML>PRIVATE</CDXML>',
+              'native_connection': 'responding',
+              'desktop_api': {'status': 'not_tested', 'secret': 'PRIVATE'}}
+    details = setup.present_diagnostic(report)['details']
+    assert details['failure']['kind'] == kind
+    assert details['failure']['native_error_code'] == code
+    assert details['native_connection'] == 'responding'
+    assert details['desktop_api'] == {'status': 'not_tested'}
+    assert not any(word in json.dumps(details) for word in ('PRIVATE', '/Users/', 'SECRET DRAWING'))
+
+
+def test_protocol_errors_also_include_shareable_diagnostics(tmp_path):
+    class FailedSession:
+        def dispatch(self, request):
+            raise PermissionError(13, 'denied', '/Users/secret/key.connection.json')
+        def close(self): pass
+    output = io.StringIO()
+    setup.serve_setup(io.StringIO('{"action":"prepare"}\n'), output, session=FailedSession())
+    result = json.loads(output.getvalue())
+    assert result['details']['failure']['exception_type'] == 'PermissionError'
+    assert result['details']['failure']['os_error_code'] == 13
+    assert '/Users/' not in json.dumps(result['details'])
+
+
+def test_timeout_guidance_does_not_claim_missing_automation_authorization():
+    value = setup.present_diagnostic({'status': 'unavailable', 'error':
+        'Add-in response timed out; native state uncertain; no retry'})
+    assert 'Automation' not in value['message']
+    assert 'Save diagnostics' in value['message']
+    denied = setup.present_diagnostic({'status': 'unavailable', 'error':
+        'ChemDraw automation failed: Not authorized to send Apple events. (-1743)'})
+    assert 'Automation' in denied['message']

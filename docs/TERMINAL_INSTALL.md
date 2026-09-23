@@ -137,6 +137,20 @@ the manual enable step silently.
 [Update guidance](UPDATES.md) distinguishes terminal installs from the bundled
 Mac app. Do not delete working add-in credentials when updating Python code.
 
+### Diagnostic reports (rc15)
+
+If terminal setup fails, it saves a private `.txt` report under
+`~/Library/Logs/ChemDraw MCP/` and prints its exact location after restoring the
+terminal screen. If saving fails, a copyable report is printed instead.
+Reports contain timestamped setup stages, software checks and classified
+connection failures, not drawings, connection keys or raw exception text.
+Nothing is uploaded. This covers failures inside `chemdraw-mac setup`, not Git
+or uv dependency-installation failures before setup starts.
+
+When reporting a problem, include the installation route (DMG, Claude `.mcpb`,
+or Git/terminal), the version and the diagnostic report. Do not send the private
+`.chemdrawaddin` file.
+
 - **Busy:** disconnect the other assistant's ChemDraw server, then rerun setup.
   No process is killed automatically.
 - **No document:** open a blank drawing and rerun setup.

@@ -15,6 +15,36 @@ Working plan, updated 2026-09-17. The repository is public and experimental, not
   Report actual workflow stages during long jobs, without invented progress or
   completion estimates. No speedup is claimed until measured.
 
+## Biocatalysis focus and reference reactions, proposed 2026-09-17
+
+- [ ] Curate a small enzyme-reaction reference library serving both as editable
+  examples and regression fixtures. SN2 remains an arrow-rendering example, not
+  the supported reaction catalogue or the model for every enzyme mechanism.
+  Starter candidates: ADH/KRED, transaminase, imine reductase, lipase/esterase,
+  PAL and the reported LCD example. Select exact enzyme/substrate cases and verify
+  their sources before claiming a correct reference scheme or mechanism.
+- [ ] Keep overall transformations and detailed electron-pushing mechanisms
+  separate. Each curated entry should carry source citations, explicit substrate
+  and product graphs/stereo, a stated protonation convention, cofactors/coproducts,
+  evidence status and a native editable example. Add mechanistic intermediates,
+  catalytic residues and arrow recipes only where supported by the cited evidence.
+  Check data/artwork licensing before redistribution; draw original native figures.
+- [ ] Evaluate Rhea/ChEBI for overall reaction identities and M-CSA plus primary
+  papers for enzyme mechanisms. These are proposed sources, not installed lookups:
+  https://www.rhea-db.org/help/what-is-rhea and
+  https://www.ebi.ac.uk/thornton-srv/m-csa/documentation/.
+- [ ] Explore cofactor-aware presentation: compact labels versus explicit reactive
+  cofactor fragments, regeneration loops and balanced overall-reaction views.
+  Do not confuse a bound/regenerated cofactor with net consumption.
+- [ ] Explore connected cascade/mechanism layout with shared intermediates,
+  readable active-site residue labels and consistently routed electron arrows.
+- [ ] Explore biocatalysis scope captions with separate user-supplied conversion,
+  isolated yield, ee/dr and reaction conditions. Missing measurements stay blank;
+  enzyme-family membership alone must not imply substrate acceptance or selectivity.
+
+These are product ideas and future acceptance examples, not implemented features.
+Keep arbitrary explicitly specified reactions available beyond the reference set.
+
 ## Next user-facing work, requested 2026-09-16
 
 - [x] Implement guided terminal setup and verify an isolated package installation, live connection read and animated drawing. Fresh-Mac Add-in Manager import remains an independent acceptance gate. [Terminal guide](TERMINAL_INSTALL.md)

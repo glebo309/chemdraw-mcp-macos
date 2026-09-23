@@ -8,6 +8,7 @@ import errno
 import os
 from pathlib import Path
 import plistlib
+import re
 import subprocess
 import sys
 
@@ -69,6 +70,31 @@ def welcome_data():
             'credit': 'Created by Glenn Bojanov', 'molecules': load_molecules()}
 
 
+def diagnostic_details(report, exception=None):
+    """Shareable allowlist. Never export exception text, paths or document data."""
+    details = {key: report.get(key) for key in (
+        'package_version', 'macos', 'architecture', 'version', 'rdkit_version',
+        'cdxml_writer_available', 'rasterizer_available', 'status',
+        'native_connection', 'shared_drawing_ready') if key in report}
+    api = report.get('desktop_api', {})
+    details['desktop_api'] = {key: api[key] for key in (
+        'status', 'code', 'api_version', 'read_verified', 'write_tested') if key in api}
+    error = str(exception) if exception is not None else report.get('error', '')
+    if error:
+        match = re.search(r'\((-\d+)\)', error) if error.startswith('ChemDraw automation failed:') else None
+        code = int(match[1]) if match else None
+        kind = ('automation_denied' if code == -1743 else
+                'addin_timeout' if error.startswith('Add-in response timed out') else
+                'automation_timeout' if error.startswith('ChemDraw automation timed out') else
+                'native_error' if code is not None else 'unclassified_error')
+        details['failure'] = {'kind': kind, 'native_error_code': code}
+        if exception is not None:
+            details['failure']['exception_type'] = type(exception).__name__
+            if isinstance(exception, OSError):
+                details['failure']['os_error_code'] = exception.errno
+    return details
+
+
 def present_diagnostic(report):
     ready = report.get('status') == 'ready' and report.get('shared_drawing_ready') is True
     messages = {
@@ -76,16 +102,22 @@ def present_diagnostic(report):
         'needs_setup': ('Enable the ChemDraw add-in', 'Follow the add-in steps below, then click Next.'),
         'needs_document': ('Open a drawing', 'In ChemDraw, choose File > New. Then click Next again.'),
         'busy': ('Another assistant is connected', 'Disconnect the ChemDraw extension in your other assistant, then test again. Nothing needs reinstalling.'),
-        'unavailable': ('Connection needs attention', 'Open and activate your licensed ChemDraw application. Approve macOS Automation access if asked. If denied, enable it in System Settings > Privacy & Security > Automation, then test again.'),
+        'unavailable': ('Connection needs attention', 'The connection check failed. Choose Save diagnostics or Copy diagnostics to share the failure details.'),
         'basic_only': ('Bundled software needs attention', 'A bundled chemistry component could not load. Choose Save diagnostics and share the report so the installer can be corrected.'),
     }
     title, message = ('Connected to ChemDraw', 'The live document read passed. Finish setup to connect your selected assistants.') if ready else messages.get(report.get('status'), ('Not connected yet', 'Prepare the add-in, open a ChemDraw document, then test the connection.'))
+    details = diagnostic_details(report)
+    failure = details.get('failure', {}).get('kind')
+    if report.get('status') == 'unavailable' and failure == 'automation_denied':
+        title = 'ChemDraw control was denied'
+        message = 'macOS reported an Automation denial. Check System Settings > Privacy & Security > Automation for the launching app. If no entry appears, choose Save diagnostics.'
+    elif report.get('status') == 'unavailable' and failure == 'addin_timeout':
+        title = 'The ChemDraw add-in did not respond'
+        message = 'The local add-in did not return the document read. Choose Save diagnostics and share the report; this does not establish a permissions problem.'
     # Never return drawings, document names, private credentials or raw XML to the UI.
     return {'status': report.get('status', 'unavailable'), 'ready': ready,
             'title': title, 'message': message,
-            'details': {key: report.get(key) for key in (
-                'package_version', 'macos', 'architecture', 'version', 'rdkit_version',
-                'cdxml_writer_available', 'rasterizer_available')}}
+            'details': details}
 
 
 class SetupSession:
@@ -197,7 +229,8 @@ def serve_setup(source=None, sink=None, *, session=None):
                 value = session.dispatch(request)
             except Exception as exc:
                 # Local UI only; no upload. Do not serialize private connection objects.
-                value = {'status': 'error', 'title': 'Setup needs attention', 'message': str(exc)}
+                value = {'status': 'error', 'title': 'Setup needs attention', 'message': str(exc),
+                         'details': diagnostic_details({'status': 'error'}, exception=exc)}
             sink.write(json.dumps(value, ensure_ascii=True)+'\n')
             sink.flush()
     finally:

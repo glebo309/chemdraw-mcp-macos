@@ -75,3 +75,49 @@ def test_extension_declares_its_bundled_logo():
     from chemdraw_macos.desktop_setup import extension_manifest
     assert extension_manifest('0.10.0-rc.7', 'arm64')['icon'] == 'icon.png'
     assert (ROOT/'packaging/icon.svg').is_file()
+
+
+@pytest.mark.skipif(platform.system() != 'Darwin', reason='Native Swift diagnostics')
+def test_diagnostics_export_writes_text_and_returns_io_failures(tmp_path):
+    harness = tmp_path/'main.swift'
+    harness.write_text(r'''
+import Foundation
+var report = SetupDiagnostics()
+report.record(action: "test", status: "unavailable", details: ["failure": ["kind": "addin_timeout"]])
+let text = report.text
+assert(text.contains("addin_timeout") && text.contains("test"))
+assert(text.contains("timestamp") && text.contains("No drawings or connection keys"))
+let root = URL(fileURLWithPath: CommandLine.arguments[1])
+let target = root.appendingPathComponent("Connection check.txt")
+let saved = try DiagnosticExport.save(text, to: target).get()
+assert(saved == target)
+let readBack = try String(contentsOf: target, encoding: .utf8)
+assert(readBack == text)
+let failure = DiagnosticExport.save(text, to: root.appendingPathComponent("missing/report.txt"))
+switch failure {
+case .success: fatalError("An unsuccessful write must be visible to the caller")
+case .failure(let error): assert(!error.localizedDescription.isEmpty)
+}
+for _ in 0..<100 { report.record(action: "test", status: "ready", details: [:]) }
+assert(report.events.count == 50)
+print("Diagnostics file roundtrip, failed-write result and bounded history passed")
+''')
+    flags = []
+    if overlay := os.environ.get('CHEMDRAW_BUILD_SWIFT_OVERLAY'):
+        flags = ['-vfsoverlay', overlay, '-Xcc', '-ivfsoverlay', '-Xcc', overlay]
+    result = subprocess.run(['swiftc', *flags, str(ROOT/'packaging/SetupPresentation.swift'),
+                             str(harness), '-o', str(tmp_path/'test')], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    subprocess.run([str(tmp_path/'test'), str(tmp_path)], check=True)
+
+
+def test_save_panel_handles_results_and_offers_copy_fallback():
+    source = (ROOT/'packaging/Welcome.swift').read_text()
+    save = source.split('func saveDiagnostics()')[1].split('func close()')[0]
+    assert 'allowedContentTypes = [.plainText]' in save
+    assert 'DiagnosticExport.save(' in save
+    assert 'case .failure' in save and 'case .success' in save
+    assert 'Copy report' in save and 'NSPasteboard.general' in save
+    assert 'activateFileViewerSelecting' in save
+    assert 'diagnostics.record(' in source
+    assert 'Button("Copy diagnostics")' in source

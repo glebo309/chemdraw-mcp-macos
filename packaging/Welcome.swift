@@ -66,6 +66,9 @@ struct ThemeCheckbox: ToggleStyle {
     private var process: Process?
     private var input: FileHandle?
     private var buffer = Data()
+    private var diagnostics = SetupDiagnostics()
+    private var pendingAction = "startup"
+    @Published var diagnosticsCopied = false
 
     init() {
         let manifest = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("manifest.json")
@@ -93,9 +96,12 @@ struct ThemeCheckbox: ToggleStyle {
             let bytes = handle.availableData
             Task { @MainActor in self?.receive(bytes) }
         }
-        task.terminationHandler = { [weak self] _ in
+        task.terminationHandler = { [weak self] task in
+            let exitCode = task.terminationStatus
             Task { @MainActor in
                 guard let self = self, !self.finished else { return }
+                self.diagnostics.record(action: self.pendingAction, status: "helper_stopped",
+                                        details: ["exit_code": exitCode])
                 self.busy = false
                 self.ready = false
                 _ = self.flow.receive(status: "error", ready: false)
@@ -111,6 +117,8 @@ struct ThemeCheckbox: ToggleStyle {
 
     func request(_ action: String, path: String? = nil) {
         guard !busy else { return }
+        pendingAction = action
+        diagnostics.record(action: action, status: "started", details: [:])
         do {
             try start()
             var value: [String: Any] = ["action": action]
@@ -133,6 +141,8 @@ struct ThemeCheckbox: ToggleStyle {
             message = "Approve macOS Automation access if a permission window appears."
             try input?.write(contentsOf: bytes)
         } catch {
+            diagnostics.record(action: action, status: "request_failed",
+                               details: ["error_domain": (error as NSError).domain, "error_code": (error as NSError).code])
             busy = false
             _ = flow.receive(status: "error", ready: false)
             title = "Could not start setup"
@@ -146,6 +156,8 @@ struct ThemeCheckbox: ToggleStyle {
             let line = buffer[..<newline]
             buffer.removeSubrange(...newline)
             guard let value = try? JSONSerialization.jsonObject(with: line) as? [String: Any] else { continue }
+            diagnostics.record(action: pendingAction, status: value["status"] as? String ?? "error",
+                               details: value["details"] as? [String: Any] ?? [:])
             busy = false
             ready = value["ready"] as? Bool ?? false
             title = value["title"] as? String ?? title
@@ -217,10 +229,41 @@ struct ThemeCheckbox: ToggleStyle {
 
     func saveDiagnostics() {
         let panel = NSSavePanel()
+        panel.title = "Save diagnostics"
+        panel.allowedContentTypes = [.plainText]
+        panel.canSelectHiddenExtension = false
+        panel.isExtensionHidden = false
+        panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         panel.nameFieldStringValue = "ChemDraw connection check.txt"
         if panel.runModal() == .OK, let url = panel.url {
-            try? (title+"\n"+message+"\n\n"+details).write(to: url, atomically: true, encoding: .utf8)
+            let report = diagnostics.text
+            let alert = NSAlert()
+            switch DiagnosticExport.save(report, to: url) {
+            case .success(let saved):
+                alert.messageText = "Diagnostics saved"
+                alert.informativeText = "You can send this report for troubleshooting.\n\n" + saved.path
+                alert.addButton(withTitle: "Show in Finder")
+                alert.addButton(withTitle: "Done")
+                if alert.runModal() == .alertFirstButtonReturn {
+                    NSWorkspace.shared.activateFileViewerSelecting([saved])
+                }
+            case .failure(let error):
+                alert.alertStyle = .warning
+                alert.messageText = "Could not save diagnostics"
+                alert.informativeText = error.localizedDescription + "\n\nTry another folder, or copy the report and paste it into a message."
+                alert.addButton(withTitle: "Copy report")
+                alert.addButton(withTitle: "Cancel")
+                if alert.runModal() == .alertFirstButtonReturn {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(report, forType: .string)
+                }
+            }
         }
+    }
+
+    func copyDiagnostics() {
+        NSPasteboard.general.clearContents()
+        diagnosticsCopied = NSPasteboard.general.setString(diagnostics.text, forType: .string)
     }
 
     func close() { try? input?.close() }
@@ -369,6 +412,8 @@ struct FineLineFrame: View {
                     HStack {
                         if model.flow.showDiagnostics {
                             Button("Save diagnostics…") { model.saveDiagnostics() }.buttonStyle(.bordered)
+                            Button("Copy diagnostics") { model.copyDiagnostics() }.buttonStyle(.bordered)
+                            if model.diagnosticsCopied { Text("Copied").foregroundStyle(Palette.accent) }
                         }
                         Spacer()
                         Button(model.ready ? "Finish setup" : model.prepared ? "Test connection" : "Next") { model.next() }
@@ -426,6 +471,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 model.clients.claude = true
                 model.clients.codex = true
                 model.message = "Document read passed. Finish setup to save your connections, then restart your selected assistants."
+            }
+            if CommandLine.arguments.contains("--diagnostics-error") {
+                model.selectedApp = "/Applications/ChemDraw.app"
+                model.prepared = true
+                model.existingFiles = true
+                model.clients.claude = true
+                _ = model.flow.receive(status: "prepared", ready: false)
+                let fixture: [String: Any] = ["status": "unavailable", "ready": false,
+                    "title": "The ChemDraw add-in did not respond",
+                    "message": "Choose Save diagnostics or Copy diagnostics to share the failure details.",
+                    "details": ["failure": ["kind": "addin_timeout"]]]
+                if var bytes = try? JSONSerialization.data(withJSONObject: fixture) {
+                    bytes.append(10)
+                    model.receive(bytes)
+                }
+                model.diagnosticsCopied = true
             }
             let view = NSHostingView(rootView: WelcomeView(model: model))
             let bounds = NSRect(x: 0, y: 0, width: 800, height: 400)
