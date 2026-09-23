@@ -95,13 +95,17 @@ def plan_addition(before, structures, *, preset='house', columns=None, scaffold_
         rr=ET.fromstring(reference);ff=rr.find('page/fragment')
         transform(ff,scale=float(spec['BondLength'])/statistics.median(bond_lengths(ff)))
         rr.set('BondLength',str(spec['BondLength']));reference=ET.tostring(rr,encoding='unicode')
-    fragments=[]
+    fragments=[];orientations=[]
     for record in records:
         if reference is not None and scaffold_smiles:
             block,_=seed_from_native_scaffold(record['canonical_smiles'],reference,scaffold_smiles)
             mol=Chem.MolFromMolBlock(block,removeHs=False)
+            orientation={'policy':'reference_preserved','rotation_degrees':0.0}
         else:
             mol=parse(record['canonical_smiles']);rdDepictor.Compute2DCoords(mol)
+            from .drawing_orientation import orient_new_molecule
+            orientation=orient_new_molecule(mol)
+        orientations.append({'compound_id':record['compound_id'],**orientation})
         seed=ET.fromstring(Chem.MolToCDXMLBlock(mol));fragment=seed.find('page/fragment')
         start=max([int(e.get('id')) for e in root.iter() if e.get('id')]+[1])+1
         ids={e.get('id'):str(start+j) for j,e in enumerate(fragment.iter()) if e.get('id')}
@@ -213,7 +217,7 @@ def plan_addition(before, structures, *, preset='house', columns=None, scaffold_
             'omit molecules, shrink the chemical scale, or open a second document. '
             'The existing document needs more drawing space before the complete request can be retried.')
     return ET.tostring(root,encoding='unicode'),{'count':len(records),'columns':cols,'pages_added':pages_added,
-        'scaffold_smiles':scaffold_smiles,'reference_source':reference_source,'preset':preset,
+        'scaffold_smiles':scaffold_smiles,'reference_source':reference_source,'preset':preset,'orientations':orientations,
         'coordinate_source':'RDKit constrained depiction and ChemDraw CDXML writer'}
 
 
@@ -269,6 +273,11 @@ def run_api_drawing(bridge,plan,out,document_id=None):
     from pathlib import Path
     from .harness import NeedsInput
     from .workflow import _write_json
+    from .timing import StageTimer
+    timer=StageTimer()
+    export_mode=plan.get('exports','full')
+    if export_mode not in ('preview','full','canvas'):
+        raise ValueError('exports must be preview, full or canvas')
     if plan.get('workflow','molecules')!='molecules' or plan.get('groups') is not None:
         raise NeedsInput('unsupported_shared_objects','Direct API insertion currently supports plain molecule batches, not decorated groups or reactions. Those require an explicitly requested separate workflow. No drawing was changed.')
     if plan.get('charge_style','plain')!='plain' or plan.get('layout') is not None or isinstance(plan.get('preset'),dict):
@@ -283,6 +292,7 @@ def run_api_drawing(bridge,plan,out,document_id=None):
     elif not any(d['document_id']==document_id for d in docs):
         raise ValueError('Shared document is absent; refresh document IDs')
     did=bridge._id(document_id);backend=get_backend(bridge);initial=backend.read(did)
+    timer.mark('document_read')
     try:
         if ET.fromstring(initial['cdxml']).find('page/fragment') is not None:
             chemical_signature(initial['cdxml'])
@@ -291,6 +301,7 @@ def run_api_drawing(bridge,plan,out,document_id=None):
             '. Earlier chemically interpreted captions must be corrected or removed in ChemDraw first; no new objects were added.') from exc
     payload,planning=plan_addition(initial['cdxml'],plan['structures'],preset=plan.get('preset','house'),
         columns=plan.get('columns'),scaffold_smiles=plan.get('scaffold_smiles'),allow_page_expansion=plan.get('page_policy','add_pages')=='add_pages')
+    timer.mark('layout')
     expected_centres=None
     if len(plan['structures'])>1:
         payload,expected_centres=measure_table_payload(bridge,payload)
@@ -298,12 +309,14 @@ def run_api_drawing(bridge,plan,out,document_id=None):
         fresh=backend.read(did)
         if fresh['source_token']!=initial['source_token']:raise ValueError('Source changed during table measurement; nothing appended')
         planning['layout_measurement']='native ink; one hidden measuring copy'
+        timer.mark('native_table_measurement')
     out=Path(out);out.mkdir()
     (out/'before.cdxml').write_text(initial['cdxml']);(out/'payload.cdxml').write_text(payload)
     _write_json(out/'request.json',plan)
     try:
         page_options={'allow_page_expansion':True} if planning['pages_added'] or int(ET.fromstring(payload).find('page').get('HeightPages','1'))>1 else {}
         result=backend.append(did,payload,initial['source_token'],**page_options)
+        timer.mark('append_and_verify')
     except Exception as exc:
         _write_json(out/'audit.json',{'status':'not_completed','message':str(exc),'planning':planning})
         raise
@@ -322,25 +335,44 @@ def run_api_drawing(bridge,plan,out,document_id=None):
         if expected_centres:
             verify_table_centres(payload,ET.tostring(added,encoding='unicode'),expected_centres)
             result['checks']['native_table_centres_and_baselines_verified']=True
+        timer.mark('style_and_layout_verify')
     except Exception as exc:
         _write_json(out/'audit.json',{'status':'uncertain','message':str(exc),'document_id':did})
         raise NativeUncertain('API append occurred but native style verification failed: '+str(exc)) from exc
-    try:
-        svg=figure/'figure.svg';png=figure/'figure.png'
-        bridge.export(did,str(svg),'svg')
-        from .raster import rasterize_svg
-        png.write_bytes(rasterize_svg(svg.read_text(),plan.get('pixels',3200)))
-        fresh=backend.read(did)
-        verify_export_snapshot(native,fresh['cdxml'])
-        path.write_text(fresh['cdxml'])
-        result['source_token']=fresh['source_token']
-        result['checks']['native_svg_export']=True
-    except Exception as exc:
-        _write_json(out/'audit.json',{'status':'uncertain','message':str(exc),'document_id':did})
-        raise NativeUncertain('Drawing inserted; export did not complete. Do not draw it again: '+str(exc)) from exc
-    result.update(stage='delivery',output_dir=str(out),artifacts={'cdxml':str(path),'svg':str(svg),'png':str(png)},
+    artifacts={'cdxml':str(path)}
+    if export_mode!='canvas':
+        try:
+            svg=figure/'figure.svg'
+            bridge.export(did,str(svg),'svg')
+            timer.mark('native_svg_export')
+            from .raster import rasterize_svg
+            if export_mode=='preview':
+                png=figure/'preview.png'
+                png.write_bytes(rasterize_svg(svg.read_text(),1200,background='white'))
+                artifacts['preview']=str(png)
+            else:
+                png=figure/'figure.png'
+                png.write_bytes(rasterize_svg(svg.read_text(),plan.get('pixels',3200)))
+                artifacts['png']=str(png)
+            timer.mark('rasterize')
+            fresh=backend.read(did)
+            verify_export_snapshot(native,fresh['cdxml'])
+            path.write_text(fresh['cdxml'])
+            result['source_token']=fresh['source_token']
+            result['checks']['native_svg_export']=True
+            artifacts['svg']=str(svg)
+            timer.mark('export_verify')
+        except Exception as exc:
+            _write_json(out/'audit.json',{'status':'uncertain','message':str(exc),'document_id':did,'timings':timer.report()})
+            raise NativeUncertain('Drawing inserted; export did not complete. Do not draw it again: '+str(exc)) from exc
+    timings=timer.report()
+    result.update(stage='delivery',output_dir=str(out),artifacts=artifacts,visual_review='required',
+        timings=timings,delivery={'mode':export_mode,'export_tool':'chemdraw_export_figure',
+            'note':'Preview is for visual review, not a physical-scale publication export.' if export_mode=='preview' else
+                   'No image export requested; inspect the editable ChemDraw canvas.' if export_mode=='canvas' else
+                   'Full transparent image bundle; use export_figure for a specified physical scale.'},
         presentation={'mode':'shared','intermediates':'one hidden native measuring copy' if expected_centres else 'none'},planning=planning,
-        audit={'status':'checks_passed','checks':result['checks']},
+        audit={'status':'checks_passed','checks':result['checks'],'timings':timings},
         note='Appended once to the existing working document. CDXML artifact contains the whole current canvas.')
     _write_json(out/'audit.json',result['audit']);_write_json(out/'result.json',result)
     return result

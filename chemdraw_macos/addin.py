@@ -18,7 +18,7 @@ import threading
 import xml.etree.ElementTree as ET
 import zipfile
 
-from .core import validate_cdxml
+from .core import validate_cdxml, document_row
 from .shared import _page, fingerprint
 from .polish import bounds, chemical_signature
 
@@ -190,8 +190,9 @@ def read_document(bridge, channel, document_id):
         result=channel.request('read')
         if result.get('error'):raise RuntimeError('Add-in read failed: '+result['error'])
         validate_cdxml(result['cdxml'])
-        if bridge._run('active_document')!=did:raise RuntimeError('Active document changed during read')
-        doc=next(d for d in bridge.documents()['documents'] if d['document_id']==did)
+        state=bridge._run('active_document_state')
+        if state is None or state[0]!=did:raise RuntimeError('Active document changed during read')
+        doc=document_row(state)
         return {'document':doc,'cdxml':result['cdxml'],'selection_cdxml':result.get('selection'),
                 'source_token':source_token(result['cdxml']),'api_version':result.get('version'),
                 'transport':'desktop_addin','selection_changed':False}

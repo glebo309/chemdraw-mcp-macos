@@ -4,6 +4,10 @@ Working plan, updated 2026-09-17. The repository is public and experimental, not
 
 ## Generation speed
 
+- [x] Add shared-drawing stage timings, validated in-memory lookup reuse, lighter
+  review previews, optional canvas-only delivery and combined post-read state
+  checks. Measure the caffeine fixture with full, preview and canvas-only modes.
+  [Measurements and reproduction](DRAWING_PERFORMANCE.md).
 - [ ] Benchmark end-to-end generation for one molecule, a full analogue table,
   a reaction and an electron-pushing mechanism. Separate assistant/tool-selection
   time from identifier lookup, native reads, import/cleanup, layout, validation
@@ -13,7 +17,8 @@ Working plan, updated 2026-09-17. The repository is public and experimental, not
   Retain source-preservation, chemistry, stereo, physical-scale and layout checks.
 - [ ] Record before/after wall times and tool-call counts for the same fixtures.
   Report actual workflow stages during long jobs, without invented progress or
-  completion estimates. No speedup is claimed until measured.
+  completion estimates. The caffeine measurements do not establish speedups
+  for every drawing workflow.
 
 ## Biocatalysis focus and reference reactions, proposed 2026-09-17
 

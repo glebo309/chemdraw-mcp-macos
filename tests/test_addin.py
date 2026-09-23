@@ -117,6 +117,7 @@ def test_read_is_id_bound_and_uses_api_without_native_export(tmp_path):
         lock=nullcontext()
         def _id(self,n):return n
         def _run(self,operation):
+            if operation=='active_document_state':return [42,'Test','',False,0]
             assert operation=='active_document';return 42
         def documents(self):return {'documents':[{'document_id':42,'file':'','molecule_count':0}]}
     class Channel:
@@ -133,7 +134,8 @@ def test_stale_append_never_dispatches_write(tmp_path):
     class Bridge:
         lock=nullcontext()
         def _id(self,n):return n
-        def _run(self,operation):return 42
+        def _run(self,operation):
+            return [42,'Test','',False,0] if operation=='active_document_state' else 42
         def documents(self):return {'documents':[{'document_id':42,'file':''}]}
     class Channel:
         def request(self,operation):

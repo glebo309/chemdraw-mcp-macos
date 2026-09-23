@@ -137,6 +137,15 @@ def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False
     panel=auto selects a plain aligned grid on the shared canvas, without a retry
     or inferred decorations. Missing labels on SMILES/InChI become numbers, not
     formulas. Exports contain the whole current canvas.
+    Shared molecules default to exports=auto: editable CDXML, native SVG and a
+    white 1200-pixel artifacts.preview PNG for direct visual review. Open that
+    preview directly; no white-background conversion or separate export is needed.
+    Use exports=full only when a transparent 3200-pixel PNG is requested, or
+    exports=canvas when only the editable canvas is wanted (review in ChemDraw).
+    Publication/DPI exports use chemdraw_export_figure afterwards, without redrawing.
+    Validated name/CAS results are cached in this process for five minutes;
+    refresh_identifiers=true forces a new lookup. Permission/ambiguity rules remain.
+    timings measures server work, not model reasoning or client-side image review.
     Shared reactions/decorated panels/arbitrary graphics are not supported yet:
     explicitly use background for a legacy separate export workflow.
     These modes hide intermediates but require the licensed desktop, not a headless

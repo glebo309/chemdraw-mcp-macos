@@ -24,6 +24,13 @@ For ordinary new molecule, panel and explicit reaction requests, use the
 point and diagnostics; `full` retains advanced tools. The harness has typed
 inputs and mandatory native/delivery checks, not model-controlled skip flags.
 
+Shared `produce` / `chemdraw_draw` requests default to a white 1200-pixel review
+preview plus native SVG and editable CDXML. Set request `exports` to `full` for
+the transparent 3200-pixel PNG bundle, or `canvas` for checked insertion without
+image exports. Publication files remain available separately through
+`export-figure`. The advanced `draw` interface and background/reaction workflows
+retain full exports. [Delivery choices and stage timings](DRAWING_HARNESS.md#drawing-speed-and-export-choices).
+
 CLI and MCP share the same workflow implementations. Natural-language interpretation comes from a connected assistant; the server itself is not an LLM. The separate `resolve` interface contacts PubChem only when the caller explicitly enables network access. Native `draw-name` also requires explicit network consent because ChemDraw may use an online naming fallback.
 
 `produce --presentation shared --document ID` and matching

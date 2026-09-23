@@ -84,19 +84,21 @@ def _validate(svg_text, pixels):
     return math.ceil(pixels * width / height), pixels
 
 
-def rasterize_svg(svg_text: str, pixels: int = 3200) -> bytes:
+def rasterize_svg(svg_text: str, pixels: int = 3200, *, background: str | None = None) -> bytes:
     """Return transparent PNG bytes; preserve source SVG and use local system fonts.
 
     Call the module worker in a timed subprocess when an execution deadline is
     required. Font substitution and chemical correctness are not certified here.
     """
     expected_size = _validate(svg_text, pixels)
+    if background not in (None, 'white'):
+        raise ValueError('Raster background must be transparent or white')
     try:
         import resvg_py
     except ImportError as exc:
         raise RuntimeError('PNG rasterization requires resvg-py; no renderer fallback is used') from exc
     png = resvg_py.svg_to_bytes(svg_string=svg_text, width=pixels, height=pixels,
-                                background=None, dpi=96.0, skip_system_fonts=False,
+                                background=background, dpi=96.0, skip_system_fonts=False,
                                 log_information=False)
     # resvg fits proportionally inside the requested square. Check the actual
     # encoded dimensions and alpha format, rather than asserting the request won.

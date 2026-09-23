@@ -2,6 +2,31 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc16: faster shared drawing and upright ring orientation
+
+- Shared drawing defaults to native SVG plus a white 1200-pixel review preview;
+  full transparent exports and explicit canvas-only delivery remain available.
+- Repeated validated name/CAS results use a bounded five-minute in-memory cache,
+  with fresh-lookup control and unchanged permission/ambiguity requirements.
+- Native reads combine post-read identity and metadata into one invocation;
+  stage timings distinguish server work from model/client overhead.
+- Fresh regular six-membered rings use a measured rigid rotation to eliminate
+  arbitrary tilt. Live references retain their supplied orientation. The caffeine
+  native preview was inspected on white with an upright fused edge and carbonyl.
+
+Validation: 1,168 portable tests passed, 93 optional tests skipped. Seven serial
+native tests passed, covering all delivery modes, live-target/stale-token checks,
+shared analogue alignment, mixed chemistry, paged tables and physical exports.
+Pre-existing documents remained unchanged in the timing comparison. Caffeine
+warm medians were 2.952 seconds for the previous full-export/read sequence,
+2.067 seconds for preview and 1.401 seconds for canvas-only (three runs each).
+[Environment, scope and reproduction](docs/DRAWING_PERFORMANCE.md).
+
+All 14 packaged checks passed, including isolated installation/client startup,
+plain ZIP extraction, live document read and a native caffeine drawing from the
+frozen candidate with the preview and upright-ring policy. Package execution was
+bound to the candidate rather than delegated to an older selected installation.
+
 ## 0.10.0rc15: setup diagnostics
 
 - Graphical setup saves plain-text reports, confirms the destination and offers Show in Finder. Failed saves offer a clipboard fallback; Copy diagnostics is available directly.

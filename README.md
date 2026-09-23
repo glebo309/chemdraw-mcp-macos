@@ -4,8 +4,8 @@ Native, editable chemical drawings from your assistant or terminal.
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
-**[Download for Mac (Apple Silicon)](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg)** ·
-[Release notes](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc15) ·
+**[Download for Mac (Apple Silicon)](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg)** ·
+[Release notes](https://github.com/glebo309/chemdraw-mcp-macos/releases/tag/v0.10.0rc16) ·
 [Terminal installation](docs/TERMINAL_INSTALL.md) ·
 [Examples and customization](docs/GETTING_STARTED.md) ·
 [Architecture](docs/ARCHITECTURE.md)
@@ -16,7 +16,7 @@ document, and export figures at a consistent chemical scale.
 
 | Route | Start here |
 | --- | --- |
-| **Graphical Mac installer** | [Download the Apple Silicon DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg), open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
+| **Graphical Mac installer** | [Download the Apple Silicon DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg), open **ChemDraw MCP**, and choose your installed ChemDraw app and local assistants. Python and dependencies are included. |
 | **Terminal / Git** | Clone this repository and run `./install.sh`. It installs locked dependencies and automatically launches the animated terminal setup. Requires Git and uv. [Commands](docs/TERMINAL_INSTALL.md) |
 | **MCP bundle** | The `.mcpb` is an alternative for clients that import MCP bundles. Choose this or the DMG, not both. |
 
@@ -43,7 +43,7 @@ PATH change is assumed. For an optional first drawing after setup:
 uv run --locked --extra chemistry chemdraw-mac first-run
 ```
 
-Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc15/ChemDraw-MCP-Apple-Silicon.dmg),
+Prefer no terminal? [Download the Mac DMG](https://github.com/glebo309/chemdraw-mcp-macos/releases/download/v0.10.0rc16/ChemDraw-MCP-Apple-Silicon.dmg),
 open it, and open **ChemDraw MCP**. The graphical helper includes Python and
 dependencies, guides the ChemDraw add-in step, and connects selected local clients.
 It does not install or license ChemDraw itself.
@@ -53,7 +53,7 @@ macOS zsh Terminal window and run `chemdraw-mac --help` or `chemdraw-mac first-r
 No second download, Python or uv installation is needed. Setup preserves and
 backs up existing shell settings before adding its PATH entry.
 
-**Experimental candidate: 0.10.0rc15.** Requires your own licensed ChemDraw and a
+**Experimental candidate: 0.10.0rc16.** Requires your own licensed ChemDraw and a
 logged-in Mac desktop. Native tests have run on Apple Silicon, macOS 15.6,
 ChemDraw 23.0.1.11. The Mac app is ad-hoc signed, not Developer ID signed or
 notarized. Independent-Mac acceptance is still open. Only one assistant can own
@@ -81,6 +81,12 @@ for ordinary shared drawings or physical-scale exports.
 [Worked examples](docs/GETTING_STARTED.md) ·
 [Drawing request format](docs/DRAWING_HARNESS.md) ·
 [Export settings and limits](docs/PHYSICAL_EXPORT.md)
+
+Version rc16 includes lighter native previews, optional canvas-only delivery,
+per-stage timings and validated name-lookup reuse. Fresh regular six-membered
+rings are axis-aligned; a live scaffold reference still takes precedence.
+[Delivery choices](docs/DRAWING_HARNESS.md#drawing-speed-and-export-choices) ·
+[Measured performance](docs/DRAWING_PERFORMANCE.md)
 
 Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create native structures and explicit reaction rows, import local styles, design mapped aromatic scopes, inspect identifiers, resolve names with explicit network opt-in, polish figures, add supported electron/charge symbols and curves, or batch-export finished drawings. Inspect native exports and keep editable output plus a chemical audit.
 
@@ -150,7 +156,7 @@ The v0.9 workflow layer connects the individual tools into callable jobs:
 - **Owned movement and routes:** `build-ownership` / `move-owned` carry explicit captions, symbols and internal curves with their molecules. `suggest-routes` / `apply-route` propose and render a selected obstacle-checked cubic path. Reaction-scheme vertical moves and one-sided cross-owner curve moves are refused; manual dragging is not covered. [Guide](docs/OWNERSHIP.md)
 - **Shared styles:** `make-lab-style` / `styled-job` use versioned, hashed numerical settings and reject conflicting recipe overrides. Each output retains its exact style package. [Starting package](examples/publication-bold.lab-style.json) · [Guide](docs/LAB_STYLE.md)
 
-Every native workflow has an MCP counterpart and retains editable CDXML, native SVG, PNG and an audit. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Experimental packages are available on GitHub Releases; independent-Mac acceptance remains open in the [release checklist](docs/RELEASE_CHECKLIST.md).
+Native workflows have MCP counterparts and retain editable CDXML and an audit, with images according to the requested delivery mode. Start with the [reproducible demo walkthrough](docs/DEMO_WALKTHROUGH.md). Experimental packages are available on GitHub Releases; independent-Mac acceptance remains open in the [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## First drawing in one command
 

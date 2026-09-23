@@ -31,6 +31,13 @@ on run argv
             if (count of documents) is 0 then return "null"
             return ((id of document 1) as integer) as text
         end if
+        if operation is "active_document_state" then
+            if (count of documents) is 0 then return "null"
+            set stateRow to my documentRow(document 1)
+            if (count of documents) is 0 then error "Active document changed during read"
+            if ((id of document 1) as integer) is not (item 1 of stateRow) then error "Active document changed during read"
+            return my jsonText(stateRow)
+        end if
         if operation is "addin_available" then
             set addinPath to item 2 of argv
             if (name of every command) contains addinPath then return "true"

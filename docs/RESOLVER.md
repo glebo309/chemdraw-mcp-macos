@@ -1,9 +1,19 @@
 # Explicit name and CAS resolution
 
-`resolve_identifier(query, input_kind='name', allow_network=False, provider='pubchem')`
+`resolve_identifier(query, input_kind='name', allow_network=False, provider='pubchem', use_cache=False)`
 returns candidate records from PubChem. The network request requires literal
 `allow_network=True` for every call. It sends the supplied query to PubChem over
 HTTPS. It does not read documents, draw structures or contact ChemDraw.
+
+The drawing harness opts into a bounded five-minute, 128-entry in-memory cache.
+Only nonempty results whose returned candidates all pass local validation are
+cached. Ambiguity, truncation, query kind and exact query text are retained;
+no candidate is silently chosen by the cache. Hits report age and keep the
+original retrieval timestamp. Returned dictionaries are independent copies.
+Errors, rejected chemistry and not-found responses are not cached. Permission
+and input validation run before cache access. `use_cache=False` performs a fresh
+lookup and discards an older entry for that query; the standalone CLI/MCP resolver
+keeps this fresh-lookup default. No cache files are written.
 
 ```python
 from chemdraw_macos.resolver import resolve_identifier

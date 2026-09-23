@@ -51,6 +51,39 @@ Add `products` in the same format for a reaction. All products must be supplied;
 conditions may be placed in `conditions_above` and `conditions_below`.
 Products, yields, activity and reaction balance are not predicted.
 
+## Drawing speed and export choices
+
+Shared molecule requests accept `exports`:
+
+| Value | Delivered files |
+| --- | --- |
+| `auto` (default) or `preview` | Editable CDXML, unchanged native SVG and a white-background 1200-pixel `artifacts.preview` PNG for direct visual review |
+| `full` | Editable CDXML, native SVG and the previous transparent 3200-pixel `artifacts.png` bundle |
+| `canvas` | Editable CDXML and checked native insertion only; inspect the drawing in ChemDraw |
+
+The preview is not a publication export and is not advertised as a transparent
+PNG. Do not convert it again just to inspect it on white. Use
+`chemdraw_export_figure` or CLI `export-figure` afterwards for physical-scale
+SVG/PNG and optional PDF, without redrawing. Chemistry, stereo, source preservation,
+style, page fit and table alignment checks remain mandatory in every mode.
+Canvas mode does not claim that an SVG export or image review occurred.
+Background/reaction workflows keep full exports; explicit `preview` and `canvas`
+requests on those paths are rejected before native changes. The advanced
+`chemdraw_draw_structures` interface keeps its existing full-export default.
+
+Repeated name/CAS lookups reuse locally validated results for up to five minutes
+in the same process. The cache has at most 128 entries, never writes queries to
+disk, retains retrieval provenance and never removes ambiguity or truncation.
+Set `refresh_identifiers: true` to bypass it. Every name/CAS request still needs
+explicit network permission, including cache hits. Separate CLI invocations do
+not share memory; repeated inputs within one request can benefit.
+
+Results include `timings.total_seconds` and `timings.stages_seconds` for input
+resolution/planning, native reads, layout, insertion/verification and requested
+exports. Timings exclude model reasoning, tool selection and client image review.
+Native stage timings are retained in the audit; the overall timing is in
+`result.json`. These measurements are evidence, not an estimated progress bar.
+
 ## Enforced gates
 
 1. Strict typed request; unknown fields and attempts to skip checks are rejected.
@@ -59,7 +92,8 @@ Products, yields, activity and reaction balance are not predicted.
 4. House-scale native drawing, measured layout and bounded document ownership.
 5. Native saved-graph, layout and source-preservation checks.
 6. Independent comparison of delivered graphs, conservative measured collision
-   screening and existence of final CDXML/SVG/PNG artifacts.
+   screening and requested artifacts. Shared `canvas` delivery omits images, not
+   the graph/layout checks; background delivery retains CDXML/SVG/PNG requirements.
 7. Structured result with artifact paths, plan, audit location and presentation state.
 
 Related panels of at least four molecules use a common core only when an entire
@@ -86,6 +120,15 @@ when the entire framework matches every requested molecule. It does not infer a
 maximum common substructure or chemical correspondence outside
 the matched core. Requests without a verified core retain independent depictions;
 use the advanced `scaffold_smiles` option for an explicit common core.
+
+Fresh coordinate seeds with a regular six-membered ring use the smallest proper
+rotation that makes a ring edge vertical. This removes arbitrary global tilt,
+including the caffeine fused-ring example. It does not change relative atom
+positions, bond length, stereochemistry or label orientation. Irregular rings,
+chair/cage depictions and molecules without a qualifying ring keep their seed
+orientation. A live reference always takes precedence; it is never straightened
+behind the user's back. The planning report records each orientation policy and
+rotation. This is a bounded depiction convention, not universal layout repair.
 
 Columns are selected from measured widths. Failed alignment is not silently
 dropped; overflow is not hidden by shrinking molecules independently. This

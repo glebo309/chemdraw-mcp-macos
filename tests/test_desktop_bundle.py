@@ -78,6 +78,8 @@ async def test_frozen_real_mcp_initialize_discovery_and_offline_chemistry(tmp_pa
                     'chemdraw_export_figure'} <= {t.name for t in tools.tools}
             draw = next(t for t in tools.tools if t.name == 'chemdraw_draw')
             assert 'page_policy' in str(draw.inputSchema)
+            assert 'exports' in str(draw.inputSchema)
+            assert 'refresh_identifiers' in str(draw.inputSchema)
             result = await session.call_tool('chemdraw_identify', {'value': 'CCO', 'input_format': 'smiles'})
             assert not result.isError
             assert 'C2H6O' in str(result)
@@ -153,3 +155,43 @@ def test_frozen_setup_live_read_without_drawing_writes():
     assert result.returncode == 0, result.stderr
     value = json.loads(result.stdout)
     assert value['ready'] is True, value
+
+
+@pytest.mark.skipif(os.environ.get('CHEMDRAW_ADDIN_LIVE_TEST') != '1', reason='Requires exclusive native connection')
+@pytest.mark.asyncio
+async def test_frozen_drawing_preview_and_upright_caffeine(tmp_path):
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    from chemdraw_macos.core import Bridge
+    from test_api_drawing import EMPTY
+    from PIL import Image
+    from rdkit import Chem
+    owner = Bridge()
+    baseline = owner.documents()
+    did = owner.create(EMPTY)['document']['document_id']
+    # Execute this candidate directly. --desktop-serve deliberately delegates to
+    # the user's selected shared install, which can still be an older release.
+    # Shared-launcher installation is covered separately in an isolated home.
+    params = StdioServerParameters(command=RUNTIME, args=['--cli', 'serve', '--profile', 'full'], env=dict(os.environ))
+    async with stdio_client(params) as (reader, writer):
+        async with ClientSession(reader, writer) as session:
+            await session.initialize()
+            response = await session.call_tool('chemdraw_draw', {
+                'document_id': did, 'output_dir': str(tmp_path / 'caffeine'),
+                'request': {'molecules': [{'format': 'smiles', 'value': 'Cn1c(=O)c2c(ncn2C)n(C)c1=O', 'label': 'Caffeine'}]}})
+            assert not response.isError, response
+            result = response.structuredContent or json.loads(response.content[0].text)
+            assert result['status'] == 'completed', result
+            assert result['delivery']['mode'] == 'preview'
+            assert result['planning']['orientations'][0]['policy'] == 'axis_aligned_six_ring'
+            assert result['timings']['total_seconds'] > 0
+            assert all(result['checks'].values())
+            image = Image.open(result['artifacts']['preview'])
+            assert max(image.size) == 1200 and image.getpixel((0, 0)) == (255, 255, 255, 255)
+            mol = Chem.MolsFromCDXML(Path(result['artifacts']['cdxml']).read_text())[0]
+            rings = mol.GetRingInfo().AtomRings()
+            a, b = set(next(r for r in rings if len(r) == 6)) & set(next(r for r in rings if len(r) == 5))
+            conf = mol.GetConformer()
+            assert abs(conf.GetAtomPosition(a).x - conf.GetAtomPosition(b).x) < .002
+    owner.close(did)
+    assert owner.documents() == baseline

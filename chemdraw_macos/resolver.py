@@ -1,5 +1,7 @@
 """Explicit, bounded PubChem name/CAS candidates; never choose or draw one."""
 from datetime import datetime, timezone
+from collections import OrderedDict
+from copy import deepcopy
 import json
 import re
 import threading
@@ -17,6 +19,44 @@ REQUEST_TIMEOUT = 10
 RESPONSE_DEADLINE = 15
 _request_lock = threading.Lock()
 _last_request = float('-inf')
+CACHE_TTL_SECONDS = 300
+CACHE_MAX_ENTRIES = 128
+_resolution_cache = OrderedDict()
+_cache_lock = threading.Lock()
+
+
+def clear_resolution_cache():
+    """Discard session-local queries and results; nothing is stored on disk."""
+    with _cache_lock:
+        _resolution_cache.clear()
+
+
+def _cached_resolution(key):
+    with _cache_lock:
+        item = _resolution_cache.get(key)
+        if item is None:
+            return None
+        stored, result = item
+        age = time.monotonic() - stored
+        if not 0 <= age < CACHE_TTL_SECONDS:
+            del _resolution_cache[key]
+            return None
+        _resolution_cache.move_to_end(key)
+        result = deepcopy(result)
+    result['cache'] = {'hit': True, 'age_seconds': age, 'ttl_seconds': CACHE_TTL_SECONDS,
+                       'storage': 'process_memory'}
+    return result
+
+
+def _store_resolution(key, result):
+    # Rejected chemistry, provider errors and empty searches are never reused.
+    if not result['candidates'] or any(c['validation']['status'] != 'valid' for c in result['candidates']):
+        return
+    with _cache_lock:
+        _resolution_cache[key] = (time.monotonic(), deepcopy(result))
+        _resolution_cache.move_to_end(key)
+        while len(_resolution_cache) > CACHE_MAX_ENTRIES:
+            _resolution_cache.popitem(last=False)
 
 
 class _NotFound(Exception):
@@ -109,7 +149,7 @@ def _candidate(row, property_url):
 
 
 def resolve_identifier(query: str, input_kind: str = 'name', allow_network: bool = False,
-                       provider: str = 'pubchem') -> dict:
+                       provider: str = 'pubchem', *, use_cache: bool = False) -> dict:
     """Return reviewed-input candidates, with mandatory per-call network opt-in.
 
     PubChem matching is not authoritative CAS Registry validation. Even a single
@@ -117,6 +157,8 @@ def resolve_identifier(query: str, input_kind: str = 'name', allow_network: bool
     """
     if allow_network is not True:
         raise ValueError('Resolution sends the query to PubChem; requires allow_network=True')
+    if type(use_cache) is not bool:
+        raise ValueError('use_cache must be a boolean')
     if provider != 'pubchem':
         raise ValueError('provider must be pubchem')
     if input_kind not in ('name', 'cas'):
@@ -133,6 +175,15 @@ def resolve_identifier(query: str, input_kind: str = 'name', allow_network: bool
     # Verify the optional local dependency before sending any query.
     from .identifiers import _chemistry
     _chemistry()
+    cache_key = (provider, input_kind, query)
+    if use_cache:
+        cached = _cached_resolution(cache_key)
+        if cached is not None:
+            return cached
+    else:
+        # An explicit refresh must not leave an older cached answer available.
+        with _cache_lock:
+            _resolution_cache.pop(cache_key, None)
     escaped = quote(query, safe='')
     suffix = (f'name/{escaped}/cids/JSON?name_type=complete' if input_kind == 'name'
               else f'identifier/{escaped}/cids/JSON?identifier_type=CAS')
@@ -181,4 +232,8 @@ def resolve_identifier(query: str, input_kind: str = 'name', allow_network: bool
     if result['truncated']:
         result['warnings'].append('Candidate limit reached; omitted matches were not fetched or validated. Narrow the query.')
     result['provenance']['retrieved_at'] = datetime.now(timezone.utc).isoformat()
+    if use_cache:
+        result['cache'] = {'hit': False, 'age_seconds': 0, 'ttl_seconds': CACHE_TTL_SECONDS,
+                           'storage': 'process_memory'}
+        _store_resolution(cache_key, result)
     return result

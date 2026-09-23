@@ -12,6 +12,7 @@ from .drawing_defaults import plan_drawing_defaults
 from .batch import NativeUncertain
 from .presentation import production_job
 from .workflow import _write_json
+from .timing import StageTimer
 
 
 class CompoundInput(BaseModel):
@@ -30,6 +31,8 @@ class DrawingRequest(BaseModel):
     conditions_below: str = Field(default='',max_length=120)
     panel: Literal['auto','plain'] = Field(default='auto',description='Auto may group supported related panels; plain omits category grouping. Shared tables retain verified common-ring orientation in either mode.')
     page_policy: Literal['add_pages','keep'] = Field(default='add_pages',description='For shared molecule tables, append identical physical pages inside the same document when needed; keep refuses overflow. Never shrink molecules.')
+    exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto: shared molecules get native SVG plus a white 1200-pixel review preview; background/reactions retain full exports. Full: transparent 3200-pixel PNG. Canvas: shared molecules only, editable CDXML and native checks without image export; review in ChemDraw. Use export_figure later for physical-scale publication files.')
+    refresh_identifiers: bool = Field(default=False,description='Bypass the five-minute in-memory validated name/CAS cache. Network permission is still required on every name/CAS request.')
 
 
 class NeedsInput(ValueError):
@@ -37,7 +40,7 @@ class NeedsInput(ValueError):
         super().__init__(message); self.code=code; self.detail=detail
 
 
-def _resolve(items,allow_network,start=1):
+def _resolve(items,allow_network,start=1,*,refresh_identifiers=False):
     records=[]; provenance=[]
     for number,item in enumerate(items,start):
         if item.format in ('smiles','inchi'):
@@ -48,7 +51,7 @@ def _resolve(items,allow_network,start=1):
             if not allow_network:
                 raise NeedsInput('network_permission_required',
                     'Name/CAS lookup requires allow_network=true, or supply an explicit SMILES/InChI. Do not guess a replacement graph.')
-            resolution=resolve_identifier(item.value,item.format,allow_network=True)
+            resolution=resolve_identifier(item.value,item.format,allow_network=True,use_cache=not refresh_identifiers)
             candidates=resolution['candidates']
             if item.selected_cid is None:
                 if resolution.get('ambiguous') or resolution.get('truncated') or len(candidates)!=1:
@@ -70,9 +73,11 @@ def _resolve(items,allow_network,start=1):
 def plan_request(request,allow_network=False,*,shared=False):
     if type(allow_network) is not bool:raise ValueError('allow_network must be a boolean')
     model=DrawingRequest.model_validate(request)
-    structures,provenance=_resolve(model.molecules,allow_network)
+    if model.exports in ('preview','canvas') and (not shared or model.products is not None):
+        raise ValueError('preview/canvas exports require the shared molecule workflow')
+    structures,provenance=_resolve(model.molecules,allow_network,refresh_identifiers=model.refresh_identifiers)
     if model.products is not None:
-        products,product_provenance=_resolve(model.products,allow_network,len(structures)+1)
+        products,product_provenance=_resolve(model.products,allow_network,len(structures)+1,refresh_identifiers=model.refresh_identifiers)
         from .reaction_series import prepare_steps
         from rdkit import Chem
         prepare_steps([{'step_id':'reaction','reactants':structures,'products':products,
@@ -91,7 +96,7 @@ def plan_request(request,allow_network=False,*,shared=False):
         # Keep its verified scaffold but select a layout supported by this path.
         defaults={**defaults,'groups':None,'panel_layout':'shared_plain_grid'}
     return {'workflow':'molecules','structures':structures,'preset':'house','columns':None,
-            **({'page_policy':model.page_policy} if shared else {}),
+            **({'page_policy':model.page_policy,'exports':'preview' if model.exports=='auto' else model.exports} if shared else {}),
             'scaffold_smiles':defaults['scaffold_smiles'],
             'scaffold_layout':'reference' if defaults['scaffold_smiles'] else 'rigid',
             'groups':defaults['groups'],'frame':True,'separators':True,
@@ -147,6 +152,20 @@ def _execute(bridge,plan,out):
 
 
 def run_drawing(bridge,request,output_dir,allow_network=False,presentation='auto',document_id=None):
+    timer=StageTimer()
+    result=_run_drawing(bridge,request,output_dir,allow_network,presentation,document_id,timer)
+    # Native stages are non-overlapping with input planning. Keep the overall
+    # clock separate so lock waits and response preparation remain visible.
+    report=timer.report()
+    report['stages_seconds'].update(result.get('timings',{}).get('stages_seconds',{}))
+    result['timings']=report
+    out=Path(output_dir).expanduser()
+    if result.get('status')=='completed' and (out/'result.json').is_file():
+        _write_json(out/'result.json',result)
+    return result
+
+
+def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_id,timer):
     stage='input';out=Path(output_dir).expanduser()
     try:
         if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output needs an absolute new folder and existing parent')
@@ -158,6 +177,7 @@ def run_drawing(bridge,request,output_dir,allow_network=False,presentation='auto
         shared_molecules=(presentation=='shared' or document_id is not None or
                           isinstance(bridge,Bridge) and presentation in ('auto','interactive'))
         plan=plan_request(request,allow_network,shared=shared_molecules)
+        timer.mark('input_resolution_and_planning')
         if presentation=='shared' or document_id is not None:
             from .shared import run_shared
             stage='shared_execution'
