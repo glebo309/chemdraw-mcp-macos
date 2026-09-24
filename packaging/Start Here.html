@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start Here · ChemDraw MCP</title>
+<style>
+  :root { color-scheme: dark; --bg:#211e27; --panel:#302b35; --ink:#f2eee9; --muted:#c6becd; --pink:#e9adce; --lavender:#bcaddc; --gold:#e6cf86; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  main { max-width:1000px; margin:auto; padding:45px 34px 30px; }
+  .brand { color:var(--pink); letter-spacing:.22em; font:600 14px/1.4 monospace; }
+  .rule { width:120px; height:2px; margin:17px 0 25px; background:linear-gradient(to right,var(--pink) 0 48%,transparent 48% 53%,var(--lavender) 53% 82%,transparent 82% 87%,var(--gold) 87%); }
+  h1 { font-size:38px; line-height:1.12; margin:0 0 12px; letter-spacing:-.025em; }
+  h2 { font-size:20px; margin:0 0 8px; }
+  p { margin:0 0 14px; }
+  a { color:var(--pink); text-underline-offset:3px; }
+  .intro { max-width:780px; color:var(--muted); }
+  .launch { margin:25px 0 30px; padding:18px 22px; border:1px solid #726177; border-left:3px solid var(--pink); background:var(--panel); }
+  .launch p { margin:4px 0 0; }
+  .steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:18px; }
+  .step { border-top:1px solid #766880; padding-top:14px; }
+  .number { display:inline-grid; place-items:center; width:28px; height:28px; border:1px solid var(--pink); border-radius:50%; color:var(--pink); margin-right:8px; font:600 14px monospace; }
+  .step h3 { font-size:18px; margin:0 0 14px; }
+  .step p { color:var(--muted); font-size:15px; }
+  .mock { min-height:180px; background:var(--panel); padding:16px; border:1px solid #4a424f; border-radius:10px; margin-bottom:14px; font-size:13px; }
+  .tiny { font-size:11px; letter-spacing:.06em; color:var(--muted); margin-bottom:12px; }
+  .selected { padding:8px 10px; border:1px solid var(--pink); border-radius:5px; background:#463444; font-weight:600; }
+  .mock p { font-size:13px; margin:8px 0; color:var(--ink); }
+  .button { display:block; border-radius:6px; padding:6px 10px; text-align:center; background:#645d68; color:var(--ink); }
+  .button.highlight { border:2px solid var(--pink); background:#463444; font-weight:650; }
+  .hint { font-size:13px; color:var(--muted); margin-top:10px; }
+  .next { margin-top:26px; border-top:1px solid #65586d; padding-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .next p { font-size:15px; color:var(--muted); }
+  footer { border-top:1px solid #49414f; margin-top:20px; padding-top:15px; font-size:12px; color:var(--muted); }
+  @media(max-width:700px) { main { padding:28px 20px; } h1 { font-size:31px; } .steps,.next { grid-template-columns:1fr; } .mock { min-height:0; } }
+  @media print { :root { color-scheme:light; --bg:white; --panel:#f6f3f6; --ink:#201b23; --muted:#49414f; --pink:#8b3769; --lavender:#6d598e; } main { padding:10px; } .selected,.button.highlight { background:#f3e5ef; } .button { background:#eee; } .step { break-inside:avoid; } }
+</style>
+<main>
+  <div class="brand">CHEMDRAW / MCP</div><div class="rule"></div>
+  <h1>A quick guide to opening setup.</h1>
+  <p class="intro">This experimental build is not notarized by Apple, so macOS may block its first launch. Only continue if you downloaded it from the <a href="https://github.com/glebo309/chemdraw-mcp-macos/releases">official project releases</a> and trust the source.</p>
+  <section class="launch">
+    <strong>First: Double-click ChemDraw MCP in the disk image.</strong>
+    <p>If setup opens, skip the steps below. If macOS blocks it, dismiss the warning with <strong>Done</strong> or <strong>OK</strong>. Do not choose Move to Trash if you intend to continue.</p>
+  </section>
+  <h2>If macOS blocks the app</h2>
+  <div class="steps">
+    <section class="step">
+      <h3><span class="number">1</span>Open settings</h3>
+      <div class="mock" role="img" aria-label="Illustration: Privacy and Security selected in System Settings">
+        <div class="tiny">SYSTEM SETTINGS</div>
+        <p>Appearance</p>
+        <div class="selected">Privacy &amp; Security</div>
+        <p>Touch ID &amp; Password</p>
+      </div>
+      <p>Open <strong>System Settings → Privacy &amp; Security</strong>. Scroll down to the <strong>Security</strong> section.</p>
+    </section>
+    <section class="step">
+      <h3><span class="number">2</span>Allow this app</h3>
+      <div class="mock" role="img" aria-label="Illustration: the ChemDraw MCP blocked-app entry with Open Anyway highlighted">
+        <div class="tiny">SECURITY</div>
+        <p>“ChemDraw MCP” was blocked.</p>
+        <span class="button highlight">Open Anyway</span>
+      </div>
+      <p>Find the entry for <strong>ChemDraw MCP</strong>, then click <strong>Open Anyway</strong>.</p>
+    </section>
+    <section class="step">
+      <h3><span class="number">3</span>Confirm opening</h3>
+      <div class="mock" role="img" aria-label="Illustration: confirmation dialog with Open Anyway highlighted">
+        <div class="tiny">CONFIRMATION</div>
+        <p>Open “ChemDraw MCP”?</p>
+        <span class="button highlight">Open Anyway</span>
+      </div>
+      <p>In the next dialog, click <strong>Open Anyway</strong> or <strong>Open</strong>, depending on macOS. Authenticate if asked.</p>
+    </section>
+  </div>
+  <p class="hint">Illustrations, not clickable controls. Labels vary by macOS version. No Open Anyway entry? Try launching the app once more, then return here. A managed Mac may require your IT administrator.</p>
+  <div class="next">
+    <section>
+      <h2>Then follow the setup window.</h2>
+      <p>Select your licensed ChemDraw app and assistants. Follow the add-in instructions, test the connection, and finish. Restart your selected assistants afterwards.</p>
+    </section>
+    <section>
+      <h2>A second permission is different.</h2>
+      <p>During setup, macOS may ask to let ChemDraw MCP <strong>control ChemDraw</strong>. Choose <strong>Allow</strong> to connect them. This is <strong>Automation</strong> permission, separate from opening the installer.</p>
+    </section>
+  </div>
+  <footer>This guide works offline. No Terminal commands or global security changes are needed. This warning does not prove the app is safe; do not use these steps for an alert saying malware was detected or the app will damage your computer. <a href="https://support.apple.com/102445">Apple’s opening-app guidance</a> · <a href="https://github.com/glebo309/chemdraw-mcp-macos/blob/main/docs/DESKTOP_INSTALLER.md">Full setup guide</a></footer>
+</main>
+</html>

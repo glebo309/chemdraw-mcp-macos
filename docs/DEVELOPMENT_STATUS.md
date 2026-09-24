@@ -1,6 +1,11 @@
 # Development status
 
-Current experimental release: **0.10.0rc18**.
+Current experimental release: **0.10.0rc19**.
+
+rc19 adds an offline illustrated Start Here guide beside the application in the
+DMG. Drawing and connection behavior are unchanged from rc18. The guide separates
+the macOS opening warning from ChemDraw Automation permission; it does not
+change security settings or remove the need for notarization.
 
 Graphical and terminal setup use the same native bridge. The DMG includes its runtime and terminal commands; the Git route installs locked dependencies through `install.sh`. Both setup routes retain diagnostic reports.
 

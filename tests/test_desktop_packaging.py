@@ -56,13 +56,33 @@ def test_builder_names_one_neutral_main_download_and_optional_mcpb():
     }
 
 
+def test_disk_image_stage_includes_offline_start_here_beside_app(tmp_path):
+    spec = importlib.util.spec_from_file_location('desktop_builder', Path(__file__).parents[1]/'scripts/build_desktop.py')
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+    app = tmp_path/'source'/'ChemDraw MCP.app'
+    app.mkdir(parents=True)
+    (app/'fixture').write_text('app contents')
+    stage = tmp_path/'installer'
+    builder.stage_installer(app, stage)
+    assert (stage/'ChemDraw MCP.app'/'fixture').read_text() == 'app contents'
+    guide = (stage/'Start Here.html').read_text()
+    for instruction in ('Privacy &amp; Security', 'Open Anyway', 'Automation',
+                        'not notarized', 'github.com/glebo309/chemdraw-mcp-macos',
+                        'support.apple.com', 'Double-click'):
+        assert instruction in guide
+    assert '<script' not in guide and '<iframe' not in guide
+    assert 'src="http' not in guide and '@import' not in guide
+    assert 'stage_installer(app, installer_stage)' in Path(builder.__file__).read_text()
+
+
 def test_speed_candidate_package_versions_are_consistent():
     import tomllib
     root = Path(__file__).parents[1]
     version = tomllib.loads((root / 'pyproject.toml').read_text())['project']['version']
-    assert version == '0.10.0rc18'
+    assert version == '0.10.0rc19'
     build = (root / 'scripts/build_desktop.py').read_text()
-    assert "'CFBundleVersion': '18'" in build
-    assert "extension_manifest('0.10.0-rc.18', arch)" in build
+    assert "'CFBundleVersion': '19'" in build
+    assert "extension_manifest('0.10.0-rc.19', arch)" in build
     lock = tomllib.loads((root / 'uv.lock').read_text())
     assert next(p['version'] for p in lock['package'] if p['name'] == 'chemdraw-mcp-macos') == version

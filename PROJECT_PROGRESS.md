@@ -2,6 +2,20 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc19: illustrated first-launch guide
+
+The DMG includes an offline **Start Here.html** beside the application. Three
+numbered illustrations identify Privacy & Security, the blocked-app Open Anyway
+entry and the confirmation dialog. The guide separately explains ChemDraw
+Automation permission and links to Apple's instructions. It does not run scripts,
+fetch remote assets or change security settings. The app remains not notarized.
+
+The packaging regression verifies that the guide is staged beside the app and
+contains the offline instructions. The portable suite passed 1,188 tests with
+98 optional skips; the rendered guide was visually inspected. Native drawing
+and connection implementation are unchanged from rc18; this packaging update
+does not claim new native or independent-Mac acceptance.
+
 ## 0.10.0rc18: circled reaction charges
 
 Ordinary batched reactions display existing unit formal charges as native

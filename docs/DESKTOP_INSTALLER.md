@@ -1,5 +1,24 @@
 # Graphical ChemDraw MCP setup
 
+## Opening setup on macOS
+
+The DMG includes **Start Here.html** beside the app. Double-click it for an
+offline illustrated guide in the installer theme. No terminal commands are needed.
+
+1. Double-click **ChemDraw MCP**. If macOS blocks it, dismiss the warning.
+2. Open **System Settings → Privacy & Security**, then scroll to **Security**.
+3. Find the ChemDraw MCP entry and choose **Open Anyway**.
+4. Confirm **Open Anyway** or **Open** in the next dialog; authenticate if asked.
+
+The experimental app is not notarized. Only continue for a download from the
+project's official releases that you trust. These instructions are not for a
+malware-detection or “will damage your computer” alert. They do not disable
+Gatekeeper. See [Apple's guidance](https://support.apple.com/102445).
+
+The later request to let ChemDraw MCP **control ChemDraw** is a separate
+**Automation** permission. Choose **Allow** to connect the two applications.
+Then follow the add-in steps and test the connection in setup.
+
 ## rc15: diagnostics for graphical and terminal setup
 
 On a failed setup check, **Save diagnostics** offers a visible `.txt` extension
