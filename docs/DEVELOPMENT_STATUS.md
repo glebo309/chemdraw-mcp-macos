@@ -1,6 +1,10 @@
 # Development status
 
-Current experimental release: **0.10.0rc20**.
+Current experimental release: **0.10.0rc21**.
+
+rc21 replaces the Start Here guide's drawn controls with a cropped macOS
+screenshot and three numbered highlights. The screenshot ships beside the HTML
+for offline use. Native drawing and connection code are unchanged from rc20.
 
 rc20 adds automatic private diagnostic capture with read stages, exception types,
 native/API error codes, document counts and elapsed time. The add-in handles

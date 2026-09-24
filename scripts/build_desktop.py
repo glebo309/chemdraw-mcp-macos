@@ -39,6 +39,7 @@ def stage_installer(app, destination):
     destination.mkdir()
     shutil.copytree(app, destination/APP_NAME)
     shutil.copy2(ROOT/'packaging/Start Here.html', destination/'Start Here.html')
+    shutil.copytree(ROOT/'packaging/Start Here assets', destination/'Start Here assets')
 
 
 def build(destination):
@@ -61,7 +62,7 @@ def build(destination):
          ROOT/'packaging/SetupPresentation.swift', ROOT/'packaging/Welcome.swift', '-o', executable])
     info = {'CFBundleExecutable': executable.name, 'CFBundleIdentifier': 'org.glebo309.chemdraw-mcp.setup',
             'CFBundleName': 'ChemDraw MCP', 'CFBundleDisplayName': 'ChemDraw MCP',
-            'CFBundlePackageType': 'APPL', 'CFBundleVersion': '20', 'CFBundleShortVersionString': '0.10.0',
+            'CFBundlePackageType': 'APPL', 'CFBundleVersion': '21', 'CFBundleShortVersionString': '0.10.0',
             'CFBundleIconFile': 'ChemDraw.icns',
             'LSMinimumSystemVersion': '13.0', 'NSHighResolutionCapable': True,
             'NSAppleEventsUsageDescription': 'Connect to ChemDraw to verify your local drawing setup.'}
@@ -109,7 +110,7 @@ def build(destination):
     run(['codesign', '--verify', '--deep', '--strict', app])
     run([resources/'backend/chemdraw-runtime', '--self-check'], cwd='/tmp', env={
         'HOME': str(Path.home()), 'PATH': '/usr/bin:/bin', 'LANG': 'en_US.UTF-8'})
-    manifest = extension_manifest('0.10.0-rc.20', arch)
+    manifest = extension_manifest('0.10.0-rc.21', arch)
     (stage/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     output = destination/product_names(arch)['bundle']
     # No symbolic links: do not rely on a client's ZIP link extraction semantics.

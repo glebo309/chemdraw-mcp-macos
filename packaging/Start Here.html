@@ -22,18 +22,20 @@
   .number { display:inline-grid; place-items:center; width:28px; height:28px; border:1px solid var(--pink); border-radius:50%; color:var(--pink); margin-right:8px; font:600 14px monospace; }
   .step h3 { font-size:18px; margin:0 0 14px; }
   .step p { color:var(--muted); font-size:15px; }
-  .mock { min-height:180px; background:var(--panel); padding:16px; border:1px solid #4a424f; border-radius:10px; margin-bottom:14px; font-size:13px; }
-  .tiny { font-size:11px; letter-spacing:.06em; color:var(--muted); margin-bottom:12px; }
-  .selected { padding:8px 10px; border:1px solid var(--pink); border-radius:5px; background:#463444; font-weight:600; }
-  .mock p { font-size:13px; margin:8px 0; color:var(--ink); }
-  .button { display:block; border-radius:6px; padding:6px 10px; text-align:center; background:#645d68; color:var(--ink); }
-  .button.highlight { border:2px solid var(--pink); background:#463444; font-weight:650; }
+  .screenshot { position:relative; margin:22px 0 12px; }
+  .screenshot img { display:block; width:100%; height:auto; border-radius:10px; }
+  .highlight { position:absolute; border:2px solid var(--pink); border-radius:7px; box-shadow:0 0 0 2px #211e27; }
+  .highlight:before { content:attr(data-step); position:absolute; left:-13px; top:-15px; display:grid; place-items:center; width:27px; height:27px; border-radius:50%; background:var(--pink); color:#211e27; border:2px solid #211e27; font:700 14px monospace; }
+  .privacy { left:1.3%; top:71.7%; width:29.2%; height:5.8%; }
+  .allow { left:81.6%; top:85.8%; width:14.5%; height:4.5%; }
+  .allow:before { top:-25px; }
+  .confirm { left:37.5%; top:45.3%; width:32.2%; height:5.3%; }
   .hint { font-size:13px; color:var(--muted); margin-top:10px; }
   .next { margin-top:26px; border-top:1px solid #65586d; padding-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
   .next p { font-size:15px; color:var(--muted); }
   footer { border-top:1px solid #49414f; margin-top:20px; padding-top:15px; font-size:12px; color:var(--muted); }
-  @media(max-width:700px) { main { padding:28px 20px; } h1 { font-size:31px; } .steps,.next { grid-template-columns:1fr; } .mock { min-height:0; } }
-  @media print { :root { color-scheme:light; --bg:white; --panel:#f6f3f6; --ink:#201b23; --muted:#49414f; --pink:#8b3769; --lavender:#6d598e; } main { padding:10px; } .selected,.button.highlight { background:#f3e5ef; } .button { background:#eee; } .step { break-inside:avoid; } }
+  @media(max-width:700px) { main { padding:28px 20px; } h1 { font-size:31px; } .steps,.next { grid-template-columns:1fr; } .highlight:before { width:20px; height:20px; font-size:11px; left:-9px; top:-12px; } }
+  @media print { :root { color-scheme:light; --bg:white; --panel:#f6f3f6; --ink:#201b23; --muted:#49414f; --pink:#8b3769; --lavender:#6d598e; } main { padding:10px; } .step,.screenshot { break-inside:avoid; } }
 </style>
 <main>
   <div class="brand">CHEMDRAW / MCP</div><div class="rule"></div>
@@ -44,37 +46,27 @@
     <p>If setup opens, skip the steps below. If macOS blocks it, dismiss the warning with <strong>Done</strong> or <strong>OK</strong>. Do not choose Move to Trash if you intend to continue.</p>
   </section>
   <h2>If macOS blocks the app</h2>
+  <figure class="screenshot" aria-label="Screenshot of macOS Privacy and Security and the ChemDraw MCP opening confirmation. Numbered highlights identify the three steps below.">
+    <img src="Start Here assets/macos-open-anyway.png" width="1430" height="1105" alt="System Settings with Privacy and Security selected, the blocked ChemDraw MCP Open Anyway button, and the final Open Anyway confirmation dialog.">
+    <span class="highlight privacy" data-step="1" aria-hidden="true"></span>
+    <span class="highlight allow" data-step="2" aria-hidden="true"></span>
+    <span class="highlight confirm" data-step="3" aria-hidden="true"></span>
+  </figure>
   <div class="steps">
     <section class="step">
       <h3><span class="number">1</span>Open settings</h3>
-      <div class="mock" role="img" aria-label="Illustration: Privacy and Security selected in System Settings">
-        <div class="tiny">SYSTEM SETTINGS</div>
-        <p>Appearance</p>
-        <div class="selected">Privacy &amp; Security</div>
-        <p>Touch ID &amp; Password</p>
-      </div>
       <p>Open <strong>System Settings → Privacy &amp; Security</strong>. Scroll down to the <strong>Security</strong> section.</p>
     </section>
     <section class="step">
       <h3><span class="number">2</span>Allow this app</h3>
-      <div class="mock" role="img" aria-label="Illustration: the ChemDraw MCP blocked-app entry with Open Anyway highlighted">
-        <div class="tiny">SECURITY</div>
-        <p>“ChemDraw MCP” was blocked.</p>
-        <span class="button highlight">Open Anyway</span>
-      </div>
       <p>Find the entry for <strong>ChemDraw MCP</strong>, then click <strong>Open Anyway</strong>.</p>
     </section>
     <section class="step">
       <h3><span class="number">3</span>Confirm opening</h3>
-      <div class="mock" role="img" aria-label="Illustration: confirmation dialog with Open Anyway highlighted">
-        <div class="tiny">CONFIRMATION</div>
-        <p>Open “ChemDraw MCP”?</p>
-        <span class="button highlight">Open Anyway</span>
-      </div>
       <p>In the next dialog, click <strong>Open Anyway</strong> or <strong>Open</strong>, depending on macOS. Authenticate if asked.</p>
     </section>
   </div>
-  <p class="hint">Illustrations, not clickable controls. Labels vary by macOS version. No Open Anyway entry? Try launching the app once more, then return here. A managed Mac may require your IT administrator.</p>
+  <p class="hint">Screenshot, not clickable controls. The confirmation dialog (3) appears after you click Open Anyway (2). Labels vary by macOS version. No Open Anyway entry? Try launching the app once more, then return here. A managed Mac may require your IT administrator.</p>
   <section class="launch">
     <strong>Updating an existing installation? No uninstall needed.</strong>
     <p>Save your work and quit ChemDraw and connected assistants first. Open this new setup app and follow its steps. It refreshes the existing add-in; do not add a second copy. After the connection test, choose <strong>Finish setup</strong> and restart your assistants. <a href="https://github.com/glebo309/chemdraw-mcp-macos/blob/main/docs/UPDATES.md">Update guide</a></p>

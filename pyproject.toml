@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chemdraw-mcp-macos"
-version = "0.10.0rc20"
+version = "0.10.0rc21"
 description = "Native ChemDraw automation for macOS over MCP"
 license = "AGPL-3.0-only"
 license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "licenses/*.txt"]

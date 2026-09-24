@@ -3,7 +3,8 @@
 ## Opening setup on macOS
 
 The DMG includes **Start Here.html** beside the app. Double-click it for an
-offline illustrated guide in the installer theme. No terminal commands are needed.
+offline guide in the installer theme. A real macOS screenshot highlights the
+three steps below with numbered pink outlines. No terminal commands are needed.
 
 1. Double-click **ChemDraw MCP**. If macOS blocks it, dismiss the warning.
 2. Open **System Settings → Privacy & Security**, then scroll to **Security**.

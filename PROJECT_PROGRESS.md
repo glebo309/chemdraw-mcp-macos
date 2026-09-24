@@ -2,6 +2,19 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc21: screenshot-based opening guide
+
+The offline Start Here guide uses a cropped macOS screenshot instead of drawn
+controls. Three numbered pink outlines identify Privacy & Security, the blocked
+app's Open Anyway button and the final confirmation. The screenshot is bundled
+in Start Here assets beside the HTML, with no remote image dependency. Only the
+relevant settings and confirmation region is distributed.
+
+The packaging regression verifies the screenshot is present and byte-identical
+in the staged disk image. The portable suite passed 1,204 tests with 99 optional
+skips. The guide and all three highlights were rendered and visually inspected.
+Native drawing and connection implementation are unchanged from rc20.
+
 ## 0.10.0rc20: diagnostic capture and upgrade regressions
 
 Graphical setup automatically retains a private text report after each event,
