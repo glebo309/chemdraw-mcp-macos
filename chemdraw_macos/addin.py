@@ -182,16 +182,32 @@ class AddinChannel:
     def __exit__(self,*args):self.close()
 
 
+class AddinReadError(RuntimeError):
+    """Safe, bounded failure context without document contents or native messages."""
+    def __init__(self, code, stage):
+        self.code = code if code in ('no_open_document', 'native_api_error',
+            'invalid_read_response', 'invalid_cdxml', 'document_changed') else 'native_api_error'
+        self.stage = stage if stage in ('api_version', 'active_document', 'document_cdxml',
+            'cdxml_validation', 'document_identity') else 'document_read'
+        message = 'Active document changed during read' if self.code == 'document_changed' else 'Add-in read failed: '+self.code
+        super().__init__(message+' ('+self.stage+')')
+
+
 def read_document(bridge, channel, document_id):
     did=bridge._id(document_id)
     with bridge.lock:
         if bridge._run('active_document')!=did:
             raise ValueError('Choose the active ChemDraw document; OS keyboard focus is not required')
         result=channel.request('read')
-        if result.get('error'):raise RuntimeError('Add-in read failed: '+result['error'])
-        validate_cdxml(result['cdxml'])
+        if result.get('error'):
+            raise AddinReadError(result.get('error_code'), result.get('error_stage'))
+        if not isinstance(result.get('cdxml'), str):
+            raise AddinReadError('invalid_read_response', 'document_cdxml')
+        try:validate_cdxml(result['cdxml'])
+        except (ValueError, TypeError) as exc:
+            raise AddinReadError('invalid_cdxml', 'cdxml_validation') from exc
         state=bridge._run('active_document_state')
-        if state is None or state[0]!=did:raise RuntimeError('Active document changed during read')
+        if state is None or state[0]!=did:raise AddinReadError('document_changed', 'document_identity')
         doc=document_row(state)
         return {'document':doc,'cdxml':result['cdxml'],'selection_cdxml':result.get('selection'),
                 'source_token':source_token(result['cdxml']),'api_version':result.get('version'),
@@ -235,8 +251,11 @@ def prepare_addin(channel,directory,*,install_assets=True):
               'isModalDialog':False,'canBeUninstalled':True}
     script=Path(__file__).with_name('addin_client.js').read_text()
     config=json.dumps({'url':channel.url,'secret':channel.secret})
-    html=('<!doctype html><meta charset="utf-8"><title>ChemDraw MCP Native API</title>'
-          '<p id="status">Local MCP connection ready.</p><script>const config='+config+';\n'+script+'</script>')
+    html=('<!doctype html><meta charset="utf-8"><title>ChemDraw MCP</title>'
+          '<style>body{margin:10px;background:#29252f;color:#eee9e5;font:12px -apple-system,sans-serif}'
+          'p{margin:0;line-height:1.4}p:before{content:"";display:inline-block;width:6px;height:6px;'
+          'border-radius:50%;background:#e8a9ca;margin-right:8px}</style>'
+          '<p id="status" role="status">Waiting for local MCP</p><script>const config='+config+';\n'+script+'</script>')
     for name,text in [('main.html',html),('chemdraw-addin-metadata.json',json.dumps(metadata))]:
         if not install_assets:continue
         path=directory/name

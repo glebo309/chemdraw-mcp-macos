@@ -4,6 +4,7 @@ import importlib.metadata
 import errno
 import platform
 import plistlib
+import time
 from pathlib import Path
 
 from .core import Bridge, app_location
@@ -29,12 +30,14 @@ def _chemistry():
     return result
 
 
-def _desktop_api(bridge,documents):
+def _desktop_api(bridge,documents,progress=None):
     """Probe a current document, without inserting objects or installing an add-in."""
     if not documents:
         return {'status':'needs_document','code':'no_open_document',
                 'help':'Open a blank ChemDraw document, then rerun doctor. No test document was created.'}
     from .addin import get_backend, installed_addin_directory
+    progress = progress if progress is not None else {}
+    progress['stage'] = 'addin_discovery'
     backend=getattr(bridge,'_desktop_addin',None)
     if backend is None or backend.closed:
         base=Path.home()/'Library/Application Support/com.revvity.ChemDraw/Add-ins/ChemDraw MCP Native API'
@@ -53,16 +56,25 @@ def _desktop_api(bridge,documents):
             return {'status':'busy','code':'endpoint_in_use',
                     'help':'Another MCP client owns the add-in connection. Close that client before testing this one; do not reinstall.'}
     if hasattr(backend, 'connect'):
+        progress['stage'] = 'addin_open'
         connection = backend.connect()
         if connection.get('status') != 'connected':
             return {'status': connection['status'], 'code': connection.get('code'),
                     'help': connection.get('next_action', 'Enable the add-in in Add-in Manager.')}
-    value=backend.read(bridge._run('active_document'))
+    progress['stage'] = 'active_document'
+    did = bridge._run('active_document')
+    if did is None:
+        return {'status':'needs_document','code':'no_open_document',
+                'help':'Open a blank ChemDraw document, then test again. No document was created or changed.'}
+    progress['stage'] = 'document_read'
+    value=backend.read(did)
     return {'status':'responding','api_version':value.get('api_version'),
             'read_verified':True,'write_tested':False}
 
 
 def doctor(connect=True,*,bridge=None):
+    started = time.monotonic()
+    progress = {'stage': 'application_discovery'}
     try:version=importlib.metadata.version('chemdraw-mcp-macos')
     except importlib.metadata.PackageNotFoundError:version='uninstalled source'
     result={'platform':platform.system(),'python':platform.python_version(),
@@ -86,9 +98,12 @@ def doctor(connect=True,*,bridge=None):
                       sips_available=Path('/usr/bin/sips').is_file())
         if connect:
             b=bridge if bridge is not None else Bridge(app_path=app)
+            progress['stage'] = 'document_list'
             result['documents']=b.documents()['documents']
+            result['document_count']=len(result['documents'])
             result['native_connection']='responding'
-            result['desktop_api']=_desktop_api(b,result['documents'])
+            result['desktop_api']={'status':'checking'}
+            result['desktop_api']=_desktop_api(b,result['documents'],progress)
         else:result['native_connection']='not tested'
         dependencies=result['cdxml_writer_available'] and result['rasterizer_available']
         api=result['desktop_api']
@@ -102,6 +117,17 @@ def doctor(connect=True,*,bridge=None):
         result.update(status='busy',native_connection='not tested: busy',error=str(exc),
                       help='Another cooperating client holds the native session. Wait for that workflow to finish before trying again.')
     except Exception as exc:
+        result['failure_context'] = {'stage': progress['stage'], 'exception_type': type(exc).__name__}
+        from .addin import AddinReadError
+        if isinstance(exc, AddinReadError):
+            result['failure_context'].update(stage=exc.stage, code=exc.code)
+        if isinstance(exc, OSError):result['failure_context']['os_error_code'] = exc.errno
+        if result['desktop_api']['status'] == 'checking':
+            result['desktop_api'] = {'status':'failed','read_verified':False,'write_tested':False}
         result.update(status='unavailable',error=str(exc),
                       help='Check CHEMDRAW_APP, licence activation and macOS Automation permission. No automatic retries or permission changes are made.')
+        if isinstance(exc, AddinReadError) and exc.code == 'no_open_document':
+            result.update(status='needs_document',help='Open a blank ChemDraw document, then test again.')
+            result['desktop_api'].update(status='needs_document',code=exc.code)
+    result['elapsed_ms'] = round((time.monotonic()-started)*1000)
     return result

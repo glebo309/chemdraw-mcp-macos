@@ -19,7 +19,11 @@ The later request to let ChemDraw MCP **control ChemDraw** is a separate
 **Automation** permission. Choose **Allow** to connect the two applications.
 Then follow the add-in steps and test the connection in setup.
 
-## rc15: diagnostics for graphical and terminal setup
+## Connection diagnostics and updates
+
+For a new version, open its DMG and run setup again. No uninstall is required.
+Existing add-in files are refreshed in place; Finish switches the shared runtime
+and terminal commands. [Update steps and limits](UPDATES.md).
 
 On a failed setup check, **Save diagnostics** offers a visible `.txt` extension
 and defaults to Downloads. Successful writes show the saved path and a Show in
@@ -27,15 +31,19 @@ Finder button. Failed writes show the error and offer Copy report. The separate
 **Copy diagnostics** button works without opening a save dialog.
 
 Reports contain up to fifty timestamped setup events, version/dependency checks,
-connection status and classified native error codes. They exclude document data,
+connection status, failed stage, exception type, document count, elapsed time and
+classified native/API error codes. They exclude document data,
 connection keys, personal paths and raw exception text. An unknown error remains
-unclassified rather than being labelled a permission denial. The helper does not
-save reports automatically or upload them. Copy or save before closing setup.
+unclassified rather than being labelled a permission denial. Graphical setup now
+automatically saves a private report to `~/Library/Logs/ChemDraw MCP/` after
+each event, including before a connection attempt. **Show saved report** locates
+the file after failure. If automatic saving fails, Save and Copy remain available.
+Reports are never uploaded automatically.
 
-This candidate improves troubleshooting; it does not establish the cause of the
-reported second-Mac disconnection or change macOS permissions. The rc15 release
-includes these fixes and terminal
-setup failure reports, described in [terminal troubleshooting](TERMINAL_INSTALL.md).
+An empty document list prompts File > New instead of a permission warning. The
+compact add-in panel says when a document has been sent; only the setup window's
+verified read establishes success. ChemDraw 26 acceptance remains unverified.
+Terminal failure reports are described in [terminal troubleshooting](TERMINAL_INSTALL.md).
 
 ## rc13: terminal access included
 

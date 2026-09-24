@@ -93,6 +93,14 @@ let saved = try DiagnosticExport.save(text, to: target).get()
 assert(saved == target)
 let readBack = try String(contentsOf: target, encoding: .utf8)
 assert(readBack == text)
+let automatic = try DiagnosticExport.autosave(text, directory: root.appendingPathComponent("logs"), session: "test-session").get()
+assert(automatic.pathExtension == "txt")
+let automaticText = try String(contentsOf: automatic, encoding: .utf8)
+assert(automaticText == text)
+let attributes = try FileManager.default.attributesOfItem(atPath: automatic.path)
+assert((attributes[.posixPermissions] as! NSNumber).intValue == 0o600)
+let again = try DiagnosticExport.autosave(text + "updated", directory: automatic.deletingLastPathComponent(), session: "test-session").get()
+assert(again == automatic)
 let failure = DiagnosticExport.save(text, to: root.appendingPathComponent("missing/report.txt"))
 switch failure {
 case .success: fatalError("An unsuccessful write must be visible to the caller")
@@ -121,3 +129,11 @@ def test_save_panel_handles_results_and_offers_copy_fallback():
     assert 'activateFileViewerSelecting' in save
     assert 'diagnostics.record(' in source
     assert 'Button("Copy diagnostics")' in source
+
+
+def test_native_setup_autosaves_diagnostics_and_exposes_saved_report():
+    source = (ROOT/'packaging/Welcome.swift').read_text()
+    assert 'DiagnosticExport.autosave(' in source
+    assert 'Button("Show saved report")' in source
+    assert source.count('diagnostics.record(') == 1
+    assert source.count('recordDiagnostic(') >= 5

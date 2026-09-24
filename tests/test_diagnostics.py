@@ -108,3 +108,47 @@ def test_prepared_but_unregistered_addin_is_not_a_licence_or_permission_error(en
     assert report['status'] == 'needs_setup'
     assert report['native_connection'] == 'responding'
     assert 'Add-in Manager' in report['help']
+
+
+def test_failed_read_keeps_stage_exception_and_document_count_without_private_data(environment):
+    from chemdraw_macos.desktop_setup import diagnostic_details
+    d, b = environment
+    class Backend:
+        closed = False
+        def read(self, did): raise KeyError('PRIVATE DRAWING /Users/private/file.cdxml')
+    b._desktop_addin = Backend()
+    report = d.doctor(bridge=b)
+    details = diagnostic_details(report)
+    assert report['desktop_api']['status'] == 'failed'
+    assert details['failure']['stage'] == 'document_read'
+    assert details['failure']['exception_type'] == 'KeyError'
+    assert details['document_count'] == 1
+    assert details['elapsed_ms'] >= 0
+    assert 'PRIVATE' not in str(details) and '/Users/' not in str(details)
+
+
+def test_document_disappearing_before_read_is_actionable(environment):
+    d, b = environment
+    class Backend:
+        closed = False
+        def read(self, did): pytest.fail('No read may be sent without a document')
+    b._desktop_addin = Backend()
+    b._run = lambda op: None
+    report = d.doctor(bridge=b)
+    assert report['status'] == 'needs_document'
+    assert report['desktop_api']['code'] == 'no_open_document'
+
+
+def test_native_api_no_document_is_not_reported_as_permission_failure(environment):
+    from chemdraw_macos.addin import AddinReadError
+    from chemdraw_macos.desktop_setup import diagnostic_details
+    d, b = environment
+    class Backend:
+        closed = False
+        def read(self, did): raise AddinReadError('no_open_document', 'active_document')
+    b._desktop_addin = Backend()
+    report = d.doctor(bridge=b)
+    assert report['status'] == 'needs_document'
+    details = diagnostic_details(report)
+    assert details['failure']['kind'] == 'no_open_document'
+    assert details['failure']['stage'] == 'active_document'

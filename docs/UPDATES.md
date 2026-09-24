@@ -32,18 +32,29 @@ instructions when provided.
 
 ## Graphical installation
 
-There is no automatic update checker yet. Obtain a newer experimental DMG from
-the project's Releases page, close assistants using the server, and run its
-setup. The helper stores versioned app copies and uses a stable launcher for
-selected client settings. A same-name entry pointing elsewhere is refused.
-Keep the old download until the new version passes its connection test.
+No uninstall is needed for an ordinary update from the graphical installer.
 
-Versioned storage is already implemented. A complete graphical upgrade and
-rollback acceptance test across released versions is still pending; retained
-versions alone are not a verified one-click rollback feature. Do not delete the
-ChemDraw add-in or other assistants' configurations to force an update.
+1. Save your ChemDraw work, quit ChemDraw, and quit assistants using its MCP connection.
+2. Download and open the new DMG, then open **ChemDraw MCP** inside it.
+3. Select your installed ChemDraw and assistants. Setup refreshes the existing
+   add-in in place, retaining its local key. Do not import another copy when the
+   add-in is already listed.
+4. Open a drawing, test the connection, then choose **Finish setup**. Restart
+   your assistants. New terminal commands use the same updated runtime.
 
-The planned update UI will show installed/available versions, preserve private
+The helper stores versioned app copies and switches stable launchers after the
+connection test. Existing assistant settings are not duplicated, and previous
+app versions are retained. A same-name server entry pointing to a different,
+manually configured installation is deliberately refused rather than overwritten.
+Setup saves diagnostic reports automatically; **Show saved report** locates one
+after a failure. Keep the old download until the new version passes its test.
+
+Regression tests exercise repeated upgrades, stable client and terminal paths,
+preserved credentials and suffixed add-in folders. Independent-Mac acceptance
+is still pending. Retained versions are not a one-click rollback service.
+Do not delete the ChemDraw add-in or assistant configurations to force an update.
+
+There is no automatic update checker yet. The planned update UI will show installed/available versions, preserve private
 credentials and client settings, replace the shared runtime safely, and explain
 required client restarts. It will need a tested recovery path before being
 advertised as automatic updating. [Roadmap](ROADMAP.md)

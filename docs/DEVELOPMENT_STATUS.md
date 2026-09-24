@@ -1,11 +1,14 @@
 # Development status
 
-Current experimental release: **0.10.0rc19**.
+Current experimental release: **0.10.0rc20**.
 
-rc19 adds an offline illustrated Start Here guide beside the application in the
-DMG. Drawing and connection behavior are unchanged from rc18. The guide separates
-the macOS opening warning from ChemDraw Automation permission; it does not
-change security settings or remove the need for notarization.
+rc20 adds automatic private diagnostic capture with read stages, exception types,
+native/API error codes, document counts and elapsed time. The add-in handles
+missing documents explicitly, does not require selection support for a full
+document read, and uses a compact status panel without premature success text.
+Repeated upgrade regressions check stable launchers, preserved assistant settings
+and in-place add-in refresh with unchanged credentials. The illustrated DMG guide
+now includes update instructions. ChemDraw 26 acceptance remains unverified.
 
 Graphical and terminal setup use the same native bridge. The DMG includes its runtime and terminal commands; the Git route installs locked dependencies through `install.sh`. Both setup routes retain diagnostic reports.
 
@@ -18,6 +21,12 @@ from model time. Fresh regular six-membered rings are axis-aligned without
 changing the orientation of live references. [Measured performance](DRAWING_PERFORMANCE.md).
 
 ## Validation
+
+The rc20 portable suite passed 1,203 tests with 99 optional skips. Fourteen
+packaged checks passed, including an isolated rc19-to-rc20 executable upgrade;
+three optional native checks were skipped in that run. A separate packaged
+read-only setup check passed against ChemDraw 23.0.1.11. The diagnostic-screen
+preview was visually inspected. No ChemDraw 26 acceptance is claimed.
 
 The rc18 portable suite passed 1,187 tests with 98 optional skips. Five serial
 native tests passed: the full glycoside reaction with circled charges, three

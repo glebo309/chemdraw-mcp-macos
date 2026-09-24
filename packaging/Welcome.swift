@@ -58,6 +58,8 @@ struct ThemeCheckbox: ToggleStyle {
     @Published var package: URL?
     @Published var directory: URL?
     @Published var details = ""
+    @Published var diagnosticFile: URL?
+    @Published var diagnosticSaveFailed = false
     @Published var molecules: [Molecule] = []
     @Published var flow = SetupFlow()
     @Published var preview = false
@@ -67,6 +69,7 @@ struct ThemeCheckbox: ToggleStyle {
     private var input: FileHandle?
     private var buffer = Data()
     private var diagnostics = SetupDiagnostics()
+    private let diagnosticSession = UUID().uuidString
     private var pendingAction = "startup"
     @Published var diagnosticsCopied = false
 
@@ -100,7 +103,7 @@ struct ThemeCheckbox: ToggleStyle {
             let exitCode = task.terminationStatus
             Task { @MainActor in
                 guard let self = self, !self.finished else { return }
-                self.diagnostics.record(action: self.pendingAction, status: "helper_stopped",
+                self.recordDiagnostic(action: self.pendingAction, status: "helper_stopped",
                                         details: ["exit_code": exitCode])
                 self.busy = false
                 self.ready = false
@@ -118,7 +121,7 @@ struct ThemeCheckbox: ToggleStyle {
     func request(_ action: String, path: String? = nil) {
         guard !busy else { return }
         pendingAction = action
-        diagnostics.record(action: action, status: "started", details: [:])
+        recordDiagnostic(action: action, status: "started", details: [:])
         do {
             try start()
             var value: [String: Any] = ["action": action]
@@ -141,7 +144,7 @@ struct ThemeCheckbox: ToggleStyle {
             message = "Approve macOS Automation access if a permission window appears."
             try input?.write(contentsOf: bytes)
         } catch {
-            diagnostics.record(action: action, status: "request_failed",
+            recordDiagnostic(action: action, status: "request_failed",
                                details: ["error_domain": (error as NSError).domain, "error_code": (error as NSError).code])
             busy = false
             _ = flow.receive(status: "error", ready: false)
@@ -156,7 +159,7 @@ struct ThemeCheckbox: ToggleStyle {
             let line = buffer[..<newline]
             buffer.removeSubrange(...newline)
             guard let value = try? JSONSerialization.jsonObject(with: line) as? [String: Any] else { continue }
-            diagnostics.record(action: pendingAction, status: value["status"] as? String ?? "error",
+            recordDiagnostic(action: pendingAction, status: value["status"] as? String ?? "error",
                                details: value["details"] as? [String: Any] ?? [:])
             busy = false
             ready = value["ready"] as? Bool ?? false
@@ -177,8 +180,8 @@ struct ThemeCheckbox: ToggleStyle {
                 existingFiles = value["existing_files"] as? Bool ?? false
                 package = (value["package"] as? String).map { URL(fileURLWithPath: $0) }
                 directory = (value["search_directory"] as? String).map { URL(fileURLWithPath: $0) }
-                title = "Connect ChemDraw"
-                message = "Open Add-ins > Add-in Manager in ChemDraw."
+                title = existingFiles ? "Existing add-in refreshed" : "Connect ChemDraw"
+                message = existingFiles ? "Open a drawing and test the connection. No second add-in is needed." : "Open Add-ins > Add-in Manager in ChemDraw."
             case "exported":
                 savedInstaller = (value["path"] as? String).map { URL(fileURLWithPath: $0) }
                 title = "Installer saved"
@@ -225,6 +228,15 @@ struct ThemeCheckbox: ToggleStyle {
         panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         panel.nameFieldStringValue = "ChemDraw MCP Native API.chemdrawaddin"
         if panel.runModal() == .OK, let url = panel.url { request("export_installer", path: url.path) }
+    }
+
+    func recordDiagnostic(action: String, status: String, details: [String: Any]) {
+        diagnostics.record(action: action, status: status, details: details)
+        let directory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/ChemDraw MCP")
+        switch DiagnosticExport.autosave(diagnostics.text, directory: directory, session: diagnosticSession) {
+        case .success(let url): diagnosticFile = url; diagnosticSaveFailed = false
+        case .failure: diagnosticSaveFailed = true
+        }
     }
 
     func saveDiagnostics() {
@@ -407,6 +419,14 @@ struct FineLineFrame: View {
                     }.frame(maxHeight: .infinity)
                 } else {
                     Spacer(minLength: 0)
+                }
+                if model.flow.showDiagnostics {
+                    if model.diagnosticSaveFailed {
+                        Text("Automatic log save failed. Use Save or Copy diagnostics below.").font(.system(size: 10))
+                    } else if let file = model.diagnosticFile {
+                        Button("Show saved report") { NSWorkspace.shared.activateFileViewerSelecting([file]) }
+                            .buttonStyle(.link).font(.system(size: 10))
+                    }
                 }
                 if !model.finished {
                     HStack {

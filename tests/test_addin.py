@@ -128,6 +128,47 @@ def test_read_is_id_bound_and_uses_api_without_native_export(tmp_path):
     with pytest.raises(ValueError,match='active'):read_document(Bridge(),Channel(),7)
 
 
+@pytest.mark.parametrize('reply,code,stage', [
+    ({'error':'PRIVATE', 'error_code':'no_open_document','error_stage':'active_document'}, 'no_open_document','active_document'),
+    ({'error':'PRIVATE','error_code':'native_api_error','error_stage':'document_cdxml'}, 'native_api_error','document_cdxml'),
+    ({'version':'1.6'}, 'invalid_read_response','document_cdxml'),
+    ({'cdxml':'not XML'}, 'invalid_cdxml','cdxml_validation'),
+])
+def test_read_errors_keep_safe_protocol_context(reply, code, stage):
+    from contextlib import nullcontext
+    from chemdraw_macos.addin import read_document
+    class Bridge:
+        lock = nullcontext()
+        def _id(self, n): return n
+        def _run(self, op): return 42
+    class Channel:
+        def request(self, op): return reply
+    with pytest.raises(RuntimeError) as error: read_document(Bridge(), Channel(), 42)
+    assert error.value.code == code
+    assert error.value.stage == stage
+    assert 'PRIVATE' not in str(error.value)
+
+
+def test_upgrade_refreshes_existing_suffixed_addin_and_retains_credentials(tmp_path):
+    from zipfile import ZipFile
+    from chemdraw_macos.addin import DesktopAddin
+    root = tmp_path/'Add-ins/ChemDraw MCP Native API'
+    installed = root.with_name(root.name+'-12345678')
+    with DesktopAddin(None, directory=root, setup=True) as backend:
+        with ZipFile(backend.package) as archive: archive.extractall(installed)
+    credential = root.with_name(root.name+'.connection.json')
+    before = credential.read_bytes()
+    html = installed/'main.html'
+    html.write_text(html.read_text().replace('Document sent to local MCP', 'OLD CLIENT'))
+    for _ in range(2):
+        with DesktopAddin(None, directory=root, setup=True) as backend:
+            assert backend.directory == installed
+            assert 'OLD CLIENT' not in html.read_text()
+            assert 'Document sent to local MCP' in html.read_text()
+            assert credential.read_bytes() == before
+            assert not root.exists()
+
+
 def test_stale_append_never_dispatches_write(tmp_path):
     from contextlib import nullcontext
     from chemdraw_macos.addin import append_document

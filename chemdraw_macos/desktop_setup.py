@@ -75,7 +75,7 @@ def diagnostic_details(report, exception=None):
     details = {key: report.get(key) for key in (
         'package_version', 'macos', 'architecture', 'version', 'rdkit_version',
         'cdxml_writer_available', 'rasterizer_available', 'status',
-        'native_connection', 'shared_drawing_ready') if key in report}
+        'native_connection', 'shared_drawing_ready', 'document_count', 'elapsed_ms') if key in report}
     api = report.get('desktop_api', {})
     details['desktop_api'] = {key: api[key] for key in (
         'status', 'code', 'api_version', 'read_verified', 'write_tested') if key in api}
@@ -88,6 +88,12 @@ def diagnostic_details(report, exception=None):
                 'automation_timeout' if error.startswith('ChemDraw automation timed out') else
                 'native_error' if code is not None else 'unclassified_error')
         details['failure'] = {'kind': kind, 'native_error_code': code}
+        context = report.get('failure_context', {})
+        if context.get('code') in ('no_open_document', 'native_api_error', 'invalid_read_response',
+                                  'invalid_cdxml', 'document_changed'):
+            details['failure']['kind'] = context['code']
+        for key in ('stage', 'exception_type', 'os_error_code'):
+            if key in context: details['failure'][key] = context[key]
         if exception is not None:
             details['failure']['exception_type'] = type(exception).__name__
             if isinstance(exception, OSError):

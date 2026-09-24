@@ -25,6 +25,21 @@ struct SetupDiagnostics {
 }
 
 enum DiagnosticExport {
+    static func autosave(_ report: String, directory: URL, session: String) -> Result<URL, Error> {
+        Result {
+            let manager = FileManager.default
+            guard !session.isEmpty && session.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" }) else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+            try manager.createDirectory(at: directory, withIntermediateDirectories: true,
+                                        attributes: [.posixPermissions: 0o700])
+            let target = directory.appendingPathComponent("setup-" + session + ".txt")
+            try report.write(to: target, atomically: true, encoding: .utf8)
+            try manager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: target.path)
+            return target
+        }
+    }
+
     static func save(_ report: String, to url: URL) -> Result<URL, Error> {
         Result {
             try report.write(to: url, atomically: true, encoding: .utf8)

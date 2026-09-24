@@ -2,6 +2,30 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc20: diagnostic capture and upgrade regressions
+
+Graphical setup automatically retains a private text report after each event,
+including before native calls. A visible Show saved report action locates it;
+Save and Copy remain available if automatic saving fails. Failed probes retain
+their stage, exception type, bounded error code, document count and elapsed time
+without drawings, credentials or raw native exception text.
+
+Read probes handle a disappearing document before dispatch and a missing document
+inside the add-in. API-version failures return a result instead of losing a claimed
+job. Selection retrieval is optional for full-document reads. A read requests
+document CDXML once, retains identity checks and never retries uncertain writes.
+The add-in requests a 240 by 64 pixel window and reports document delivery rather
+than claiming verified connectivity. Optional window APIs cannot break polling.
+
+Portable validation: 1,203 passed, 99 optional skips. Packaged checks: 14 passed,
+3 optional skips, including a real rc19-to-rc20 runtime upgrade in an isolated
+home directory. A separate packaged read-only native setup test passed against
+ChemDraw 23.0.1.11 on macOS 15.6. The actual diagnostic-screen preview was visually
+inspected. Repeated upgrade tests preserve client configuration, terminal paths,
+private connection credentials and suffixed add-in folders. Existing app versions
+remain available; automatic update discovery and one-click rollback are not implemented.
+These results do not establish ChemDraw 26 or independent-Mac acceptance.
+
 ## 0.10.0rc19: illustrated first-launch guide
 
 The DMG includes an offline **Start Here.html** beside the application. Three

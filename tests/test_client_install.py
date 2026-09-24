@@ -92,6 +92,30 @@ def test_shared_app_install_is_stable_and_versioned_without_deleting_old(tmp_pat
     assert source.exists()
 
 
+def test_upgrade_switches_shared_and_terminal_launchers_without_duplicate_configuration(tmp_path):
+    import plistlib
+    from chemdraw_macos.client_install import install_and_connect
+    source = tmp_path/'download/ChemDraw MCP.app'
+    backend = source/'Contents/Resources/backend/chemdraw-runtime'
+    backend.parent.mkdir(parents=True)
+    home = tmp_path/'user'
+    previous = None
+    for version in ('18', '20', '21'):
+        (source/'Contents/Info.plist').write_bytes(plistlib.dumps({
+            'CFBundleIdentifier': 'org.glebo309.chemdraw-mcp.setup', 'CFBundleVersion': version}))
+        backend.write_text('runtime ' + version)
+        result = install_and_connect(source, ['claude', 'codex'], home=home)
+        app = Path(result['installed_app'])
+        assert (app/'Contents/Resources/backend/chemdraw-runtime').read_text() == 'runtime ' + version
+        for name in ('chemdraw-mcp', 'chemdraw-mac', 'chemdraw-mcp-macos'):
+            assert str(app) in (home/'Library/Application Support/ChemDraw MCP/bin'/name).read_text()
+        config = (home/'.codex/config.toml').read_bytes()
+        if previous is not None: assert config == previous
+        previous = config
+        assert (home/'.zshrc').read_text().count('# >>> ChemDraw MCP terminal access >>>') == 1
+    assert (home/'Library/Application Support/ChemDraw MCP/versions/18/ChemDraw MCP.app').is_dir()
+
+
 def test_no_registration_until_finish_and_finish_failure_does_not_mark_complete(tmp_path, monkeypatch):
     session = setup.SetupSession(settings_path=tmp_path/'settings.json')
     with pytest.raises(ValueError, match='connection'):

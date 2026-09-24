@@ -10,6 +10,28 @@ RUNTIME = os.environ.get('CHEMDRAW_DESKTOP_RUNTIME')
 pytestmark = pytest.mark.skipif(not RUNTIME, reason='Set CHEMDRAW_DESKTOP_RUNTIME to the frozen executable')
 
 
+@pytest.mark.skipif(not os.environ.get('CHEMDRAW_PREVIOUS_RUNTIME'), reason='Requires two released build runtimes')
+def test_frozen_upgrade_keeps_configs_and_switches_executed_version(tmp_path):
+    from chemdraw_macos.client_install import install_and_connect
+    old_runtime = os.environ['CHEMDRAW_PREVIOUS_RUNTIME']
+    configs = None
+    versions = []
+    for runtime in (old_runtime, RUNTIME):
+        result = install_and_connect(Path(runtime).resolve().parents[3], ['claude', 'codex'], home=tmp_path)
+        current = [(tmp_path/p).read_bytes() for p in (
+            '.codex/config.toml', 'Library/Application Support/Claude/claude_desktop_config.json')]
+        if configs is not None: assert configs == current
+        configs = current
+        run = subprocess.run([result['terminal_command'], 'doctor', '--no-connect'],
+            env={'HOME': str(tmp_path), 'PATH': '/usr/bin:/bin'}, capture_output=True, text=True, timeout=30)
+        assert run.returncode == 0, run.stderr
+        report = json.loads(run.stdout)
+        versions.append(report['package_version'])
+        assert report['cdxml_writer_available'] and report['rasterizer_available']
+    assert versions[0] != versions[1]
+    assert versions[1] == __import__('importlib.metadata').metadata.version('chemdraw-mcp-macos')
+
+
 def test_frozen_app_has_native_finder_icon():
     import plistlib
     app = Path(RUNTIME).resolve().parents[3]
