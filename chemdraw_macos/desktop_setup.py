@@ -90,7 +90,7 @@ def diagnostic_details(report, exception=None):
         details['failure'] = {'kind': kind, 'native_error_code': code}
         context = report.get('failure_context', {})
         if context.get('code') in ('no_open_document', 'native_api_error', 'invalid_read_response',
-                                  'invalid_cdxml', 'document_changed'):
+                                  'invalid_cdxml', 'document_changed', 'invalid_document_id'):
             details['failure']['kind'] = context['code']
         for key in ('stage', 'exception_type', 'os_error_code'):
             if key in context: details['failure'][key] = context[key]

@@ -186,18 +186,21 @@ class AddinReadError(RuntimeError):
     """Safe, bounded failure context without document contents or native messages."""
     def __init__(self, code, stage):
         self.code = code if code in ('no_open_document', 'native_api_error',
-            'invalid_read_response', 'invalid_cdxml', 'document_changed') else 'native_api_error'
+            'invalid_read_response', 'invalid_cdxml', 'document_changed', 'invalid_document_id') else 'native_api_error'
         self.stage = stage if stage in ('api_version', 'active_document', 'document_cdxml',
-            'cdxml_validation', 'document_identity') else 'document_read'
+            'cdxml_validation', 'document_identity', 'document_id') else 'document_read'
         message = 'Active document changed during read' if self.code == 'document_changed' else 'Add-in read failed: '+self.code
         super().__init__(message+' ('+self.stage+')')
 
 
 def read_document(bridge, channel, document_id):
-    did=bridge._id(document_id)
+    try:did=bridge._id(document_id)
+    except (ValueError, TypeError, OverflowError) as exc:
+        raise AddinReadError('invalid_document_id', 'document_id') from exc
     with bridge.lock:
-        if bridge._run('active_document')!=did:
-            raise ValueError('Choose the active ChemDraw document; OS keyboard focus is not required')
+        active=bridge._run('active_document')
+        if active is None:raise AddinReadError('no_open_document', 'active_document')
+        if active!=did:raise AddinReadError('document_changed', 'active_document')
         result=channel.request('read')
         if result.get('error'):
             raise AddinReadError(result.get('error_code'), result.get('error_stage'))

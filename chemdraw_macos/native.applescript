@@ -6,6 +6,13 @@ on jsonText(value)
     return (current application's NSString's alloc()'s initWithData:dataValue encoding:4) as text
 end jsonText
 
+on jsonInteger(value)
+    -- AppleScript text coercion uses scientific notation for large integers.
+    -- Serialize through Foundation, then unwrap the single JSON array item.
+    set encoded to my jsonText({value as integer})
+    return text 2 thru -2 of encoded
+end jsonInteger
+
 on fileReference(p)
     return POSIX file p
 end fileReference
@@ -29,7 +36,7 @@ on run argv
     tell application __APP__
         if operation is "active_document" then
             if (count of documents) is 0 then return "null"
-            return ((id of document 1) as integer) as text
+            return my jsonInteger((id of document 1) as integer)
         end if
         if operation is "active_document_state" then
             if (count of documents) is 0 then return "null"

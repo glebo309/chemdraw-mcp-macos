@@ -125,7 +125,7 @@ def test_read_is_id_bound_and_uses_api_without_native_export(tmp_path):
             assert operation=='read';return {'cdxml':EMPTY,'selection':EMPTY,'version':'1.6'}
     result=read_document(Bridge(),Channel(),42)
     assert result['cdxml']==EMPTY and result['source_token']==source_token(EMPTY)
-    with pytest.raises(ValueError,match='active'):read_document(Bridge(),Channel(),7)
+    with pytest.raises(RuntimeError,match='Active document changed'):read_document(Bridge(),Channel(),7)
 
 
 @pytest.mark.parametrize('reply,code,stage', [

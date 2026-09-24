@@ -2,6 +2,25 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## 0.10.0rc22: exact native document IDs
+
+Active-document IDs use Foundation JSON serialization rather than AppleScript
+text coercion. Large positive and negative values previously became scientific
+notation, parsed as floats and failed the bridge's strict integer validation.
+The strict input guard remains in place; no rounding or permissive float-to-ID
+conversion was added.
+
+Read preflight reports invalid_document_id, document_changed or no_open_document
+with the specific stage. Reports exclude the ID value, drawing and credentials.
+Known read failures no longer recommend changing Automation permissions.
+
+Validation: 1,219 portable tests passed with 99 optional skips. The regression
+executes the production AppleScript serializer on macOS without ChemDraw,
+including signed 32-bit limits and the no-document case. A source-runtime
+read-only check passed against ChemDraw 23.0.1.11 on macOS 15.6, Apple Silicon,
+with unchanged open-document metadata. ChemDraw 26 and independent-Mac acceptance
+remain unverified. Installer and terminal use the same corrected bridge.
+
 ## 0.10.0rc21: screenshot-based opening guide
 
 The offline Start Here guide uses a cropped macOS screenshot instead of drawn

@@ -152,3 +152,34 @@ def test_native_api_no_document_is_not_reported_as_permission_failure(environmen
     details = diagnostic_details(report)
     assert details['failure']['kind'] == 'no_open_document'
     assert details['failure']['stage'] == 'active_document'
+
+
+@pytest.mark.parametrize('document_id,active_id,code,stage', [
+    (1234567890.0, 1234567890, 'invalid_document_id', 'document_id'),
+    (True, 7, 'invalid_document_id', 'document_id'),
+    (7, 8, 'document_changed', 'active_document'),
+    (7, None, 'no_open_document', 'active_document'),
+])
+def test_read_preflight_failures_are_precise_and_private(environment, document_id, active_id, code, stage):
+    from chemdraw_macos.addin import read_document
+    from chemdraw_macos.core import Bridge
+    from chemdraw_macos.desktop_setup import diagnostic_details
+    d, b = environment
+    b._id = Bridge._id
+    ids = iter([document_id, active_id])
+    b._run = lambda op: next(ids)
+    class Channel:
+        def request(self, operation): pytest.fail('Invalid or changed document must not dispatch a read')
+    class Backend:
+        closed = False
+        def read(self, did): return read_document(b, Channel(), did)
+    b._desktop_addin = Backend()
+    report = d.doctor(bridge=b)
+    details = diagnostic_details(report)
+    assert details['failure']['kind'] == code
+    assert details['failure']['stage'] == stage
+    assert details['failure']['exception_type'] == 'AddinReadError'
+    assert details['native_connection'] == 'responding'
+    assert details['desktop_api']['read_verified'] is False
+    assert 'Automation permission' not in report['help']
+    assert '1234567890' not in str(details)

@@ -129,5 +129,10 @@ def doctor(connect=True,*,bridge=None):
         if isinstance(exc, AddinReadError) and exc.code == 'no_open_document':
             result.update(status='needs_document',help='Open a blank ChemDraw document, then test again.')
             result['desktop_api'].update(status='needs_document',code=exc.code)
+        elif isinstance(exc, AddinReadError):
+            result['help'] = ('Keep the intended ChemDraw document active, then test again.'
+                              if exc.code == 'document_changed' else
+                              'ChemDraw responded, but the document read could not be verified. '
+                              'Save or copy diagnostics to report the failing read step.')
     result['elapsed_ms'] = round((time.monotonic()-started)*1000)
     return result

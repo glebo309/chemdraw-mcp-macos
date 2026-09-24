@@ -1,6 +1,11 @@
 # Development status
 
-Current experimental release: **0.10.0rc21**.
+Current experimental release: **0.10.0rc22**.
+
+rc22 fixes native active-document IDs being converted to scientific notation.
+Large positive and negative IDs now remain exact integers. Read diagnostics
+distinguish invalid IDs, changed documents and closed documents before dispatch;
+these failures no longer suggest an Automation permission problem.
 
 rc21 replaces the Start Here guide's drawn controls with a cropped macOS
 screenshot and three numbered highlights. The screenshot ships beside the HTML
@@ -25,6 +30,12 @@ from model time. Fresh regular six-membered rings are axis-aligned without
 changing the orientation of live references. [Measured performance](DRAWING_PERFORMANCE.md).
 
 ## Validation
+
+The rc22 portable suite passed 1,219 tests with 99 optional skips, including
+macOS execution of the production serializer without launching ChemDraw.
+A source-runtime read-only check passed on ChemDraw 23.0.1.11, macOS 15.6,
+Apple Silicon, with unchanged document metadata. ChemDraw 26 acceptance remains
+unverified; this fixes a reproduced bridge bug, not every possible read failure.
 
 The rc20 portable suite passed 1,203 tests with 99 optional skips. Fourteen
 packaged checks passed, including an isolated rc19-to-rc20 executable upgrade;
