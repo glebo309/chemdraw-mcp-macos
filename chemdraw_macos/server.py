@@ -144,11 +144,12 @@ def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False
     panel=auto selects a plain aligned grid on the shared canvas, without a retry
     or inferred decorations. Missing labels on SMILES/InChI become numbers, not
     formulas. Exports contain the whole current canvas.
-    Shared molecules default to exports=auto: editable CDXML, native SVG and a
-    white 1200-pixel artifacts.preview PNG for direct visual review. Open that
-    preview directly; no white-background conversion or separate export is needed.
-    Use exports=full only when a transparent 3200-pixel PNG is requested, or
-    exports=canvas when only the editable canvas is wanted (review in ChemDraw).
+    Shared molecules default to exports=auto: editable canvas and CDXML recovery
+    snapshot, without image export. Inspect in ChemDraw first. Request exports=preview
+    explicitly for a white review image, or full for transparent PNG and SVG.
+    For a requested new rounded/shadowed table use panel=framed, optional heading,
+    and no document_id. One complete framed document, no follow-up decoration.
+    Framed panels also default to canvas-only; full exports contain just the table.
     Publication/DPI exports use chemdraw_export_figure afterwards, without redrawing.
     Validated name/CAS results are cached in this process for five minutes;
     refresh_identifiers=true forces a new lookup. Permission/ambiguity rules remain.
@@ -344,7 +345,7 @@ def chemdraw_propose_scope(parent_smiles:str,handle_atom_map:int,profile:Literal
     return propose_scope(parent_smiles,handle_atom_map,profile)
 
 @mcp.tool(annotations=WRITE)
-def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal['house','acs-1996']|dict='house',columns:int|None=None,pixels:int=3200,scaffold_smiles:str|None=None,layout:dict|None=None,charge_style:Literal['plain','circled']='plain',groups:list[dict]|None=None,frame:bool=True,separators:bool=True,scaffold_layout:Literal['rigid','reference']='rigid',presentation:Literal['auto','background','interactive','shared']='auto',document_id:int|None=None)->dict:
+def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal['house','acs-1996']|dict='house',columns:int|None=None,pixels:int=3200,scaffold_smiles:str|None=None,layout:dict|None=None,charge_style:Literal['plain','circled']='plain',groups:list[dict]|None=None,frame:bool=True,separators:bool=True,scaffold_layout:Literal['rigid','reference']='rigid',presentation:Literal['auto','background','interactive','shared']='auto',document_id:int|None=None,exports:Literal['auto','canvas','preview','full']='auto')->dict:
     """Draw 1..24 explicit {compound_id,label,smiles} records in ONE call. Keep preset=house unless requested otherwise.
 
     Plain shared/auto batches append to the active canvas, including untitled drawings.
@@ -355,8 +356,10 @@ def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal
     NEW FRAMED TABLE: supply groups=[{label,compound_ids}], frame=true,
     presentation=interactive and no document_id. With plain charges, the complete
     batch uses one hidden measuring document and leaves ONE final framed document.
-    Do not call decorate_scope or import_file afterward. Returns CDXML, physical
-    SVG, 600-DPI PNG and a white preview. Background closes its final document.
+    Do not call decorate_scope or import_file afterward. Shared and interactive
+    framed tables default to canvas-only plus CDXML recovery snapshot. Request
+    exports=preview for a white review image, full for physical SVG/600-DPI PNG.
+    Background defaults to full export and closes its final document.
     Omit columns for automatic fit; IDs do not add duplicate captions.
 
     Same-document decoration/custom layouts/circled charges remain unsupported;
@@ -369,7 +372,7 @@ def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal
     from .harness import NeedsInput
     try:
         return draw_structures(bridge(),structures,output_dir,preset,columns,pixels,scaffold_smiles,layout,charge_style,
-                               groups=groups,frame=frame,separators=separators,scaffold_layout=scaffold_layout,presentation=presentation,document_id=document_id)
+                               groups=groups,frame=frame,separators=separators,scaffold_layout=scaffold_layout,presentation=presentation,document_id=document_id,exports=exports)
     except NeedsInput as exc:
         return {'status':'needs_input','code':exc.code,'message':str(exc),
                 'document_id':document_id,**exc.detail}

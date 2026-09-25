@@ -34,7 +34,7 @@ def _layout(measured, records, groups, columns, layout, frame, separators, *, se
 
 
 def draw_scope_table(bridge, structures, output_dir, *, groups, preset='house', columns=None,
-                     pixels=3200, scaffold_smiles=None, layout=None, frame=True, separators=True):
+                     pixels=3200, scaffold_smiles=None, layout=None, frame=True, separators=True,exports='full'):
     from .draw import prepare_structures
     from .grouped_draw import validate_draw_groups
     from .styles import require_style_fonts, verify_custom_style
@@ -43,6 +43,7 @@ def draw_scope_table(bridge, structures, output_dir, *, groups, preset='house', 
     timer=StageTimer();out=Path(output_dir).expanduser()
     if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output requires absolute path and existing parent')
     if out.exists() or out.is_symlink():raise FileExistsError('Output already exists')
+    if exports not in ('canvas','preview','full'):raise ValueError('Invalid exports mode')
     records=prepare_structures(structures)
     validate_draw_groups(groups,[r['compound_id'] for r in records])
     require_style_fonts(preset)
@@ -59,7 +60,7 @@ def draw_scope_table(bridge, structures, output_dir, *, groups, preset='house', 
         baseline=_native(bridge.documents)['documents']
         content={d['document_id']:_document_content(bridge,d['document_id']) for d in baseline}
         out.mkdir();_write_json(out/'request.json',{'structures':structures,'groups':groups,'preset':preset,
-            'columns':columns,'scaffold_smiles':scaffold_smiles,'frame':frame,'separators':separators})
+            'columns':columns,'scaffold_smiles':scaffold_smiles,'frame':frame,'separators':separators,'exports':exports})
         (out/'seed.cdxml').write_text(seed);_write_json(out/'audit.json',audit)
         try:
             created=_native(bridge.create,seed,visible=False);did=created['document']['document_id'];owned.append(did)
@@ -87,24 +88,28 @@ def draw_scope_table(bridge, structures, output_dir, *, groups, preset='house', 
             _verify_paper(native,{'width_pt':PAPERS[paper][0],'height_pt':PAPERS[paper][1]})
             audit['checks'].update(verification['checks'],native_layout=True,native_style=True,physical_paper=True)
             timer.mark('native_final_verification')
-            svg=figure/'figure.svg';_native(bridge.export,did,str(svg),'svg');raw=svg.read_text()
-            (figure/'figure.png').write_bytes(physical_png(raw,600))
-            (figure/'preview.png').write_bytes(rasterize_svg(raw,1200,background='white'))
-            svg.write_text(physical_svg(raw)[0])
-            post=out/'post-export.cdxml';_native(bridge.export,did,str(post),'cdxml')
-            # Frame-aware verification also rechecks the source objects after export.
-            verify_scope_decoration(arranged,post.read_text(),decoration)
+            artifacts={'cdxml':str(cdxml)}
+            if exports!='canvas':
+                svg=figure/'figure.svg';_native(bridge.export,did,str(svg),'svg');raw=svg.read_text()
+                (figure/'preview.png').write_bytes(rasterize_svg(raw,1200,background='white'))
+                artifacts.update(svg=str(svg),preview=str(figure/'preview.png'))
+                if exports=='full':
+                    (figure/'figure.png').write_bytes(physical_png(raw,600));artifacts['png']=str(figure/'figure.png')
+                svg.write_text(physical_svg(raw)[0])
+                post=out/'post-export.cdxml';_native(bridge.export,did,str(post),'cdxml')
+                verify_scope_decoration(arranged,post.read_text(),decoration)
+                audit['checks']['native_svg_export']=True
             current=[d for d in _native(bridge.documents)['documents'] if d['document_id']!=did]
             if sorted(current,key=lambda d:d['document_id'])!=sorted(baseline,key=lambda d:d['document_id']):
                 raise ValueError('Pre-existing document inventory changed')
             for oid,before in content.items():
                 if _document_content(bridge,oid)!=before:raise ValueError('Pre-existing document content changed')
             timer.mark('exports_and_preservation')
-            audit['checks'].update(preexisting_documents_unchanged=True,native_svg_export=True)
+            audit['checks'].update(preexisting_documents_unchanged=True)
             audit.update(status='checks_passed',timings=timer.report(),planning={**planning,
                 'columns':plan['layout']['columns'],'paper':paper})
             result={'status':'completed','document':created['document'],'checks':audit['checks'],'audit':audit,
-                'artifacts':{fmt:str(figure/('preview.png' if fmt=='preview' else 'figure.'+fmt)) for fmt in ('cdxml','svg','png','preview')},
+                'artifacts':artifacts,'delivery':{'mode':exports,'export_tool':'chemdraw_export_figure'},
                 'timings':timer.report(),'visual_review':'required','output_dir':str(out),'group_plan':plan,
                 'presentation':{'measurement_documents':1,'final_documents':1},
                 'note':'Complete framed table. Do not call decorate_scope or import the result again.'}

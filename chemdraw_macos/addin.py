@@ -201,10 +201,15 @@ def read_preserving_active(bridge, document_id):
     back if another actor changed the active document during this read.
     """
     with bridge.lock:
+        backend=get_backend(bridge)
+        # Opening the modeless connection can change ChemDraw's active tab.
+        # Establish it first, then bind and restore the explicit read target.
+        ready=getattr(backend,'_ready',None)
+        if ready is not None:ready()
         active=bridge._run('active_document')
         switched=active!=document_id
         if switched:bridge._run('select_document',document_id,active)
-        try:return get_backend(bridge).read(document_id)
+        try:return backend.read(document_id)
         finally:
             if switched and bridge._run('active_document')==document_id:
                 bridge._run('select_document',active,document_id)

@@ -127,7 +127,10 @@ def plan_addition(before, structures, *, preset='house', columns=None, scaffold_
                 if atom.GetIsotope():
                     ET.SubElement(t,'s',font=font,size=str(spec['LabelSize']),face='64').text=str(atom.GetIsotope())
                 ET.SubElement(t,'s',font=font,size=str(spec['LabelSize']),face='96').text=label
-        for bond in fragment.findall('b'):
+        for z,bond in enumerate(fragment.findall('b'),1):
+            # Native saving may report near-touching bonds as cached crossings.
+            # Give every new bond explicit foreground order before that happens.
+            bond.set('Z',str(z))
             for key in ('LineWidth','BoldWidth'):bond.set(key,str(spec[key]))
             bond.set('BondSpacing','18')
         # Carbon vertices need stroke clearance, not an imaginary atom label.
@@ -247,13 +250,22 @@ def center_measured_payload(payload, measured):
 
 def measure_table_payload(bridge,payload):
     """One hidden native measuring copy for the complete table, not per cell."""
-    created=bridge.create(payload,visible=False)
+    from .batch import _native
+    from .harness import NeedsInput
+    created=_native(bridge.create,payload,visible=False)
     did=created['document']['document_id']
     snapshot=bridge._new_path('.cdxml','backups')
     # On uncertain native operations retain the copy and stop. Never retry.
-    bridge.export(did,str(snapshot),'cdxml')
-    corrected,expected=center_measured_payload(payload,snapshot.read_text())
-    bridge.close(did)
+    _native(bridge.export,did,str(snapshot),'cdxml')
+    try:
+        corrected,expected=center_measured_payload(payload,snapshot.read_text())
+    except ValueError as exc:
+        _native(bridge.close,did)
+        raise NeedsInput('table_measurement_failed',
+            'Native table measurement failed before insertion: '+str(exc),
+            inserted_count=0,measurement_snapshot=str(snapshot),
+            next_action='Inspect the retained measurement. Do not change labels or create another document as a workaround.') from exc
+    _native(bridge.close,did)
     return corrected,expected
 
 
@@ -275,7 +287,8 @@ def run_api_drawing(bridge,plan,out,document_id=None):
     from .workflow import _write_json
     from .timing import StageTimer
     timer=StageTimer()
-    export_mode=plan.get('exports','full')
+    export_mode=plan.get('exports','canvas')
+    if export_mode=='auto':export_mode='canvas'
     if export_mode not in ('preview','full','canvas'):
         raise ValueError('exports must be preview, full or canvas')
     if plan.get('workflow','molecules')!='molecules' or plan.get('groups') is not None:
@@ -404,8 +417,27 @@ def verify_export_snapshot(before,after):
     views=[]
     for text in (before,after):
         root=ET.fromstring(text)
+        # Export only: known native scope ornaments have no molecular semantics.
+        # Their complete attributes remain covered by the whole-document
+        # fingerprint below; strip only from the plain chemical verifier's view.
+        for g in list(root.findall('page/graphic')):
+            if g.get('SupersededBy'):continue
+            kind=g.get('GraphicType')
+            flag='RectangleType' if kind=='Rectangle' else 'OvalType'
+            allowed_flags={'RoundEdge','Shadow'} if kind=='Rectangle' else {'Circle','Filled'}
+            allowed={'id','Z','color','GraphicType',flag,'BoundingBox','Center3D',
+                     'MajorAxisEnd3D','MinorAxisEnd3D','LineWidth'}
+            if kind=='Rectangle':allowed.update(('CornerRadius','ShadowSize'))
+            if (kind not in ('Rectangle','Oval') or list(g) or set(g.attrib)-allowed
+                    or set(g.get(flag,'').split())!=allowed_flags):
+                raise ValueError('Unsupported export decoration')
+            for key,count in (('BoundingBox',4),('Center3D',3),('MajorAxisEnd3D',3),('MinorAxisEnd3D',3)):
+                values=list(map(float,g.get(key,'').split()))
+                if len(values)!=count or not all(math.isfinite(v) for v in values):
+                    raise ValueError('Invalid export decoration geometry')
+            root.find('page').remove(g)
         if root.findall('page/chemicalproperty'):
-            root,page=_page(text,vertical_pages=True)
+            root,page=_page(ET.tostring(root,encoding='unicode'),vertical_pages=True)
             for e in list(page.findall('chemicalproperty')):page.remove(e)
         views.append(ET.tostring(root,encoding='unicode'))
     _verify(*views)

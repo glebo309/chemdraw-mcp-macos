@@ -104,11 +104,19 @@ def export_figure(bridge, document_id, output_dir, dpi=600, include_pdf=False):
     if out.exists() or out.is_symlink(): raise FileExistsError('Output already exists')
     did = bridge._id(document_id)
     backend = get_backend(bridge)
-    before = backend.read(did)
+    from .core import Bridge
+    if isinstance(bridge,Bridge):
+        from .addin import read_preserving_active
+        # Establish the connection before selecting a known document. Export
+        # targets an explicit ID, even if a previous operation changed tabs.
+        backend._ready()
+        read=lambda:read_preserving_active(bridge,did)
+    else:read=lambda:backend.read(did)
+    before = read()
     out.mkdir()
     (out/'figure.cdxml').write_text(before['cdxml'])
     bridge.export(did, str(out/'native.svg'), 'svg')
-    after = backend.read(did)
+    after = read()
     verify_export_snapshot(before['cdxml'], after['cdxml'])
     native = (out/'native.svg').read_text()
     svg, size = physical_svg(native)
@@ -127,7 +135,7 @@ def export_figure(bridge, document_id, output_dir, dpi=600, include_pdf=False):
         copy_id=copy['document']['document_id']
         bridge.export(copy_id,str(out/'figure.pdf'),'pdf')
         bridge.close(copy_id)
-        verify_export_snapshot(before['cdxml'],backend.read(did)['cdxml'])
+        verify_export_snapshot(before['cdxml'],read()['cdxml'])
     result = {'status': 'completed', 'document_id': did, 'dpi': dpi,
               'physical_size_mm': [v*25.4/72 for v in size],
               'pixels_per_drawing_point': dpi/72,

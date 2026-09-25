@@ -12,9 +12,16 @@ The output directory must not already exist. Use either this CLI process or an
 assistant's connected MCP, not both at once. The matching MCP operation is
 `chemdraw_draw_structures` with the manifest fields except `schema_version`.
 The request includes every structure, its groups and the frame in one call.
-It leaves one complete editable document and returns a white preview; there is
+It leaves one complete editable document without exporting images by default; there is
 no follow-up decoration or import step. See [drawing performance](DRAWING_PERFORMANCE.md)
 for the batch route and measured scope of validation.
+
+For the ordinary drawing entry point, supply `panel="framed"`, an optional
+`heading`, and every molecule in one request. Do not supply a document ID: this
+creates one new table and preserves existing drawings. Shared canvas requests
+remain additive and do not support this frame yet. Request `exports="preview"`
+for a white review image or `exports="full"` for publication-scale framed-table
+files. Exporting afterward uses `chemdraw_export_figure`; do not draw again.
 
 ## Physical exports and paginated shared tables (rc10)
 

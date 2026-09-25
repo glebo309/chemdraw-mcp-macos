@@ -146,10 +146,12 @@ from .presentation import production_job
 
 
 @production_job(shared_molecules=True)
-def draw_structures(bridge,structures,output_dir,preset='house',columns=None,pixels=3200,scaffold_smiles=None,layout=None,charge_style='plain',groups=None,frame=True,separators=True,scaffold_layout='rigid'):
+def draw_structures(bridge,structures,output_dir,preset='house',columns=None,pixels=3200,scaffold_smiles=None,layout=None,charge_style='plain',groups=None,frame=True,separators=True,scaffold_layout='rigid',exports='auto'):
     out=Path(output_dir).expanduser()
     if not out.is_absolute() or not out.parent.is_dir():raise ValueError('Output requires absolute path and existing parent')
     if out.exists() or out.is_symlink():raise FileExistsError('Output already exists')
+    if exports not in ('auto','canvas','preview','full'):raise ValueError('Invalid exports mode')
+    if groups is None and exports in ('canvas','preview'):raise ValueError('Separate ungrouped drawing requires full export; use the shared workflow for canvas drawing')
     if charge_style not in ('plain','circled'):raise ValueError('charge_style must be plain or circled')
     layout={} if layout is None else dict(layout)
     if set(layout)-{'margin','h_gap','v_gap','label_gap'} or any(type(v) not in (int,float) or not math.isfinite(v) or not 2<=v<=144 for v in layout.values()):
@@ -179,7 +181,7 @@ def draw_structures(bridge,structures,output_dir,preset='house',columns=None,pix
         from .scope_table import draw_scope_table
         return draw_scope_table(bridge,structures,output_dir,groups=groups,preset=preset,
             columns=columns,pixels=pixels,scaffold_smiles=scaffold_smiles,layout=layout,
-            frame=frame,separators=separators)
+            frame=frame,separators=separators,exports='full' if exports=='auto' else exports)
     audit={'status':'in_progress','checks':{},'visual_review':'required','renderer':'native ChemDraw',
            'coordinate_seed':'RDKit MOL writer; native Clean Up Structure runs on each new private import',
            'limitations':'Labels are caller supplied, not name-verified. No common-scaffold alignment, experimental yields or comprehensive intramolecular collision checks.'}

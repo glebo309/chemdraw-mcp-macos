@@ -59,9 +59,9 @@ Shared molecule requests accept `exports`:
 
 | Value | Delivered files |
 | --- | --- |
-| `auto` (default) or `preview` | Editable CDXML, unchanged native SVG and a white-background 1200-pixel `artifacts.preview` PNG for direct visual review |
+| `auto` (default) or `canvas` | Editable drawing and CDXML recovery snapshot, without image export |
+| `preview` | Editable CDXML, native SVG and a white-background 1200-pixel `artifacts.preview` PNG for requested visual review |
 | `full` | Editable CDXML, native SVG and the previous transparent 3200-pixel `artifacts.png` bundle |
-| `canvas` | Editable CDXML and checked native insertion only; inspect the drawing in ChemDraw |
 
 The preview is not a publication export and is not advertised as a transparent
 PNG. Do not convert it again just to inspect it on white. Use
@@ -71,8 +71,17 @@ style, page fit and table alignment checks remain mandatory in every mode.
 Canvas mode does not claim that an SVG export or image review occurred.
 Reaction full exports use physical SVG and 600-DPI PNG, plus a white review image.
 Other background workflows keep full exports; explicit `preview` and `canvas`
-requests on those paths are rejected before native changes. The advanced
-`chemdraw_draw_structures` interface keeps its existing full-export default.
+requests on legacy paths are rejected before native changes. The advanced
+`chemdraw_draw_structures` interface also defaults to canvas-only for shared
+drawings and interactive framed tables.
+
+For a new complete table, set `panel="framed"` and optionally `heading`.
+This route draws all supplied molecules inside a rounded, shadowed box in one
+new document. It also defaults to canvas-only; `exports="full"` explicitly adds
+physical SVG, a 600-DPI transparent PNG and a white review preview. The export
+contains only the table, not the old parent and empty space on another sheet.
+Do not combine this route with `document_id` or shared presentation. It does
+not implement same-document decoration and never silently substitutes a copy.
 
 Repeated name/CAS lookups reuse locally validated results for up to five minutes
 in the same process. The cache has at most 128 entries, never writes queries to

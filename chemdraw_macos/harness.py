@@ -29,9 +29,10 @@ class DrawingRequest(BaseModel):
     products: list[CompoundInput] | None = Field(default=None,min_length=1,max_length=24,description='Explicit products only. Omit for molecule drawings; no reaction prediction.')
     conditions_above: str = Field(default='',max_length=120)
     conditions_below: str = Field(default='',max_length=120)
-    panel: Literal['auto','plain'] = Field(default='auto',description='Auto may group supported related panels; plain omits category grouping. Shared tables retain verified common-ring orientation in either mode.')
+    panel: Literal['auto','plain','framed'] = Field(default='auto',description='Framed creates ONE new complete table with a rounded shadow box. No document_id/shared mode for framed panels. Auto/plain use the working canvas. Shared tables retain verified common-ring orientation.')
+    heading: str = Field(default='Substrate scope',min_length=1,max_length=120,description='Heading for panel=framed.')
     page_policy: Literal['add_pages','keep'] = Field(default='add_pages',description='For shared molecule tables, append identical physical pages inside the same document when needed; keep refuses overflow. Never shrink molecules.')
-    exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto: shared molecules get native SVG plus a white 1200-pixel review preview; reactions get physical-scale SVG, 600-DPI transparent PNG and preview. Full: transparent 3200-pixel PNG for molecules, 600-DPI PNG for reactions. Canvas: shared molecules only, editable CDXML and native checks without image export; review in ChemDraw. Use export_figure later for molecule publication files.')
+    exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto draws shared molecules and framed panels without image export. Canvas retains editable CDXML and native checks; review in ChemDraw. Preview explicitly requests a white review image. Full requests SVG/transparent PNG. Reactions and legacy background workflows export by default. Use export_figure later for publication files, without redrawing.')
     refresh_identifiers: bool = Field(default=False,description='Bypass the five-minute in-memory validated name/CAS cache. Network permission is still required on every name/CAS request.')
     reaction_paper: Literal['auto','A4 portrait','A4 landscape','A3 landscape'] = Field(default='auto',description='Separate reaction output only: bounded staging preflight followed by the smallest paper fitting native measurements, at unchanged bond scale. Explicit paper refuses estimated overflow before native production and rechecks actual ink.')
 
@@ -76,7 +77,8 @@ def plan_request(request,allow_network=False,*,shared=False):
     model=DrawingRequest.model_validate(request)
     if model.products is None and model.reaction_paper!='auto':
         raise ValueError('reaction_paper requires products')
-    if model.exports in ('preview','canvas') and (not shared or model.products is not None):
+    if model.panel=='framed' and model.products is not None:raise ValueError('Framed panels require molecules, not a reaction')
+    if model.exports in ('preview','canvas') and ((not shared and model.panel!='framed') or model.products is not None):
         raise ValueError('preview/canvas exports require the shared molecule workflow')
     structures,provenance=_resolve(model.molecules,allow_network,refresh_identifiers=model.refresh_identifiers)
     if model.products is not None:
@@ -94,13 +96,20 @@ def plan_request(request,allow_network=False,*,shared=False):
     if model.conditions_above or model.conditions_below:
         raise ValueError('Reaction conditions require explicit products')
     prepared=prepare_structures(structures)
+    if model.panel=='framed':
+        defaults=plan_drawing_defaults(prepared)
+        return {'workflow':'molecules','structures':structures,'preset':'house','columns':None,
+            'scaffold_smiles':defaults['scaffold_smiles'],'groups':[{'label':model.heading,
+            'compound_ids':[r['compound_id'] for r in structures]}],
+            'frame':True,'separators':False,'framed_panel':True,
+            'exports':'canvas' if model.exports=='auto' else model.exports,'provenance':provenance}
     defaults=plan_drawing_defaults(prepared) if model.panel=='auto' else {'scaffold_smiles':None,'groups':None}
     if shared:
         # Auto is a policy choice, not an explicit request for decorations.
         # Keep its verified scaffold but select a layout supported by this path.
         defaults={**defaults,'groups':None,'panel_layout':'shared_plain_grid'}
     return {'workflow':'molecules','structures':structures,'preset':'house','columns':None,
-            **({'page_policy':model.page_policy,'exports':'preview' if model.exports=='auto' else model.exports} if shared else {}),
+            **({'page_policy':model.page_policy,'exports':'canvas' if model.exports=='auto' else model.exports} if shared else {}),
             'scaffold_smiles':defaults['scaffold_smiles'],
             'scaffold_layout':'reference' if defaults['scaffold_smiles'] else 'rigid',
             'groups':defaults['groups'],'frame':True,'separators':True,
@@ -182,9 +191,14 @@ def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_i
                           isinstance(bridge,Bridge) and presentation in ('auto','interactive'))
         plan=plan_request(request,allow_network,shared=shared_molecules)
         timer.mark('input_resolution_and_planning')
+        if plan.get('framed_panel'):
+            if document_id is not None or presentation=='shared':
+                raise NeedsInput('framed_panel_requires_new_document',
+                    'Framed panels create one new complete table. Same-document framing is not supported by this route. Nothing was drawn.')
+            if presentation=='auto':presentation='interactive'
         if plan['workflow']=='molecules' and plan.get('groups') and presentation in ('background','interactive') and document_id is None:
             stage='scope_table_batch'
-            options={k:plan[k] for k in ('groups','preset','columns','scaffold_smiles','frame','separators') if k in plan}
+            options={k:plan[k] for k in ('groups','preset','columns','scaffold_smiles','frame','separators','exports') if k in plan}
             result=draw_structures(bridge,plan['structures'],str(out),presentation=presentation,**options)
             result['plan']=plan
             return result

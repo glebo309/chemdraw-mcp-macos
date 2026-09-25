@@ -67,7 +67,7 @@ def test_full_append_and_export_retains_stale_linked_name(tmp_path,monkeypatch):
         def export(self,did,path,fmt):
             Path(path).write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>')
     backend=Backend();monkeypatch.setattr(api_drawing,'get_backend',lambda bridge:backend)
-    result=api_drawing.run_api_drawing(Bridge(),{'structures':[{'compound_id':'new','label':'New','smiles':'CCO'}]},tmp_path/'out',42)
+    result=api_drawing.run_api_drawing(Bridge(),{'exports':'full','structures':[{'compound_id':'new','label':'New','smiles':'CCO'}]},tmp_path/'out',42)
     assert result['status']=='completed'
     assert ET.fromstring(backend.current).find('page/chemicalproperty') is not None
     assert result['checks']['native_svg_export'] is True

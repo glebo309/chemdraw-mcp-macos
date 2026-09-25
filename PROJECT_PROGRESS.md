@@ -2,6 +2,44 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## Development: draw-first delivery and explicit framed panels
+
+Shared molecule drawing and interactive framed tables now default to the
+editable canvas plus a CDXML recovery snapshot. Image export is explicit.
+The ordinary drawing request accepts `panel="framed"` and a heading, producing
+one rounded, shadowed table in one new document. Existing-document requests
+remain distinct; same-document framing is not implemented by this route.
+Advanced MCP and CLI manifests expose the same export choices.
+
+Constrained seeds are checked for coincident atoms. A singly attached new
+branch may rotate around its attachment to clear an overlap while retaining
+every reference atom and all bond lengths. Unresolved overlaps fail before a
+native write. Determinate measurement failures close their own staging copy;
+uncertain native outcomes still retain evidence without retrying.
+New seed bonds carry explicit foreground order so native near-crossing caches
+can be verified without inventing an order after import.
+
+Physical export now accepts unchanged native scope frames and separators,
+checking the complete drawing fingerprint in addition to chemical geometry.
+Explicit-document export uses guarded reads rather than requiring the user
+to select another tab. Preservation reads establish the add-in connection
+before selecting the read target, because opening the connection can change
+ChemDraw's active tab.
+
+A complete native 15-structure run, including the frame, physical exports and
+preservation of two existing documents, passed in 10.492 seconds on the
+development Mac. The white preview was inspected. A subsequent independent
+300-DPI export passed without redrawing. Full-export and canvas-only serial
+native acceptance both passed, preserving the existing document inventory.
+These are source-runtime results, not a new installer or compatibility claim.
+The final serial 15-member reference-scope checks took 6.289 seconds in canvas
+mode and 8.775 seconds with full exports. These are individual workflow
+measurements, excluding assistant latency. Both native acceptance cases passed.
+Final portable verification passed 1,249 tests with 101 optional skips. The
+native cases were run separately and serially. The macOS Swift compilation
+checks used the existing local SDK overlay. No installer was rebuilt or
+installed for these source-runtime checks.
+
 ## Development: complete scope batches and recovery
 
 Explicit plain-charge grouped drawings now measure the whole table in one
@@ -28,9 +66,10 @@ in 6.735 seconds, including native layout/style/frame checks and all image
 exports. It left one final document and retained the original document inventory.
 The white preview was visually inspected; the 3900 by 5117 RGBA PNG has a
 600-DPI physical scale and transparent margins on all sides. The full new
-desktop-API preservation workflow remains pending exclusive native acceptance:
+desktop-API preservation workflow was still pending exclusive native acceptance at that point:
 an installed runtime owned that connection during the component test. This
 result does not certify the complete integration or a new packaged release.
+Later source-runtime acceptance is recorded above.
 `tests/test_scope_table_live.py` exercises the full workflow serially when both
 native-test opt-ins are enabled.
 

@@ -127,10 +127,10 @@ def test_canvas_cannot_bypass_style_checks(drawing_backend, tmp_path, monkeypatc
     assert events == ['read', 'append']
 
 
-def test_harness_auto_preview_only_on_shared_path():
+def test_harness_auto_canvas_on_shared_path():
     from chemdraw_macos.harness import plan_request
     request = {'molecules': [{'format': 'smiles', 'value': 'CCO'}]}
-    assert plan_request(request, shared=True)['exports'] == 'preview'
+    assert plan_request(request, shared=True)['exports'] == 'canvas'
     assert 'exports' not in plan_request(request)
     assert plan_request({**request, 'exports': 'canvas'}, shared=True)['exports'] == 'canvas'
     with pytest.raises(ValueError, match='shared'):

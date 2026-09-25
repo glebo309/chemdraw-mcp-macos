@@ -218,7 +218,7 @@ def test_shared_runner_uses_single_api_append_without_seed_documents(tmp_path,mo
             calls.append(did)
             self.current=text
             path=tmp_path/'native.cdxml';path.write_text(text)
-            return {'status':'completed','document':{'document_id':did},'after_snapshot':str(path),'checks':{'page_unchanged':True}}
+            return {'status':'completed','document':{'document_id':did},'after_snapshot':str(path),'source_token':source_token(text),'checks':{'page_unchanged':True}}
     class Bridge:
         def _id(self,did):return did
         def documents(self):return {'documents':[{'document_id':42}]}
@@ -230,7 +230,7 @@ def test_shared_runner_uses_single_api_append_without_seed_documents(tmp_path,mo
     result=api_drawing.run_api_drawing(Bridge(),{'workflow':'molecules','structures':[{'compound_id':'1','label':'Test','smiles':'CCO'}]},tmp_path/'out')
     assert result['status']=='completed' and result['document']['document_id']==42
     assert calls==[42]
-    assert set(result['artifacts'])=={'cdxml','svg','png'}
+    assert set(result['artifacts'])=={'cdxml'}
     assert result['source_token']==source_token(Path(result['artifacts']['cdxml']).read_text())
 
 

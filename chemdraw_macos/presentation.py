@@ -22,6 +22,7 @@ def production_job(function=None, *, shared_molecules=False):
                 return function(bridge, *args, **kwargs)
             mode = ('shared' if shared_molecules else bridge.automatic_presentation()) if presentation == 'auto' else presentation
             separate_table=shared_molecules and kwargs.get('groups') is not None and mode=='interactive' and document_id is None
+            if separate_table and kwargs.get('exports','auto')=='auto':kwargs['exports']='canvas'
             if shared_molecules and not separate_table and (mode in ('shared','interactive') or document_id is not None):
                 import inspect
                 from pathlib import Path

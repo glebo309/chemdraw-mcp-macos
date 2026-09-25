@@ -335,7 +335,7 @@ def main(argv=None):
             result=build_reaction(bridge,output_dir=args.output,**options)
         elif args.command=='draw':
             options=json.loads(args.manifest.read_text())
-            if not isinstance(options,dict) or set(options)-{'schema_version','structures','preset','columns','pixels','scaffold_smiles','layout','charge_style','groups','frame','separators','scaffold_layout','presentation','document_id'}:raise ValueError('Invalid draw manifest fields')
+            if not isinstance(options,dict) or set(options)-{'schema_version','structures','preset','columns','pixels','scaffold_smiles','layout','charge_style','groups','frame','separators','scaffold_layout','presentation','document_id','exports'}:raise ValueError('Invalid draw manifest fields')
             if type(options.get('schema_version',1)) is not int or options.pop('schema_version',1)!=1:raise ValueError('Unsupported draw manifest schema')
             if args.style:options['preset']=inspect_style_file(args.style)['preset']
             result=draw_structures(bridge,output_dir=args.output,**options)
