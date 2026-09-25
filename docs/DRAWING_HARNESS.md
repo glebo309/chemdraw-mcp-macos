@@ -82,6 +82,10 @@ physical SVG, a 600-DPI transparent PNG and a white review preview. The export
 contains only the table, not the old parent and empty space on another sheet.
 Do not combine this route with `document_id` or shared presentation. It does
 not implement same-document decoration and never silently substitutes a copy.
+Interactive delivery now keeps this new working document visible throughout
+measurement and finishing. It does not open a second final drawing or use the
+clipboard. This owned-document replacement is not an arbitrary replacement
+operation on a user's pre-existing canvas.
 
 Repeated name/CAS lookups reuse locally validated results for up to five minutes
 in the same process. The cache has at most 128 entries, never writes queries to
@@ -200,6 +204,18 @@ or closes the original as a workaround. Other legacy separate workflows retain
 their existing untitled-document limits.
 
 ## Current acceptance scope
+
+The batch planner also aligns acyclic analogue panels when a complete supplied
+parent of 6 through 150 heavy atoms matches every input with stereochemistry
+respected. It uses constrained parent coordinates without changing molecular
+graphs or assigning new stereocentres. This depiction rule does not invent
+scope categories or infer a partial common substructure. Explicit scaffold
+requests and a unique matching live reference take precedence.
+Fresh regular acyclic seeds with at least six heavy atoms are straightened onto
+the 30/90-degree bond grid using only a rigid rotation. This removes inherited
+global tilt for eligible seeds; input ordering can still affect orientation when
+the first analogue has an irregular bond grid. It does not straighten an existing
+live reference or change bond lengths, conformations or stereochemistry.
 
 Portable tests exercise typed routing, chemistry breadth, strict rejection,
 ambiguity, missing verification, collisions, presentation and uncertainty.

@@ -15,6 +15,39 @@ REPLACEMENT_SCOPE=[
     'c1ccccc1CC2C=Cc3c2c(=O)n(C)c(=O)n3C', 'FC1C=Cc2c1c(=O)n(C)c(=O)n2C',
     'ClC1C=Cc2c1c(=O)n(C)c(=O)n2C', 'FC(F)(F)C1C=Cc2c1c(=O)n(C)c(=O)n2C']
 
+LYSINE_SCOPE=[
+    'C=C(C)OC(=O)[C@@H](N)CCCCN',
+    'C=C(C)OC(=O)[C@@H](N)C(C)CCCN',
+    'C=C(C)OC(=O)[C@@H](N)C(F)CCCN',
+    'C=C(C)OC(=O)[C@@H](N)CC(C)CCN',
+    'C=C(C)OC(=O)[C@@H](N)CC(O)CCN',
+    'C=C(C)OC(=O)[C@@H](N)CC(c1ccccc1)CCN',
+    'C=C(C)OC(=O)[C@@H](N)CCC(F)CN',
+    'C=C(C)OC(=O)[C@@H](N)CCC(C(F)(F)F)CN',
+    'C=C(C)OC(=O)[C@@H](N)CCCC(N)C']
+
+
+def test_acyclic_scope_automatically_preserves_whole_supplied_parent_coordinates():
+    from chemdraw_macos.api_drawing import plan_addition,_isolated
+    from chemdraw_macos.reaction_batch import set_paper
+    from chemdraw_macos.polish import chemical_signature
+    from rdkit import Chem
+    records=[{'compound_id':str(i),'label':str(i),'smiles':s} for i,s in enumerate(LYSINE_SCOPE)]
+    text,report=plan_addition(set_paper(EMPTY,'A3 landscape'),records,allow_page_expansion=True)
+    assert report['scaffold_smiles']==Chem.MolToSmiles(Chem.MolFromSmiles(LYSINE_SCOPE[0]))
+    assert report['reference_source']=='first_requested_structure'
+    root=ET.fromstring(text)
+    assert_core_orientation(_isolated(root,root.find('page/fragment')),text,report['scaffold_smiles'])
+    assert sorted(chemical_signature(text))==sorted(Chem.MolToSmiles(Chem.MolFromSmiles(s)) for s in LYSINE_SCOPE)
+
+
+def test_acyclic_automatic_parent_does_not_ignore_opposite_stereochemistry():
+    from chemdraw_macos.api_drawing import plan_addition
+    records=[{'compound_id':str(i),'label':str(i),'smiles':s} for i,s in enumerate(
+        [LYSINE_SCOPE[0],LYSINE_SCOPE[1].replace('@@','@')])]
+    _,report=plan_addition(EMPTY,records,allow_page_expansion=True)
+    assert report['scaffold_smiles'] is None
+
 
 def assert_core_orientation(before,added,scaffold):
     """Compare centred atom coordinates, without fitting away any rotation."""

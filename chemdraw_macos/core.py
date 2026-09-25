@@ -228,6 +228,10 @@ class Bridge:
                 time.sleep(.05)
             raise RuntimeError(f'Opened document could not be reconciled; working copy: {path}') from exc
 
+    def finish_scope(self,document_id,expected,arranged,decorated,decoration):
+        from .scope_finish import finish_scope
+        return finish_scope(self,document_id,expected,arranged,decorated,decoration)
+
     def set_visibility(self,document_id,visible):
         """Show/hide exactly the supplied document, never the whole application."""
         if type(visible) is not bool:raise ValueError('visible must be a boolean')

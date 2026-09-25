@@ -85,3 +85,25 @@ def test_nonhexagonal_molecule_keeps_existing_seed_orientation():
     before = mol.GetConformer().GetPositions().copy()
     assert orient_new_molecule(mol)['policy'] == 'seed_preserved'
     assert (mol.GetConformer().GetPositions() == before).all()
+def test_fresh_acyclic_lysine_parent_has_exact_zigzag_axes_without_stereo_change():
+    import math
+    from rdkit import Chem
+    from rdkit.Chem import rdDepictor
+    from chemdraw_macos.drawing_orientation import orient_new_molecule
+    mol=Chem.MolFromSmiles('C=C(C)OC(=O)[C@@H](N)CCCCN')
+    rdDepictor.Compute2DCoords(mol)
+    before=Chem.MolToSmiles(mol)
+    conf=mol.GetConformer()
+    lengths=[(conf.GetAtomPosition(b.GetBeginAtomIdx())-conf.GetAtomPosition(b.GetEndAtomIdx())).Length()
+             for b in mol.GetBonds()]
+    report=orient_new_molecule(mol)
+    assert report['policy']=='axis_aligned_acyclic'
+    for bond,length in zip(mol.GetBonds(),lengths):
+        v=conf.GetAtomPosition(bond.GetEndAtomIdx())-conf.GetAtomPosition(bond.GetBeginAtomIdx())
+        angle=math.degrees(math.atan2(v.y,v.x))
+        assert abs((angle-30+30)%60-30)<1e-6
+        assert abs(v.Length()-length)<1e-9
+    # The carbonyl is vertical; chain segments alternate +/-30 degrees.
+    v=conf.GetAtomPosition(5)-conf.GetAtomPosition(4)
+    assert abs(v.x)<1e-9
+    assert Chem.MolToSmiles(Chem.MolFromMolBlock(Chem.MolToMolBlock(mol)))==before

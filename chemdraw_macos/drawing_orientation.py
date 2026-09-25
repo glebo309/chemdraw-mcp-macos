@@ -4,7 +4,7 @@ import statistics
 
 
 def orient_new_molecule(mol):
-    """Align a regular six-ring edge vertically by the smallest rigid rotation.
+    """Align regular six-rings or long acyclic zigzags by a rigid rotation.
 
     This is a page convention, not a conformer or stereochemistry operation.
     Irregular rings, chairs and cages do not qualify. No coordinates are mirrored,
@@ -12,6 +12,7 @@ def orient_new_molecule(mol):
     """
     conf = mol.GetConformer()
     candidates = []
+    policy = 'axis_aligned_six_ring'
     for ring in mol.GetRingInfo().AtomRings():
         if len(ring) != 6:
             continue
@@ -30,6 +31,21 @@ def orient_new_molecule(mol):
         for index, angle in enumerate(angles):
             rotation = (math.pi / 2 - angle + math.pi / 2) % math.pi - math.pi / 2
             candidates.append((abs(rotation), rotation, ring[index], ring[(index + 1) % 6]))
+    if not candidates and not mol.GetRingInfo().NumRings() and mol.GetNumHeavyAtoms()>=6:
+        # Regular acyclic seeds share a 60-degree bond grid. Snap that grid to
+        # +/-30 degrees and vertical, eliminating global depiction tilt while
+        # retaining the complete conformer and its stereochemical handedness.
+        bonds=list(mol.GetBonds())
+        angles=[]
+        for bond in bonds:
+            v=conf.GetAtomPosition(bond.GetEndAtomIdx())-conf.GetAtomPosition(bond.GetBeginAtomIdx())
+            angles.append(math.atan2(v.y,v.x))
+        if angles:
+            angle=(math.pi/6-angles[0]+math.pi/6)%(math.pi/3)-math.pi/6
+            errors=[abs((a+angle-math.pi/6+math.pi/6)%(math.pi/3)-math.pi/6) for a in angles]
+            if max(errors)<math.radians(2):
+                candidates.append((abs(angle),angle,bonds[0].GetBeginAtomIdx(),bonds[0].GetEndAtomIdx()))
+                policy='axis_aligned_acyclic'
     if not candidates:
         return {'policy': 'seed_preserved', 'rotation_degrees': 0.0}
     # Quantize only the tie-break key, never atom coordinates or the rotation.
@@ -38,5 +54,5 @@ def orient_new_molecule(mol):
     for i in range(mol.GetNumAtoms()):
         p = conf.GetAtomPosition(i)
         conf.SetAtomPosition(i, (cosine * p.x - sine * p.y, sine * p.x + cosine * p.y, p.z))
-    return {'policy': 'axis_aligned_six_ring', 'rotation_degrees': math.degrees(angle),
+    return {'policy': policy, 'rotation_degrees': math.degrees(angle),
             'anchor_atom_indices': [a, b]}

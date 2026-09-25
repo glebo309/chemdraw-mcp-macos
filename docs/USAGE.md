@@ -16,6 +16,12 @@ It leaves one complete editable document without exporting images by default; th
 no follow-up decoration or import step. See [drawing performance](DRAWING_PERFORMANCE.md)
 for the batch route and measured scope of validation.
 
+With `presentation="interactive"`, one new window stays open throughout:
+initial structures, measured arrangement, then the finished frame. Other open
+drawings are preserved. Do not edit that working document while the operation
+runs; detected edits stop finishing and retain the document. Explicit background
+mode retains the hidden-copy rendering path.
+
 For the ordinary drawing entry point, supply `panel="framed"`, an optional
 `heading`, and every molecule in one request. Do not supply a document ID: this
 creates one new table and preserves existing drawings. Shared canvas requests

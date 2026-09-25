@@ -35,6 +35,7 @@ def production_job(function=None, *, shared_molecules=False):
                 plan['workflow']='molecules'
                 return run_shared(bridge,plan,out,document_id)
             bridge._production_depth = depth + 1
+            bridge._production_mode = mode
             try:
                 result = function(bridge, *args, **kwargs)
                 did = result.get('document', {}).get('document_id')
@@ -46,9 +47,12 @@ def production_job(function=None, *, shared_molecules=False):
                         result['document_closed'] = True
                     else:
                         bridge.set_visibility(did, True)
-                result['presentation'] = {'mode': mode, 'intermediates': 'hidden'}
+                details=result.get('presentation',{})
+                result['presentation'] = {**details,'mode':mode,
+                    'intermediates':'none' if details.get('same_working_document') else 'hidden'}
                 return result
             finally:
                 bridge._production_depth = depth
+                bridge._production_mode = None
     run.production_presentation = True
     return run

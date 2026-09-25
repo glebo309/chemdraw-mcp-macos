@@ -2,106 +2,28 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
-## Development: draw-first delivery and explicit framed panels
+## Development: drawing and harness performance
 
-The editable-checkout launcher now connects an existing graphical installation's
-shared MCP and terminal entry points directly to the locked source environment.
-Launchers are backed up, client configuration remains unchanged, and source
-execution never redirects into an older frozen app. Diagnostics identify the
-source directory, startup fingerprint and whether a restart is required.
-Running MCP processes must reconnect after source changes; hot reload during a
-native operation is not implemented.
+Interactive framed tables are measured and finished in one new visible document.
+Canvas-only delivery is the default; image exports are requested separately.
+Blank canvases initialize manual-edit defaults to the selected style. Existing
+drawings are preserved, and uncertain operations retain recovery evidence.
+A checkout launcher allows local development without reinstalling the app.
 
-The first insertion into an empty document now initializes native manual-edit
-defaults to the chosen preset. A native object-count guard runs before setters,
-and rereading verifies sizes, fonts, page bounds and file binding. Populated
-documents are never restyled by this initialization. Native blank-document font
-tables can omit unused default fonts, so their native document properties are
-checked separately in that case.
+Automatic layout considers wider rows, and acyclic analogue panels can share a
+complete supplied parent with stereochemistry preserved. Input ordering can
+still affect global acyclic orientation; this remains a known limitation.
 
-Verification passed 1,258 portable tests with 102 optional skips. A serial
-private-document native defaults test passed, preserving the pre-existing
-document inventory. A fresh process launched through the installed checkout
-entry point passed MCP initialization, current framed/export schema discovery
-and an offline chemistry call. Full live add-in acceptance of the new default
-initialization remains pending because another running client owned the port.
-No new package or public release was produced for this development switch.
+Successful MCP drawing replies omit bulky planning records while retaining
+checks, delivery paths and a link to the full local result. A four-compound
+native test reduced response size from 16,186 to 2,284 bytes and completed in
+11.55 seconds with one result document. This is server time, not assistant latency.
 
-Shared molecule drawing and interactive framed tables now default to the
-editable canvas plus a CDXML recovery snapshot. Image export is explicit.
-The ordinary drawing request accepts `panel="framed"` and a heading, producing
-one rounded, shadowed table in one new document. Existing-document requests
-remain distinct; same-document framing is not implemented by this route.
-Advanced MCP and CLI manifests expose the same export choices.
-
-Constrained seeds are checked for coincident atoms. A singly attached new
-branch may rotate around its attachment to clear an overlap while retaining
-every reference atom and all bond lengths. Unresolved overlaps fail before a
-native write. Determinate measurement failures close their own staging copy;
-uncertain native outcomes still retain evidence without retrying.
-New seed bonds carry explicit foreground order so native near-crossing caches
-can be verified without inventing an order after import.
-
-Physical export now accepts unchanged native scope frames and separators,
-checking the complete drawing fingerprint in addition to chemical geometry.
-Explicit-document export uses guarded reads rather than requiring the user
-to select another tab. Preservation reads establish the add-in connection
-before selecting the read target, because opening the connection can change
-ChemDraw's active tab.
-
-A complete native 15-structure run, including the frame, physical exports and
-preservation of two existing documents, passed in 10.492 seconds on the
-development Mac. The white preview was inspected. A subsequent independent
-300-DPI export passed without redrawing. Full-export and canvas-only serial
-native acceptance both passed, preserving the existing document inventory.
-These are source-runtime results, not a new installer or compatibility claim.
-The final serial 15-member reference-scope checks took 6.289 seconds in canvas
-mode and 8.775 seconds with full exports. These are individual workflow
-measurements, excluding assistant latency. Both native acceptance cases passed.
-Final portable verification passed 1,249 tests with 101 optional skips. The
-native cases were run separately and serially. The macOS Swift compilation
-checks used the existing local SDK overlay. No installer was rebuilt or
-installed for these source-runtime checks.
-
-## Development: complete scope batches and recovery
-
-Explicit plain-charge grouped drawings now measure the whole table in one
-native document and deliver the grid, heading, frame and exports in one final
-document. The planner uses real physical paper and retains bond scale. Native
-object matching uses graph and geometry instead of document order, so native
-renumbering or reordering cannot silently swap compound labels. Both the
-advanced MCP operation and CLI draw manifest reach this path. The ordinary
-background harness routes eligible grouped requests before the legacy untitled
-document guard.
-
-Preservation reads can select an explicit inactive untitled document under the
-native lock and restore the original tab without activating the application.
-The comparison excludes native page-handle churn but retains drawing content.
-Named drawings with unsaved edits also use the API read, avoiding native save
-side effects during preservation checks.
-Shared additions preserve narrowly supported linked name-caption metadata
-without using stale names as molecular identity. Unknown properties still fail
-closed. Native uncertainty returns available artifacts, audit checks and the
-last known retained document ID through MCP and CLI, without retrying a write.
-
-The serial development-Mac component test rendered the 15-member framed table
-in 6.735 seconds, including native layout/style/frame checks and all image
-exports. It left one final document and retained the original document inventory.
-The white preview was visually inspected; the 3900 by 5117 RGBA PNG has a
-600-DPI physical scale and transparent margins on all sides. The full new
-desktop-API preservation workflow was still pending exclusive native acceptance at that point:
-an installed runtime owned that connection during the component test. This
-result does not certify the complete integration or a new packaged release.
-Later source-runtime acceptance is recorded above.
-`tests/test_scope_table_live.py` exercises the full workflow serially when both
-native-test opt-ins are enabled.
-
-The locked-environment suite passed 1,236 tests with 100 optional skips. The
-macOS Swift checks used the existing local SDK module-map overlay. Regression
-coverage includes complete batch routing, label ownership after native object
-reordering, immutable linked caption metadata, guarded untitled preservation
-reads, and retained-result reporting through the harness, advanced MCP and CLI.
-The counts include portable/mock checks, not the skipped exclusive live run.
+Validation: 1,279 tests passed with 104 opt-in skips. Swift checks used a local
+SDK module-map overlay. Native tests on ChemDraw 23.0.1.11 verified single-window
+finishing, preservation and exports; previews were inspected. These changes
+are source-only, not a rebuilt installer or additional compatibility claim.
+See [drawing performance](docs/DRAWING_PERFORMANCE.md) for workflow limitations.
 
 ## 0.10.0rc22: exact native document IDs
 

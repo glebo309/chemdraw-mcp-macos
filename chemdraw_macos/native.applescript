@@ -97,6 +97,17 @@ on run argv
             set index of window of targetDoc to 1
             if ((id of document 1) as integer) is not wantedID then error "Could not select preservation-read document"
             return "true"
+        else if operation is "clear_owned_scope" then
+            if ((id of document 1) as integer) is not wantedID then error "Active scope changed; no clear dispatched"
+            if (my pathOfFile(file of targetDoc)) is not (item 3 of argv) then error "Working scope file changed"
+            if modified of targetDoc then error "Working scope was edited; no clear dispatched"
+            do command "selectAll"
+            if ((id of document 1) as integer) is not wantedID then error "Active scope changed before clear"
+            if modified of targetDoc then error "Working scope was edited before clear"
+            do command "clear"
+            if ((id of document 1) as integer) is not wantedID then error "Active scope changed during clear"
+            if (count of objects of targetDoc) is not 0 then error "Working scope clear incomplete"
+            return my jsonText(my documentRow(targetDoc))
         else if operation is "empty_document_style" then
             if ((id of document 1) as integer) is not wantedID then error "Active document changed before setting defaults"
             if (count of objects of targetDoc) is not 0 then error "Document is no longer empty; defaults unchanged"

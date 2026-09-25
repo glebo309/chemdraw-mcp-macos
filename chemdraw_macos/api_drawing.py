@@ -77,6 +77,19 @@ def plan_addition(before, structures, *, preset='house', columns=None, scaffold_
         from .drawing_defaults import plan_drawing_defaults
         scaffold_smiles=plan_drawing_defaults(records)['scaffold_smiles']
         if scaffold_smiles:candidates=live_candidates(scaffold_smiles)
+    if not candidates and not scaffold_smiles and len(records)>1:
+        # Acyclic analogue tables also need a shared depiction. Use only a
+        # complete supplied parent present in every graph, including stereo;
+        # this does not infer chemistry, a partial MCS, or scope categories.
+        mols=[parse(r['canonical_smiles']) for r in records]
+        for i in sorted(range(len(mols)),key=lambda i:(mols[i].GetNumAtoms(),records[i]['canonical_smiles'])):
+            core=mols[i]
+            if not 6<=core.GetNumHeavyAtoms()<=150 or core.GetRingInfo().NumRings():continue
+            if len(Chem.GetMolFrags(core))!=1 or any(a.GetAtomicNum()==1 for a in core.GetAtoms()):continue
+            if all(m.HasSubstructMatch(core,useChirality=True) for m in mols):
+                scaffold_smiles=records[i]['canonical_smiles']
+                candidates=live_candidates(scaffold_smiles)
+                break
     if not scaffold_smiles and len(records)>1:
         # A depiction-only core: preserve a complete ring/linker framework from
         # an input, never a guessed MCS or a chemical transformation. Match every

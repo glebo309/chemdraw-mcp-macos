@@ -1,5 +1,13 @@
 # Compatibility and limits
 
+Development, 2026-09-25: interactive complete framed tables now finish in one
+visible, newly owned document through guarded native clear and API insertion.
+ChemDraw 23.0.1.11 tests retained the document ID, measured layout, native frame,
+physical paper and other open drawings. No clipboard or mouse control is used.
+The operation is not exposed for arbitrary replacement of existing user
+documents. Explicit background tables and plain shared-table measurements retain
+their separate hidden-document paths; this is not a universal no-window claim.
+
 2026-09-23 rc17: ordinary explicit reactions through `chemdraw_draw` / `produce`
 use complete local assembly followed by native measurement and final export.
 The supported physical papers are A4 portrait, A4 landscape and A3 landscape,

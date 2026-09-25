@@ -25,15 +25,39 @@ tests closed only their owned result documents and retained native artifacts.
 
 ## Complete framed tables (development)
 
-Explicit grouped tables with plain charges now use two whole-document native
-opens: one hidden measuring document, then one complete final document. There
-is no molecule-by-molecule import, cleanup loop or second decoration workflow.
+Interactive grouped tables with plain charges now use one visible working
+document. Structures appear there first; native measurements then drive the
+layout and rounded frame in that same document ID. There is no second import,
+molecule-by-molecule window loop or clipboard operation. Native replacement
+is restricted to the newly owned document, with content, active-ID, file and
+modified-state guards plus recovery snapshots. Changed or uncertain work is
+retained rather than retried or automatically closed.
 The measured table selects A4 portrait, A4 landscape or A3 landscape without
 shrinking bonds. Chemical identity, native style, cell layout and frame geometry
 are checked before delivery. Returned results include stage timings. A requested
 preview or full export includes a white image ready for visual review.
 
-A serial native component test on ChemDraw 23.0.1.11 rendered a 15-member,
+Automatic column selection also tries wider rows when three or fewer columns
+cannot fit. The candidates reuse the same native measurement, without another
+import. Explicit column counts remain an upper bound. A retained 16-compound,
+five-group native snapshot now selects four columns on A3 landscape in a
+0.400-second offline layout replay. This measures layout only, not rendering.
+
+Explicit background rendering retains its two hidden-copy opens and may still
+flash while opening. The API finishing route needs an active visible document.
+Reusing a pre-existing user document for a complete framed table is still not
+implemented; ordinary shared molecule insertion is a separate supported path.
+
+A serial interactive test with two other drawings open verified exactly one
+visible creation, no intermediate close, the same final document ID and unchanged
+originals. Native chemistry, style, layout, paper, frame and export checks passed
+in 9.446 seconds for the 15-member test table. A separate replay of the retained
+16-member grouped request completed in 7.399 seconds with one creation and no
+close. Both white previews were visually inspected. These are server workflow
+times, not total assistant latency. The full three-case native suite also
+retained passing background canvas and full-export checks.
+
+An earlier serial native component test on ChemDraw 23.0.1.11 rendered a 15-member,
 three-column, five-row framed table in 6.735 seconds, including measurement,
 native checks, SVG, 600-DPI transparent PNG and a white preview. It left one
 final document. The existing document inventory was unchanged, and guarded

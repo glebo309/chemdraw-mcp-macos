@@ -1,5 +1,6 @@
 """Typed stdio MCP tools for native ChemDraw on macOS."""
 from typing import Literal
+from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from .core import Bridge,PRESETS
@@ -27,6 +28,22 @@ from .native_actions import NativeAction
 from .harness import DrawingRequest, run_drawing
 from .recovery import retained_job_failure
 
+
+def _drawing_reply(result:dict,output_dir:str)->dict:
+    """Avoid sending retained planning payloads through the model on success."""
+    if result.get('status')!='completed':return result
+    details=Path(output_dir).expanduser()/'result.json'
+    # No extra writes or native calls after completion. Older workflows without
+    # a retained full result keep their existing response unchanged.
+    if not details.is_file():return result
+    bulky={'plan','planning','group_plan'}
+    reply={key:value for key,value in result.items() if key not in bulky}
+    if isinstance(reply.get('audit'),dict):
+        reply['audit']={key:value for key,value in reply['audit'].items() if key not in bulky}
+    reply['details']=str(details)
+    return reply
+
+
 INSTRUCTIONS = (
     'Controls actual ChemDraw through its desktop API and bounded AppleScript commands. Natural-language interpretation and '
     'tool selection belong to the connected AI client; this server has no embedded LLM. '
@@ -39,6 +56,8 @@ INSTRUCTIONS = (
     'groups, frame=true and presentation=interactive. This complete batch leaves one final document. '
     'Do not follow it with decorate_scope, import_file, or another drawing job. '
     'Use the returned white preview for visual review; no image conversion is needed. '
+    'Successful drawing replies are compact; details points to the full local result. '
+    'Do not read diagnostic files or inspect source code after a successful drawing unless needed for the user request. '
     'Do not use mouse or keyboard automation to bypass a rejected drawing, page-fit check or unsaved-document guard. '
     'Do not remove participants or change supplied labels/conditions to force a reaction to fit. '
     'Read molecular_graphs from read_live_document or analyze_document after human edits. '
@@ -175,7 +194,7 @@ def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False
     On table_needs_space stop: never retry smaller batches, drop requested entries,
     or create a second document to bypass a same-document request.
     """
-    return run_drawing(bridge(),request.model_dump(),output_dir,allow_network,presentation,document_id=document_id)
+    return _drawing_reply(run_drawing(bridge(),request.model_dump(),output_dir,allow_network,presentation,document_id=document_id),output_dir)
 
 @mcp.tool(annotations=NAME_WRITE)
 def chemdraw_draw_name(name:str,output_dir:str,allow_network:bool=False,preset:Literal['house','acs-1996']='house',pixels:int=2400)->dict:
@@ -355,7 +374,7 @@ def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal
 
     NEW FRAMED TABLE: supply groups=[{label,compound_ids}], frame=true,
     presentation=interactive and no document_id. With plain charges, the complete
-    batch uses one hidden measuring document and leaves ONE final framed document.
+    batch measures and finishes in ONE visible, newly owned document.
     Do not call decorate_scope or import_file afterward. Shared and interactive
     framed tables default to canvas-only plus CDXML recovery snapshot. Request
     exports=preview for a white review image, full for physical SVG/600-DPI PNG.
@@ -371,8 +390,8 @@ def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal
     """
     from .harness import NeedsInput
     try:
-        return draw_structures(bridge(),structures,output_dir,preset,columns,pixels,scaffold_smiles,layout,charge_style,
-                               groups=groups,frame=frame,separators=separators,scaffold_layout=scaffold_layout,presentation=presentation,document_id=document_id,exports=exports)
+        return _drawing_reply(draw_structures(bridge(),structures,output_dir,preset,columns,pixels,scaffold_smiles,layout,charge_style,
+                               groups=groups,frame=frame,separators=separators,scaffold_layout=scaffold_layout,presentation=presentation,document_id=document_id,exports=exports),output_dir)
     except NeedsInput as exc:
         return {'status':'needs_input','code':exc.code,'message':str(exc),
                 'document_id':document_id,**exc.detail}
