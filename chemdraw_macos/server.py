@@ -7,7 +7,7 @@ from .diagnostics import doctor
 from .workflow import analyze_document,polish_document
 from .editing import edit_document
 from .scope import grid_document
-from .batch import batch_export
+from .batch import batch_export, NativeUncertain
 from .annotations import annotate_document,inspect_annotations_document
 from .identifiers import inspect_identifier
 from .scope_design import propose_scope,propose_custom_scope
@@ -25,6 +25,7 @@ from .lab_style import make_package,save_package,load_package,run_styled_job
 from .first_run import run_first_run
 from .native_actions import NativeAction
 from .harness import DrawingRequest, run_drawing
+from .recovery import retained_job_failure
 
 INSTRUCTIONS = (
     'Controls actual ChemDraw through its desktop API and bounded AppleScript commands. Natural-language interpretation and '
@@ -34,6 +35,10 @@ INSTRUCTIONS = (
     'or chemdraw_draw_structures with presentation=shared. Auto and interactive molecule '
     'drawing reuse the active ChemDraw canvas through one API insertion. No per-molecule windows. '
     'Do not repeat a whole drawing job merely to change labels or numbering. '
+    'For a NEW framed table, call chemdraw_draw_structures once with all structures, '
+    'groups, frame=true and presentation=interactive. This complete batch leaves one final document. '
+    'Do not follow it with decorate_scope, import_file, or another drawing job. '
+    'Use the returned white preview for visual review; no image conversion is needed. '
     'Do not use mouse or keyboard automation to bypass a rejected drawing, page-fit check or unsaved-document guard. '
     'Do not remove participants or change supplied labels/conditions to force a reaction to fit. '
     'Read molecular_graphs from read_live_document or analyze_document after human edits. '
@@ -293,7 +298,10 @@ def chemdraw_run_styled_job(package_path:str,workflow:Literal['draw','reaction',
 @mcp.tool(annotations=WRITE)
 def chemdraw_decorate_scope(document_id:int,output_dir:str,groups:list[dict],expected_source_token:str,frame:bool=True,separators:bool=True,pixels:int=3200)->dict:
     """Decorate an existing flat scope in a NEW copy with an optional native rounded shadow frame and dotted group dividers. Explicit groups {label,fragment_ids,caption_ids} must own every source fragment and caption once and form nonoverlapping top-to-bottom bands. Labels can be empty; nonempty labels need measured free space. No automatic chemical classification or molecule reordering. Inspect current IDs/source token first. Native editable CDXML/SVG/PNG with source preservation and layout audit; human visual review still required. New absolute output directory only; uncertain native writes stop without retry."""
-    return decorate_scope_document(bridge(),document_id,output_dir,groups,expected_source_token,frame,separators,pixels)
+    try:
+        return decorate_scope_document(bridge(),document_id,output_dir,groups,expected_source_token,frame,separators,pixels)
+    except NativeUncertain as exc:
+        return retained_job_failure(output_dir,exc)
 
 @mcp.tool(annotations=READ)
 def chemdraw_inspect_symbols(document_id:int)->dict:
@@ -337,7 +345,27 @@ def chemdraw_propose_scope(parent_smiles:str,handle_atom_map:int,profile:Literal
 
 @mcp.tool(annotations=WRITE)
 def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal['house','acs-1996']|dict='house',columns:int|None=None,pixels:int=3200,scaffold_smiles:str|None=None,layout:dict|None=None,charge_style:Literal['plain','circled']='plain',groups:list[dict]|None=None,frame:bool=True,separators:bool=True,scaffold_layout:Literal['rigid','reference']='rigid',presentation:Literal['auto','background','interactive','shared']='auto',document_id:int|None=None)->dict:
-    """Advanced explicit-input drawing; prefer chemdraw_draw for ordinary requests. Accept 1..24 {compound_id,label,smiles} records. Keep preset=house unless the USER requests another style. Shared/auto/interactive append one complete batch to the active canvas, including untitled documents. Tables use one hidden native measuring copy, closed before final insertion, with visible-ink center and caption-baseline checks. No clipboard or keyboard movement. Overflow appends identical vertical physical pages in the SAME document, without shrinking molecules or dropping entries. Supply document_id to bind the active canvas. A matching live parent or verified common ring framework supplies orientation; scaffold_smiles can specify a core. Omit columns for automatic fit. IDs are not duplicate captions. Shared batches support plain charges and flat molecules/captions only; custom layout/style, decorated groups and circled charges are rejected. Explicit background retains the separate legacy workflow. Use chemdraw_export_figure for physical-scale publication exports. Do not open extra final documents or retry uncertain writes. Review final appearance."""
+    """Draw 1..24 explicit {compound_id,label,smiles} records in ONE call. Keep preset=house unless requested otherwise.
+
+    Plain shared/auto batches append to the active canvas, including untitled drawings.
+    Bind document_id for a specific active canvas. Native measurement checks ink
+    centers and label baselines; overflow adds identical pages without shrinking.
+    A matching live parent supplies orientation; scaffold_smiles specifies a core.
+
+    NEW FRAMED TABLE: supply groups=[{label,compound_ids}], frame=true,
+    presentation=interactive and no document_id. With plain charges, the complete
+    batch uses one hidden measuring document and leaves ONE final framed document.
+    Do not call decorate_scope or import_file afterward. Returns CDXML, physical
+    SVG, 600-DPI PNG and a white preview. Background closes its final document.
+    Omit columns for automatic fit; IDs do not add duplicate captions.
+
+    Same-document decoration/custom layouts/circled charges remain unsupported;
+    never silently change that request to a new copy. Other separate options retain
+    the legacy workflow. No mouse, keyboard or renderer fallback. Inspect the returned
+    preview directly. On uncertain status, use retained IDs/artifacts read-only;
+    never redraw, reimport or start another CLI connection. Prefer chemdraw_draw
+    for ordinary names and simple drawings.
+    """
     from .harness import NeedsInput
     try:
         return draw_structures(bridge(),structures,output_dir,preset,columns,pixels,scaffold_smiles,layout,charge_style,
@@ -345,6 +373,8 @@ def chemdraw_draw_structures(structures:list[dict],output_dir:str,preset:Literal
     except NeedsInput as exc:
         return {'status':'needs_input','code':exc.code,'message':str(exc),
                 'document_id':document_id,**exc.detail}
+    except NativeUncertain as exc:
+        return retained_job_failure(output_dir,exc)
 
 @mcp.tool(annotations=READ)
 def chemdraw_inspect_annotations(document_id:int)->dict:

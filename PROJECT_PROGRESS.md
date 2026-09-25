@@ -2,6 +2,45 @@
 
 Experimental macOS builds are available on [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases). Native results below are from ChemDraw 23.0.1.11 on the development Mac. Skipped tests are not passes, and local results do not establish compatibility with other machines.
 
+## Development: complete scope batches and recovery
+
+Explicit plain-charge grouped drawings now measure the whole table in one
+native document and deliver the grid, heading, frame and exports in one final
+document. The planner uses real physical paper and retains bond scale. Native
+object matching uses graph and geometry instead of document order, so native
+renumbering or reordering cannot silently swap compound labels. Both the
+advanced MCP operation and CLI draw manifest reach this path. The ordinary
+background harness routes eligible grouped requests before the legacy untitled
+document guard.
+
+Preservation reads can select an explicit inactive untitled document under the
+native lock and restore the original tab without activating the application.
+The comparison excludes native page-handle churn but retains drawing content.
+Named drawings with unsaved edits also use the API read, avoiding native save
+side effects during preservation checks.
+Shared additions preserve narrowly supported linked name-caption metadata
+without using stale names as molecular identity. Unknown properties still fail
+closed. Native uncertainty returns available artifacts, audit checks and the
+last known retained document ID through MCP and CLI, without retrying a write.
+
+The serial development-Mac component test rendered the 15-member framed table
+in 6.735 seconds, including native layout/style/frame checks and all image
+exports. It left one final document and retained the original document inventory.
+The white preview was visually inspected; the 3900 by 5117 RGBA PNG has a
+600-DPI physical scale and transparent margins on all sides. The full new
+desktop-API preservation workflow remains pending exclusive native acceptance:
+an installed runtime owned that connection during the component test. This
+result does not certify the complete integration or a new packaged release.
+`tests/test_scope_table_live.py` exercises the full workflow serially when both
+native-test opt-ins are enabled.
+
+The locked-environment suite passed 1,236 tests with 100 optional skips. The
+macOS Swift checks used the existing local SDK module-map overlay. Regression
+coverage includes complete batch routing, label ownership after native object
+reordering, immutable linked caption metadata, guarded untitled preservation
+reads, and retained-result reporting through the harness, advanced MCP and CLI.
+The counts include portable/mock checks, not the skipped exclusive live run.
+
 ## 0.10.0rc22: exact native document IDs
 
 Active-document IDs use Foundation JSON serialization rather than AppleScript

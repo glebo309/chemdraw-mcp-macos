@@ -397,6 +397,10 @@ def main(argv=None):
                 if imported:bridge.close(did)
         print(json.dumps(result,indent=2,ensure_ascii=False));return 0
     except Exception as exc:
+        from .batch import NativeUncertain
+        if isinstance(exc,NativeUncertain) and getattr(args,'output',None):
+            from .recovery import retained_job_failure
+            print(json.dumps(retained_job_failure(args.output,exc)),file=sys.stderr);return 1
         print(json.dumps({'status':'error','error':str(exc)}),file=sys.stderr);return 1
     finally:transactions.close()
 

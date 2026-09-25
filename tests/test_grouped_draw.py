@@ -68,7 +68,8 @@ def test_grouping_reuses_measured_auto_columns_instead_of_hardcoded_three(tmp_pa
     from test_draw import ETHANOL
     from test_scope import measured
     class Native(BatchBridge):
-        def create(self,text):
+        def create(self,text,visible=False):
+            assert visible is False
             import xml.etree.ElementTree as ET
             root=ET.fromstring(measured(text))
             # The shared oracle centres all text; native group headings are left aligned.
@@ -78,7 +79,11 @@ def test_grouping_reuses_measured_auto_columns_instead_of_hardcoded_three(tmp_pa
             return super().create(ET.tostring(root,encoding='unicode'))
         def import_file(self,path):return self.create(ETHANOL)
         def clean(self,did):pass
+        def export(self,did,path,fmt,pixels=3200):
+            if fmt=='svg':
+                Path(path).write_text('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"/>')
+            else:super().export(did,path,fmt,pixels)
     records=[{'compound_id':str(i),'label':'Long caption '+str(i)+' with additional detail','smiles':'CCO'} for i in range(4)]
     result=draw_structures(Native(tmp_path/'work'),records,str(tmp_path/'out'),
         groups=[{'label':'Structures','compound_ids':[str(i) for i in range(4)]}])
-    assert result['audit']['grouping']['plan']['layout']['columns']==result['audit']['grid_audit']['layout']['columns']
+    assert result['group_plan']['layout']['columns']==result['audit']['planning']['columns']

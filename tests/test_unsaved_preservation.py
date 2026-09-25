@@ -1,4 +1,5 @@
 from pathlib import Path
+from contextlib import nullcontext
 from types import SimpleNamespace
 
 from chemdraw_macos import addin
@@ -8,6 +9,8 @@ from chemdraw_macos.core import Bridge
 
 def test_untitled_preservation_reads_native_api_without_saving(tmp_path, monkeypatch):
     bridge = object.__new__(Bridge)
+    bridge.lock = nullcontext()
+    bridge._run = lambda op: 42 if op == 'active_document' else None
     bridge.inspect = lambda did: {'document': {'document_id': did, 'file': '', 'modified': True}}
     bridge._new_path = lambda suffix, category: tmp_path/('recovery'+suffix)
     def forbidden(*args):

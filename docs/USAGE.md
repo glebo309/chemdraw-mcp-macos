@@ -1,5 +1,21 @@
 # Usage
 
+## One complete framed table
+
+From the source checkout, use the supplied explicit-structure manifest:
+
+```sh
+uv run --locked --extra chemistry chemdraw-mac draw --manifest examples/framed-table.json --output /absolute/new-output-folder
+```
+
+The output directory must not already exist. Use either this CLI process or an
+assistant's connected MCP, not both at once. The matching MCP operation is
+`chemdraw_draw_structures` with the manifest fields except `schema_version`.
+The request includes every structure, its groups and the frame in one call.
+It leaves one complete editable document and returns a white preview; there is
+no follow-up decoration or import step. See [drawing performance](DRAWING_PERFORMANCE.md)
+for the batch route and measured scope of validation.
+
 ## Physical exports and paginated shared tables (rc10)
 
 Use `chemdraw_export_figure(document_id, output_dir, dpi=600, include_pdf=False)`

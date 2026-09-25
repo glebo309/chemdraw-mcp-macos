@@ -111,7 +111,26 @@ This decoration policy applies to the separate background workflow. On the share
 canvas, `panel="auto"` selects a plain aligned grid before native execution while
 retaining the common core. No initial rejection or retry with `plain` is needed.
 Explicit decorations supplied through the advanced drawing tool remain unsupported
-in shared mode; they are not silently removed.
+in shared mode; they are not silently removed. For a requested new framed table,
+send all records and ordered `groups` to `chemdraw_draw_structures` with
+`presentation="interactive"`, `frame=true` and no existing `document_id`.
+Plain-charge grouped tables use one measuring copy and one complete final copy,
+not a per-molecule workflow followed by a separate decoration call. The output
+includes editable CDXML, physical-scale SVG, 600-DPI transparent PNG, a white
+preview and timings. `pixels` remains a legacy option on this path; the physical
+PNG scale is set by 600 DPI, not by fitting every figure to the same pixel box.
+
+The basic shared path also preserves supported linked name-caption metadata.
+A stale name does not replace the live atom/bond graph, and its metadata is
+checked unchanged rather than requiring the user to delete the caption.
+Other unsupported object types still fail before insertion.
+
+If a native call becomes uncertain, the response includes available retained
+artifacts, the last known working document ID and the audit location. These are
+recovery evidence, not a successful completion. Do not redraw, import, decorate
+again, switch to mouse control or start another CLI connection. Inspect the
+reported document and audit read-only. A missing document ID means the native
+response did not establish one, not permission to create a replacement.
 
 In both auto and plain shared batches, a unique matching live molecular graph
 supplies orientation. If replacing its substituent prevents a whole-parent match,

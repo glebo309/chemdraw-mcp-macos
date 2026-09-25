@@ -1,5 +1,37 @@
 # Drawing performance
 
+## Complete framed tables (development)
+
+Explicit grouped tables with plain charges now use two whole-document native
+opens: one hidden measuring document, then one complete final document. There
+is no molecule-by-molecule import, cleanup loop or second decoration workflow.
+The measured table selects A4 portrait, A4 landscape or A3 landscape without
+shrinking bonds. Chemical identity, native style, cell layout and frame geometry
+are checked before delivery. Returned results include stage timings and a white
+preview ready for visual review.
+
+A serial native component test on ChemDraw 23.0.1.11 rendered a 15-member,
+three-column, five-row framed table in 6.735 seconds, including measurement,
+native checks, SVG, 600-DPI transparent PNG and a white preview. It left one
+final document. The existing document inventory was unchanged, and guarded
+selection/restoration was exercised. This is one component measurement, not a
+median, prompt-to-answer benchmark or complete preservation acceptance. An
+already-connected installed runtime prevented testing the development runtime's
+desktop-API preservation reads in that run. The image was visually reviewed on
+white for orientation, spacing, labels, charges, frame and clipping.
+
+Use `chemdraw_draw_structures` with `groups`, `frame=true` and
+`presentation="interactive"` when one new framed document is wanted. Do not add
+a subsequent decoration or import call. `presentation="background"` closes the
+owned final document after delivery. Explicit same-document requests remain
+same-document requests; this optimization does not silently redirect them.
+
+Most delay in a failed multi-call interaction can be outside actual rendering.
+An uncertain result now returns its retained document ID, artifacts and audit
+with `retry_safe=false`. Inspect these read-only; do not recreate the figure or
+start another CLI connection to bypass the failure. Successful previews are
+already white, so they do not need a separate image-conversion command.
+
 Measurements from 2026-09-23, macOS 15.6 on Apple Silicon, ChemDraw 23.0.1.11,
 Python 3.13.2, RDKit 2026.3.6 and resvg-py 0.5.0. These are server workflow times,
 not prompt-to-answer times. Model reasoning, client startup, tool selection and

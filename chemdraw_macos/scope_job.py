@@ -110,7 +110,7 @@ def arrange_scope_groups(text,cells,groups,columns=4,layout=None,frame=True,sepa
     if len(ordered_ids)!=len(set(ordered_ids)) or set(ordered_ids)!=set(by_id):
         raise ValueError('Groups must own every selected compound exactly once.')
     ordered = [{k:v for k,v in by_id[cid].items() if k in
-                {'compound_id','fragment_ids','caption_id','metadata_id','yield_percent'}} for cid in ordered_ids]
+                {'compound_id','fragment_ids','caption_id','metadata_id','metadata_text','yield_percent'}} for cid in ordered_ids]
     columns = min(columns,len(ordered))
     uniform,layout = arrange_scope(text,ordered,columns=columns,**_spacing(layout or {}))
     root = _root(uniform);page = root.find('page');objects = {e.get('id'):e for e in page}

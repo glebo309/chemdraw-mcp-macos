@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "structures": [
+    {"compound_id":"1","label":"R = H","smiles":"O=C(O)c1ccccc1"},
+    {"compound_id":"2","label":"R = Me","smiles":"O=C(O)c1ccc(C)cc1"},
+    {"compound_id":"3","label":"R = OMe","smiles":"O=C(O)c1ccc(OC)cc1"},
+    {"compound_id":"4","label":"R = F","smiles":"O=C(O)c1ccc(F)cc1"}
+  ],
+  "groups": [{"label":"Illustrative structures","compound_ids":["1","2","3","4"]}],
+  "scaffold_smiles": "O=C(O)c1ccccc1",
+  "columns": 2,
+  "preset": "house",
+  "frame": true,
+  "separators": false,
+  "presentation": "interactive"
+}

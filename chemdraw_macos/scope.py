@@ -40,8 +40,12 @@ def validate_cells(text,cells,prepared=False):
         raise ValueError('Supply 1 to 100 explicit compound cells')
     fragments=[];captions=[];compound_ids=[]
     for cell in cells:
-        allowed={'compound_id','fragment_ids','caption_id','yield_percent'}|({'metadata_id'} if prepared else set())
+        allowed={'compound_id','fragment_ids','caption_id','yield_percent'}|({'metadata_id','metadata_text'} if prepared else set())
         if not isinstance(cell,dict) or set(cell)-allowed:raise ValueError('Unknown cell fields')
+        if 'metadata_text' in cell:
+            label=cell['metadata_text']
+            if not isinstance(label,str) or not label.strip() or len(label)>120 or any(ord(c)<32 for c in label):
+                raise ValueError('Invalid explicit table caption')
         cid=cell.get('compound_id')
         if not isinstance(cid,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,31}',cid):
             raise ValueError('Invalid compound_id; use a short explicit identifier')
@@ -67,6 +71,7 @@ def validate_cells(text,cells,prepared=False):
 
 
 def _metadata(cell):
+    if 'metadata_text' in cell:return cell['metadata_text']
     value=cell.get('yield_percent')
     return cell['compound_id']+(f' · {value:g}%' if value is not None else '')
 

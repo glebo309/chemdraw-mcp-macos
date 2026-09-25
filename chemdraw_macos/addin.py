@@ -193,6 +193,23 @@ class AddinReadError(RuntimeError):
         super().__init__(message+' ('+self.stage+')')
 
 
+def read_preserving_active(bridge, document_id):
+    """Internal preservation read of an explicit document, restoring tab order.
+
+    Public reads/writes keep their strict active-target contract. Never activate
+    the application, touch selection, save an untitled original, or steal focus
+    back if another actor changed the active document during this read.
+    """
+    with bridge.lock:
+        active=bridge._run('active_document')
+        switched=active!=document_id
+        if switched:bridge._run('select_document',document_id,active)
+        try:return get_backend(bridge).read(document_id)
+        finally:
+            if switched and bridge._run('active_document')==document_id:
+                bridge._run('select_document',active,document_id)
+
+
 def read_document(bridge, channel, document_id):
     try:did=bridge._id(document_id)
     except (ValueError, TypeError, OverflowError) as exc:

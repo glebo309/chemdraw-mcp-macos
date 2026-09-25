@@ -175,6 +175,11 @@ def draw_structures(bridge,structures,output_dir,preset='house',columns=None,pix
         validate_scaffold_inputs([r['canonical_smiles'] for r in records],scaffold_smiles)
     if columns is not None and (type(columns) is not int or not 1<=columns<=len(records)):
         raise ValueError('Columns must be an integer from 1 through structure count')
+    if groups is not None and charge_style=='plain':
+        from .scope_table import draw_scope_table
+        return draw_scope_table(bridge,structures,output_dir,groups=groups,preset=preset,
+            columns=columns,pixels=pixels,scaffold_smiles=scaffold_smiles,layout=layout,
+            frame=frame,separators=separators)
     audit={'status':'in_progress','checks':{},'visual_review':'required','renderer':'native ChemDraw',
            'coordinate_seed':'RDKit MOL writer; native Clean Up Structure runs on each new private import',
            'limitations':'Labels are caller supplied, not name-verified. No common-scaffold alignment, experimental yields or comprehensive intramolecular collision checks.'}

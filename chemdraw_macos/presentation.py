@@ -21,7 +21,8 @@ def production_job(function=None, *, shared_molecules=False):
             if depth:
                 return function(bridge, *args, **kwargs)
             mode = ('shared' if shared_molecules else bridge.automatic_presentation()) if presentation == 'auto' else presentation
-            if shared_molecules and (mode in ('shared','interactive') or document_id is not None):
+            separate_table=shared_molecules and kwargs.get('groups') is not None and mode=='interactive' and document_id is None
+            if shared_molecules and not separate_table and (mode in ('shared','interactive') or document_id is not None):
                 import inspect
                 from pathlib import Path
                 from .shared import run_shared

@@ -120,11 +120,14 @@ def _document_content(bridge,document_id):
         return fingerprint(_native(clipboard,bridge,document_id)['cdxml'])
     path=bridge._new_path('.cdxml','backups')
     from .core import Bridge
-    if isinstance(bridge, Bridge) and not _native(bridge.inspect,document_id)['document']['file']:
-        # Native save/export would bind an untitled user document to a filename.
-        # The desktop API reads current unsaved content without that side effect.
-        from .addin import get_backend
-        path.write_text(_native(get_backend(bridge).read,document_id)['cdxml'])
+    state=_native(bridge.inspect,document_id)['document'] if isinstance(bridge,Bridge) else None
+    if state is not None and (not state['file'] or state.get('modified')):
+        # Native save/export can bind an untitled document or clear a dirty flag.
+        # Read unsaved content through the API, including named modified drawings.
+        from .addin import read_preserving_active
+        path.write_text(_native(read_preserving_active,bridge,document_id)['cdxml'])
+        from .shared import fingerprint
+        return fingerprint(path.read_text())
     else:
         _native(bridge.export,document_id,str(path),'cdxml')
     root=validate_cdxml(path.read_text())

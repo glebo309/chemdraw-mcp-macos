@@ -182,6 +182,12 @@ def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_i
                           isinstance(bridge,Bridge) and presentation in ('auto','interactive'))
         plan=plan_request(request,allow_network,shared=shared_molecules)
         timer.mark('input_resolution_and_planning')
+        if plan['workflow']=='molecules' and plan.get('groups') and presentation in ('background','interactive') and document_id is None:
+            stage='scope_table_batch'
+            options={k:plan[k] for k in ('groups','preset','columns','scaffold_smiles','frame','separators') if k in plan}
+            result=draw_structures(bridge,plan['structures'],str(out),presentation=presentation,**options)
+            result['plan']=plan
+            return result
         if plan['workflow']=='reaction' and presentation!='shared' and document_id is None:
             from .reaction_batch import run_reaction_batch
             stage='reaction_batch'
@@ -227,8 +233,8 @@ def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_i
     except NeedsInput as exc:
         return {'status':'needs_input','stage':stage,'code':exc.code,'message':str(exc),**exc.detail}
     except NativeUncertain as exc:
-        return {'status':'uncertain','stage':stage,'code':'native_state_uncertain','message':str(exc),
-                'retry_safe':False,'next_action':'Inspect current native documents and retained audit before any further write.','output_dir':str(out)}
+        from .recovery import retained_job_failure
+        return {**retained_job_failure(out,exc),'stage':stage}
     except (ValueError,FileExistsError,RuntimeError,OSError) as exc:
         return {'status':'rejected','stage':stage,'code':'drawing_gate_failed','message':str(exc),
                 'retry_safe':False,'next_action':'Correct the reported input or inspect the retained job. No automatic retry or renderer fallback was attempted.','output_dir':str(out)}

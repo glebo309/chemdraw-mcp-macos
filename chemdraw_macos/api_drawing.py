@@ -329,7 +329,7 @@ def run_api_drawing(bridge,plan,out,document_id=None):
         existing=set(remap_ids(initial['cdxml'],native).values()) if len(old) else set()
         added=ET.fromstring(native);ap=added.find('page')
         for e in list(ap):
-            if e.get('id') in existing:ap.remove(e)
+            if e.get('id') in existing or e.tag=='chemicalproperty':ap.remove(e)
         verify_style(ET.tostring(added,encoding='unicode'),plan.get('preset','house'))
         result['checks']['new_object_style_verified']=True
         if expected_centres:
@@ -399,9 +399,16 @@ def verify_style(text,preset):
 
 
 def verify_export_snapshot(before,after):
-    from .shared import fingerprint
+    from .shared import fingerprint, _page
     from .batch import _verify
-    _verify(before,after)
+    views=[]
+    for text in (before,after):
+        root=ET.fromstring(text)
+        if root.findall('page/chemicalproperty'):
+            root,page=_page(text,vertical_pages=True)
+            for e in list(page.findall('chemicalproperty')):page.remove(e)
+        views.append(ET.tostring(root,encoding='unicode'))
+    _verify(*views)
     def stripped(text):
         root=ET.fromstring(text)
         for e in root.iter():

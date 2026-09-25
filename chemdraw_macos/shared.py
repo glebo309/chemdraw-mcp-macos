@@ -34,6 +34,16 @@ def _page(text, *, vertical_pages=False):
     if vertical_pages and (not page.get('HeightPages','1').isdigit() or not 1<=int(page.get('HeightPages','1'))<=20):
         raise ValueError('Expected 1 through 20 vertical physical pages')
     for e in page:
+        if e.tag == 'chemicalproperty':
+            # ChemDraw's linked name caption is metadata, not another molecule
+            # or an obstacle. Retain it unchanged; never resolve chemistry from it.
+            ids={o.get('id') for f in page.findall('fragment') for o in f.iter() if o.get('id')}
+            if (list(e) or set(e.attrib)-{'id','ChemicalPropertyDisplayID','ChemicalPropertyType','BasisObjects'}
+                    or e.get('ChemicalPropertyType')!='1'
+                    or page.find(f't[@id="{e.get("ChemicalPropertyDisplayID")}"]') is None
+                    or not e.get('BasisObjects') or not set(e.get('BasisObjects').split())<=ids):
+                raise ValueError('Unsupported linked caption chemical property')
+            continue
         if e.tag not in ('fragment','t'):
             raise ValueError('Shared append currently supports molecules and captions only')
         if not e.get('BoundingBox'):raise ValueError('Shared append requires native measured object bounds')
@@ -49,7 +59,7 @@ def plan_append(before,addition):
     _,page=_page(before);_,incoming=_page(addition)
     if not len(incoming):raise ValueError('Nothing to append')
     extent=bounds(page);ink=_union([bounds(e) for e in incoming])
-    obstacles=[bounds(e) for e in page];margin=24.;gap=24.
+    obstacles=[bounds(e) for e in page if e.tag!='chemicalproperty'];margin=24.;gap=24.
     xs=sorted({extent.left+margin,*[b.right+gap for b in obstacles]})
     ys=sorted({extent.top+margin,*[b.bottom+gap for b in obstacles]})
     for y in ys:
@@ -67,6 +77,14 @@ def verify_append(before,after,addition,placement=None,*,exact_coordinates=False
     from .batch import _verify
     from .polish import chemical_signature
     old,op=_page(before,vertical_pages=allow_page_expansion);new,np=_page(after,vertical_pages=allow_page_expansion);supplied,sp=_page(addition,vertical_pages=allow_page_expansion)
+    # addCDXML retains existing IDs. Linked caption metadata is immutable and
+    # independently checked before the chemistry/geometry verifier sees a view.
+    properties=lambda p:{e.get('id'):dict(e.attrib) for e in p.findall('chemicalproperty')}
+    if properties(op)!=properties(np) or properties(sp):
+        raise ValueError('Existing linked caption metadata changed during append')
+    for p in (op,np):
+        for e in list(p.findall('chemicalproperty')):p.remove(e)
+    before=ET.tostring(old,encoding='unicode');after=ET.tostring(new,encoding='unicode')
     if allow_page_expansion:validate_page_expansion(op,sp)
     for key in ('BoundingBox','WidthPages','HeightPages'):
         expected=sp if allow_page_expansion else op

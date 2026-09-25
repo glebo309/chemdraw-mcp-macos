@@ -91,7 +91,13 @@ on run argv
             if ((id of candidate) as integer) is wantedID then set targetDoc to contents of candidate
         end repeat
         if targetDoc is missing value then error "Document ID is stale or absent; list documents again"
-        if operation is "visibility" then
+        if operation is "select_document" then
+            set expectedID to (item 3 of argv) as integer
+            if ((id of document 1) as integer) is not expectedID then error "Active document changed before preservation read"
+            set index of window of targetDoc to 1
+            if ((id of document 1) as integer) is not wantedID then error "Could not select preservation-read document"
+            return "true"
+        else if operation is "visibility" then
             set desiredVisible to (item 3 of argv is "true")
             set visible of window of targetDoc to desiredVisible
             return my jsonText({my documentRow(targetDoc), visible of window of targetDoc})
