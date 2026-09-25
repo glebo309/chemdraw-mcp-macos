@@ -149,6 +149,41 @@ class Bridge:
         return {'document':document_row(row),'molecules':[{'molecule_index':m[0],'bounds_pt':m[1]} for m in molecules],
                 'settings':dict(zip(('bond_length_twentieth_pt','line_width_twentieth_pt','label_size_twentieth_pt','label_font','caption_size_twentieth_pt','caption_font'),settings))}
 
+    def initialize_empty_style(self,document_id,initial,backend,preset='house'):
+        """Set editing defaults only before the first objects enter a blank canvas."""
+        from .batch import NativeUncertain
+        from .styles import require_style_fonts
+        root=validate_cdxml(initial['cdxml']);pages=root.findall('page')
+        if len(pages)!=1 or len(pages[0]):return initial
+        spec=preset_settings(preset);require_style_fonts(preset)
+        values=[round(float(spec[k])*20) for k in
+                ('BondLength','LineWidth','BoldWidth','LabelSize','CaptionSize')]
+        try:
+            with self.lock:
+                self._run('empty_document_style',self._id(document_id),*values,spec['font'],18,120,32,50)
+                after=backend.read(document_id)
+            saved=validate_cdxml(after['cdxml']);page=saved.find('page')
+            if page is None or len(page):raise ValueError('Blank canvas changed while setting defaults')
+            for key in ('BoundingBox','WidthPages','HeightPages'):
+                if page.get(key)!=pages[0].get(key):raise ValueError('Canvas dimensions changed')
+            if after.get('document',{}).get('file')!=initial.get('document',{}).get('file'):
+                raise ValueError('Canvas file binding changed')
+            for key in ('BondLength','LineWidth','BoldWidth','LabelSize','CaptionSize'):
+                if abs(float(saved.get(key,'nan'))-float(spec[key]))>.026 or key not in saved.attrib:
+                    raise ValueError('Native editing default did not match: '+key)
+            fonts={f.get('id'):f.get('name') for f in saved.findall('fonttable/font')}
+            for key in ('LabelFont','CaptionFont'):
+                if saved.get(key) in fonts and fonts[saved.get(key)]!=spec['font']:
+                    raise ValueError('Native editing fonts did not match')
+            if any(saved.get(key) not in fonts for key in ('LabelFont','CaptionFont')):
+                # ChemDraw omits an unused font from a blank document's XML table.
+                settings=self.inspect(document_id)['settings']
+                if any(settings[key]!=spec['font'] for key in ('label_font','caption_font')):
+                    raise ValueError('Native editing fonts did not match')
+            return after
+        except Exception as exc:
+            raise NativeUncertain('Blank-canvas defaults may have changed; no molecules appended. Inspect the document before retrying: '+str(exc)) from exc
+
     def _new_path(self,suffix,category='scratch'):
         folder=self.workspace/category;folder.mkdir(parents=True,exist_ok=True)
         return folder/(str(uuid.uuid4())+suffix)

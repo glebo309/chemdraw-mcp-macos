@@ -11,6 +11,47 @@ import tomllib
 SERVER_NAME = 'glecko_chemdraw'
 
 
+def connect_checkout(checkout, *, uv=None, home=None):
+    """Point existing shared launchers at a locked editable source environment."""
+    import shlex
+    checkout=Path(checkout).expanduser().resolve()
+    try:
+        project=tomllib.loads((checkout/'pyproject.toml').read_text())['project']['name']
+        valid=(checkout/'uv.lock').is_file() and (checkout/'chemdraw_macos/development.py').is_file()
+    except (OSError,KeyError,ValueError):project=None;valid=False
+    if project!='chemdraw-mcp-macos' or not valid:raise ValueError('Choose the ChemDraw MCP source checkout')
+    executable=Path(uv or shutil.which('uv') or '').resolve()
+    if not executable.is_file() or not os.access(executable,os.X_OK):raise ValueError('uv executable not found')
+    home=Path(home) if home is not None else Path.home()
+    directory=home/'Library/Application Support/ChemDraw MCP/bin'
+    command=shlex.join([str(executable),'run','--quiet','--locked','--extra','chemistry',
+                       '--project',str(checkout),'python','-m','chemdraw_macos.development'])
+    plans=[]
+    for name,suffix in [('chemdraw-mcp',''),('chemdraw-mac',' --cli'),('chemdraw-mcp-macos',' --server')]:
+        path=directory/name;_regular(path)
+        before=path.read_bytes() if path.exists() else None
+        after=('#!/bin/sh\n# ChemDraw MCP editable checkout\nexec '+command+suffix+' "$@"\n').encode()
+        if before!=after:plans.append((path,before,after))
+    backups=[];written=[]
+    try:
+        for path,before,after in plans:
+            if (path.read_bytes() if path.exists() else None)!=before:raise ValueError('Launcher changed during setup')
+            path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+            if before is not None:
+                fd,name=tempfile.mkstemp(prefix=path.name+'.before-checkout-',dir=path.parent)
+                with os.fdopen(fd,'wb') as handle:handle.write(before)
+                backups.append(name)
+            _atomic(path,after,0o700);written.append((path,before,after))
+    except Exception:
+        for path,before,after in reversed(written):
+            if path.read_bytes()==after:
+                if before is None:path.unlink()
+                else:_atomic(path,before,0o700)
+        raise
+    return {'mode':'checkout','checkout':str(checkout),'command':str(directory/'chemdraw-mcp'),
+            'backups':backups,'restart_required':True}
+
+
 def _regular(path):
     if path.is_symlink() or any(p.is_symlink() for p in path.parents):
         raise ValueError('Refusing symbolic links in client configuration paths')

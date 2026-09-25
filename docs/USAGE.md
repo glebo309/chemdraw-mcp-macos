@@ -47,12 +47,12 @@ For ordinary new molecule, panel and explicit reaction requests, use the
 point and diagnostics; `full` retains advanced tools. The harness has typed
 inputs and mandatory native/delivery checks, not model-controlled skip flags.
 
-Shared `produce` / `chemdraw_draw` requests default to a white 1200-pixel review
-preview plus native SVG and editable CDXML. Set request `exports` to `full` for
-the transparent 3200-pixel PNG bundle, or `canvas` for checked insertion without
-image exports. Publication files remain available separately through
-`export-figure`. The advanced `draw` interface and background/reaction workflows
-retain full exports. Ordinary reactions now include physical-scale SVG, 600-DPI
+Shared `produce` / `chemdraw_draw` requests default to checked canvas insertion
+and a CDXML recovery snapshot, without image exports. Set request `exports` to
+`preview` for a white 1200-pixel review image or `full` for the transparent PNG
+bundle. Publication files remain available separately through `export-figure`.
+Interactive complete framed tables also default to canvas delivery.
+Ordinary reactions include physical-scale SVG, 600-DPI
 transparent PNG and a white preview through the [batch reaction path](REACTION_BATCH.md).
 [Delivery choices and stage timings](DRAWING_HARNESS.md#drawing-speed-and-export-choices).
 
@@ -88,6 +88,12 @@ The harness's `panel="auto"` now chooses a plain aligned grid on this shared pat
 without requiring a second call. A whole supplied common ring core can retain the
 live reference orientation even when the parent's substituent is replaced.
 Explicit advanced-tool decorations are still rejected, not silently dropped.
+
+Before the first insertion into an empty canvas, its native editing defaults
+are set to the requested preset and reread. Subsequent hand-drawn bonds and
+labels then use matching settings. Native scripting rounds point settings to
+twentieths of a point. Populated documents retain their previous defaults and
+existing objects are not restyled by an addition.
 Shared reactions, decorated groups, circled charges, custom layout/style and
 arbitrary graphics require an explicitly chosen separate background workflow.
 

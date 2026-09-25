@@ -4,6 +4,29 @@ Experimental macOS builds are available on [GitHub Releases](https://github.com/
 
 ## Development: draw-first delivery and explicit framed panels
 
+The editable-checkout launcher now connects an existing graphical installation's
+shared MCP and terminal entry points directly to the locked source environment.
+Launchers are backed up, client configuration remains unchanged, and source
+execution never redirects into an older frozen app. Diagnostics identify the
+source directory, startup fingerprint and whether a restart is required.
+Running MCP processes must reconnect after source changes; hot reload during a
+native operation is not implemented.
+
+The first insertion into an empty document now initializes native manual-edit
+defaults to the chosen preset. A native object-count guard runs before setters,
+and rereading verifies sizes, fonts, page bounds and file binding. Populated
+documents are never restyled by this initialization. Native blank-document font
+tables can omit unused default fonts, so their native document properties are
+checked separately in that case.
+
+Verification passed 1,258 portable tests with 102 optional skips. A serial
+private-document native defaults test passed, preserving the pre-existing
+document inventory. A fresh process launched through the installed checkout
+entry point passed MCP initialization, current framed/export schema discovery
+and an offline chemistry call. Full live add-in acceptance of the new default
+initialization remains pending because another running client owned the port.
+No new package or public release was produced for this development switch.
+
 Shared molecule drawing and interactive framed tables now default to the
 editable canvas plus a CDXML recovery snapshot. Image export is explicit.
 The ordinary drawing request accepts `panel="framed"` and a heading, producing

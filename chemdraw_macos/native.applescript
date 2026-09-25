@@ -97,6 +97,21 @@ on run argv
             set index of window of targetDoc to 1
             if ((id of document 1) as integer) is not wantedID then error "Could not select preservation-read document"
             return "true"
+        else if operation is "empty_document_style" then
+            if ((id of document 1) as integer) is not wantedID then error "Active document changed before setting defaults"
+            if (count of objects of targetDoc) is not 0 then error "Document is no longer empty; defaults unchanged"
+            set fixed length of targetDoc to (item 3 of argv) as integer
+            set line width of targetDoc to (item 4 of argv) as integer
+            set bold width of targetDoc to (item 5 of argv) as integer
+            set label size of targetDoc to (item 6 of argv) as integer
+            set caption size of targetDoc to (item 7 of argv) as integer
+            set label font of targetDoc to item 8 of argv
+            set caption font of targetDoc to item 8 of argv
+            set bond spacing of targetDoc to (item 9 of argv) as integer
+            set chain angle of targetDoc to (item 10 of argv) as integer
+            set margin width of targetDoc to (item 11 of argv) as integer
+            set hash spacing of targetDoc to (item 12 of argv) as integer
+            return "true"
         else if operation is "visibility" then
             set desiredVisible to (item 3 of argv is "true")
             set visible of window of targetDoc to desiredVisible

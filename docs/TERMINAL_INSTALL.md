@@ -134,6 +134,30 @@ the manual enable step silently.
 
 ## Updates and troubleshooting
 
+### Develop directly from an existing checkout
+
+For a development Mac that already has the graphical installation's shared
+launchers and client configuration, run once from the repository:
+
+```sh
+uv run --locked --extra chemistry python scripts/use_checkout.py
+```
+
+This backs up the MCP and terminal launchers, then points them to this checkout
+through `uv run` and the committed dependency lock. It keeps assistant settings,
+the installed app and private add-in credentials unchanged. Subsequent launches
+load local edits without downloading a release or rebuilding the app. A moved
+or missing checkout fails explicitly; it never falls back to an older bundle.
+
+Restart the existing MCP connection after changing Python code. Already running
+processes do not hot-reload, and the switch does not terminate them. Offline
+`chemdraw-mac doctor --no-connect` reports the source directory and startup source
+digest. A running source server's diagnostic reports `restart_required=true`
+when its source has changed. Use one native client at a time.
+
+This is a development route, not the installation instructions for end users.
+Finishing graphical setup again restores the packaged launchers.
+
 [Update guidance](UPDATES.md) distinguishes terminal installs from the bundled
 Mac app. Do not delete working add-in credentials when updating Python code.
 

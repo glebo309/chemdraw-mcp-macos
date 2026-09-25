@@ -1,7 +1,7 @@
 """Plan a complete molecule batch locally, then insert through the desktop API.
 
 RDKit's ChemDraw writer supplies editable graphs, not rendered images. Existing
-objects and document defaults are never restyled to accommodate new additions.
+objects are never restyled. Empty canvases acquire matching manual-edit defaults.
 """
 import copy
 import math
@@ -314,6 +314,11 @@ def run_api_drawing(bridge,plan,out,document_id=None):
             '. Earlier chemically interpreted captions must be corrected or removed in ChemDraw first; no new objects were added.') from exc
     payload,planning=plan_addition(initial['cdxml'],plan['structures'],preset=plan.get('preset','house'),
         columns=plan.get('columns'),scaffold_smiles=plan.get('scaffold_smiles'),allow_page_expansion=plan.get('page_policy','add_pages')=='add_pages')
+    if hasattr(bridge,'initialize_empty_style') and not len(ET.fromstring(initial['cdxml']).find('page')):
+        initial=bridge.initialize_empty_style(did,initial,backend,plan.get('preset','house'))
+        payload,planning=plan_addition(initial['cdxml'],plan['structures'],preset=plan.get('preset','house'),
+            columns=plan.get('columns'),scaffold_smiles=plan.get('scaffold_smiles'),allow_page_expansion=plan.get('page_policy','add_pages')=='add_pages')
+        planning['editing_defaults']='initialized on empty canvas'
     timer.mark('layout')
     expected_centres=None
     if len(plan['structures'])>1:

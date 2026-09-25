@@ -5,10 +5,31 @@ import errno
 import platform
 import plistlib
 import time
+import hashlib
+import sys
 from pathlib import Path
 
 from .core import Bridge, app_location
 from .native_lock import NativeBusy, shared_native_lock
+
+
+def _source_digest():
+    digest=hashlib.sha256()
+    for path in sorted(Path(__file__).parent.rglob('*')):
+        if path.is_file() and path.suffix in ('.py','.js','.applescript','.json'):
+            digest.update(str(path.relative_to(Path(__file__).parent)).encode())
+            digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+_LOADED_SOURCE_DIGEST=None if getattr(sys,'frozen',False) else _source_digest()
+
+
+def runtime_info():
+    if getattr(sys,'frozen',False):return {'mode':'packaged','restart_required':False}
+    return {'mode':'checkout','source_directory':str(Path(__file__).resolve().parent.parent),
+            'loaded_source_digest':_LOADED_SOURCE_DIGEST,
+            'restart_required':_source_digest()!=_LOADED_SOURCE_DIGEST}
 
 
 def _chemistry():
@@ -79,6 +100,7 @@ def doctor(connect=True,*,bridge=None):
     except importlib.metadata.PackageNotFoundError:version='uninstalled source'
     result={'platform':platform.system(),'python':platform.python_version(),
             'macos':platform.mac_ver()[0],'architecture':platform.machine(),'package_version':version,
+            'runtime':runtime_info(),
             'chemistry_validator_available':importlib.util.find_spec('rdkit') is not None,
             'renderer':'native ChemDraw; PNG from unchanged native SVG with offline resvg',
             'rasterizer_available':importlib.util.find_spec('resvg_py') is not None,
