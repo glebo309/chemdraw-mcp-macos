@@ -278,11 +278,36 @@ def _menu_item(app, menu_caption, item_caption):
     raise NativeError(f'ChemDraw menu command {menu_caption} > {item_caption} is not available')
 
 
+def _raw_items(collection):
+    """The collection's objects as raw IDispatch pointers, in collection order.
+
+    pywin32's dynamic wrapper rebuilds type information for every enumerated object; measured on
+    ChemDraw 26.1 the raw pointers return the same objects about four times faster (0.07 s instead
+    of 0.27 s for a 406-object drawing), and each drawing walks the collection several times.
+    """
+    import pythoncom
+    enum = collection._oleobj_.InvokeTypes(pythoncom.DISPID_NEWENUM, 0,
+                                           pythoncom.DISPATCH_METHOD | pythoncom.DISPATCH_PROPERTYGET,
+                                           (pythoncom.VT_UNKNOWN, 0), ()).QueryInterface(pythoncom.IID_IEnumVARIANT)
+    while True:
+        batch = enum.Next(256)
+        if not batch:
+            return
+        for item in batch:
+            yield item if hasattr(item, 'Invoke') else item.QueryInterface(pythoncom.IID_IDispatch)
+
+
+def _raw_id(item):
+    import pythoncom
+    # The DISPID is looked up per object, never assumed across object types.
+    return item.Invoke(item.GetIDsOfNames('ID'), 0, pythoncom.DISPATCH_PROPERTYGET, True)
+
+
 def _ids(collection):
-    return [o.ID for o in collection]
+    return [_raw_id(item) for item in _raw_items(collection)]
 
 
-def _isolate(doc, wanted):
+def _isolate(doc, wanted, items=None):
     """A detached collection holding exactly the objects with the given native IDs.
 
     Measured on ChemDraw 26.1: Objects.Clone().Remove() can silently remove nothing, and Add()
@@ -290,15 +315,16 @@ def _isolate(doc, wanted):
     leaves the selection unchanged. COM insertion clears the selection, so after an insert the
     selection is empty; anywhere else a non-empty selection fails closed. Reading Count on the
     empty clone before Add() makes every later Add() a silent no-op, so only the live selection
-    is counted.
+    is counted. items: (ID, object) pairs from a pass over doc.Objects just made by the caller,
+    with no change to the document since.
     """
     if doc.Selection.Objects.Count:
         raise NativeError('ChemDraw has a selection in this document; clear it, then retry. No change was made')
     collection = doc.Selection.Objects.Clone()
-    for obj in doc.Objects:
-        if obj.ID in wanted:
-            collection.Add(obj)
-    held = {o.ID for o in collection}
+    for oid, item in items if items is not None else ((_raw_id(i), i) for i in _raw_items(doc.Objects)):
+        if oid in wanted:
+            collection.Add(item)
+    held = set(_ids(collection))
     if held != set(wanted):
         raise NativeError(f'Native objects could not be isolated for this operation '
                           f'({len(set(wanted) - held)} missing, {len(held - set(wanted))} extra of {len(wanted)})')
@@ -370,18 +396,24 @@ def _insert_exact(doc, payload):
     pages = int(page.get('HeightPages', '1')) if page is not None else 1
     if pages > int(doc.NumPagesHigh):
         doc.NumPagesHigh = pages
-    before = set(_ids(doc.Objects))
+    # Objects present before come from the CDXML (COM IDs are its ids, unique document-wide; measured
+    # on ChemDraw 26.1), not from a slow pass over every object. The object count, one cheap call,
+    # guards that exactly the inserted objects are taken as new.
+    known = {e.get('id') for page in parse(_data(doc.Objects, CDXML)).findall('page') for e in page.iter()
+             if e is not page and e.get('id')}
+    before_count = doc.Objects.Count
     _put_data(doc.Objects, CDXML, payload)
-    after_ids = _ids(doc.Objects)
-    new = set(after_ids) - before
-    if not new or len(after_ids) != len(set(after_ids)):
+    after = [(_raw_id(item), item) for item in _raw_items(doc.Objects)]
+    after_ids = [oid for oid, _ in after]
+    new = {oid for oid in after_ids if str(oid) not in known}
+    if not new or len(after_ids) != len(set(after_ids)) or len(new) != len(after_ids) - before_count:
         raise NativeError('Inserted objects could not be identified natively')
     native = parse(_data(doc.Objects, CDXML))
     offset = rigid_offset(_points(native, {str(i) for i in new}), _points(supplied))
     if offset is None:
         raise NativeError('Native insertion was not a rigid translation of the supplied objects')
     if abs(offset[0]) > 0.005 or abs(offset[1]) > 0.005:
-        _isolate(doc, new).Move(-offset[0], -offset[1])
+        _isolate(doc, new, after).Move(-offset[0], -offset[1])
     return _data(doc.Objects, CDXML)
 
 

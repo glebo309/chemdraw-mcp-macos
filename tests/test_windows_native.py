@@ -27,6 +27,33 @@ ADDITION = ('<CDXML BondLength="18"><page id="9" BoundingBox="0 0 540 720">'
 SHIFT = (37.25, -11.5)  # the fake's re-centring offset
 
 
+class FakeRawObject:
+    """A raw IDispatch pointer from the collection's enumerator; ChemDraw 26.1 gives ID DISPID 3."""
+    def __init__(self, i):
+        self.ID = i
+
+    def GetIDsOfNames(self, name):
+        assert name == 'ID'
+        return 3
+
+    def Invoke(self, dispid, lcid, flags, want):
+        import pythoncom
+        assert (dispid, flags) == (3, pythoncom.DISPATCH_PROPERTYGET)
+        return self.ID
+
+
+class FakeEnum:
+    def __init__(self, ids):
+        self.items = [FakeRawObject(i) for i in ids]
+
+    def QueryInterface(self, iid):
+        return self
+
+    def Next(self, count):
+        batch, self.items = self.items[:count], self.items[count:]
+        return tuple(batch)
+
+
 class FakeOle:
     def __init__(self, objects):
         self.objects = objects
@@ -34,6 +61,11 @@ class FakeOle:
     def GetIDsOfNames(self, name):
         assert name == 'Data'
         return 7
+
+    def InvokeTypes(self, dispid, lcid, flags, result_type, arg_types):
+        import pythoncom
+        assert dispid == pythoncom.DISPID_NEWENUM
+        return FakeEnum(self.objects.ids)
 
     def Invoke(self, dispid, lcid, flags, want, mime, *value):
         import pythoncom
@@ -52,9 +84,12 @@ class FakeOle:
 class FakeCollection:
     def __init__(self, doc, ids):
         self.doc, self.ids = doc, list(ids)
+        self._oleobj_ = FakeOle(self)
 
     def __iter__(self):
-        return iter([FakeObj(i) for i in self.ids])
+        # pywin32's per-object dynamic wrapper rebuilds type information for every object
+        # (measured ~4x slower than raw IDispatch on ChemDraw 26.1); production code must not use it.
+        raise AssertionError('object collection iterated through the slow per-object wrapper')
 
     @property
     def Count(self):
@@ -78,11 +113,6 @@ class FakeCollection:
 
     def Clean(self):
         self.doc.cleaned.append(tuple(sorted(self.ids)))
-
-
-class FakeObj:
-    def __init__(self, i):
-        self.ID = i
 
 
 class FakeObjects(FakeCollection):
@@ -269,6 +299,38 @@ def test_insert_exact_restores_supplied_coordinates_and_keeps_old_content(app):
     assert new == pytest.approx([(300, 40), (318, 40)])
     assert doc.moves and doc.moves[0][:2] == pytest.approx((-SHIFT[0], -SHIFT[1]))
     assert len(doc.moves[0][2]) == 4  # fragment, two atoms, bond: exactly the inserted objects
+
+
+def test_insert_walks_the_document_objects_once(app, monkeypatch):
+    # Each pass over a large drawing costs a cross-process call per object. The objects present
+    # before come from the document's CDXML (COM IDs are CDXML ids, unique document-wide), and
+    # isolating the new objects reuses the single pass made after the insertion.
+    walked = []
+    original = FakeOle.InvokeTypes
+
+    def counting(self, *args):
+        if type(self.objects) is FakeObjects and self.objects.ids:
+            walked.append(len(self.objects.ids))
+        return original(self, *args)
+    monkeypatch.setattr(FakeOle, 'InvokeTypes', counting)
+    wn._insert_exact(app.active, ADDITION)
+    assert walked == [9]
+    assert len(app.active.moves) == 1 and len(app.active.moves[0][2]) == 4
+
+
+def test_insert_fails_closed_if_a_new_object_reuses_an_existing_document_id(app, monkeypatch):
+    doc = app.active
+    doc.root.find('page').append(ET.fromstring('<annotation id="6" Keyword="note"/>'))  # not a COM object
+    original = FakeDoc.append_recentred
+
+    def reuse_id(self, text):
+        original(self, text)
+        self.root.find('page').remove(self.root.find('page/annotation'))
+        fragment = self.root.findall('page/fragment')[-1]
+        fragment.set('id', '6')  # a hypothetical ChemDraw reusing the annotation's id
+    monkeypatch.setattr(FakeDoc, 'append_recentred', reuse_id)
+    with pytest.raises(wn.NativeError):
+        wn._insert_exact(doc, ADDITION)
 
 
 def test_channel_append_checks_freshness_before_any_write(app):
