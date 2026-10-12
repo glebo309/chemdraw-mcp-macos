@@ -4,7 +4,7 @@ Native, editable chemical drawings from your assistant or terminal, now on Windo
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
-**[Download for Windows (x64)](https://github.com/marcodecorti11/chemdraw-mcp-win/releases/tag/v0.10.0rc22-win.6)** ·
+**[Download for Windows (x64)](https://github.com/marcodecorti11/chemdraw-mcp-win/releases/tag/v0.10.0rc22-win.8)** ·
 [Test results and known gaps](docs/WINDOWS_PORT_RESULTS.md) ·
 [Examples and customization](docs/GETTING_STARTED.md) ·
 [Architecture](docs/ARCHITECTURE.md)
@@ -21,15 +21,18 @@ document, and export figures at a consistent chemical scale.
 You need 64-bit Windows and your own licensed ChemDraw. Testing used Windows 11 and
 ChemDraw Professional 26.1; Windows 10 and other ChemDraw versions are untested.
 
-1. Open the [release page](https://github.com/marcodecorti11/chemdraw-mcp-win/releases/tag/v0.10.0rc22-win.6)
-   and download `ChemDraw-MCP-Windows-x64-0.10.0rc22-win.6.zip`. Optionally compare it with
+1. Open the [release page](https://github.com/marcodecorti11/chemdraw-mcp-win/releases/tag/v0.10.0rc22-win.8)
+   and download `ChemDraw-MCP-Windows-x64-0.10.0rc22-win.8.zip`. Optionally compare it with
    `SHA256SUMS` (PowerShell: `Get-FileHash -Algorithm SHA256 <zip>`).
 2. Extract the zip on a local disk (not a network share) and run **ChemDraw MCP Setup.exe**
    inside the `ChemDraw MCP` folder.
 3. Choose the assistants to connect: Claude Desktop, Claude Code (terminal), Codex (app and CLI),
    Gemini CLI, any combination, or none.
 4. Start ChemDraw yourself and open any drawing (File > New is fine), then press
-   **Test connection**, then **Finish**. Restart the connected apps, or start a new session in a
+   **Test connection**.
+5. On the last screen, optionally choose your own ChemDraw style file (`.cds` or `.cdxml`) under
+   **Drawing style**; new drawings then use its fonts and bond settings. Skip it to keep the built-in
+   style. Press **Finish setup**, then restart the connected apps, or start a new session in a
    terminal assistant.
 
 The files are not code-signed, so Windows SmartScreen may warn the first time.
@@ -50,6 +53,11 @@ can use the same local (stdio) server:
 `"%LOCALAPPDATA%\ChemDraw MCP\current\chemdraw-runtime.exe" --desktop-serve`. Only one assistant
 can drive ChemDraw at a time.
 
+**Multi-page templates:** if your template opens with several pages (a poster layout), drawing
+still works. Before adding to such a document, the server sets it to one page, but only when the
+document is empty or everything on it is on the first page; nothing moves. Otherwise it refuses
+and says how to fix it.
+
 **Updating:** run the newer release's setup. Assistant settings are kept, the previous version
 stays installed beside the new one, and no duplicate entry is added.
 
@@ -59,9 +67,10 @@ stays installed beside the new one, and no duplicate entry is added.
 ## Status of the Windows port
 
 Tested on one Windows 11 laptop with ChemDraw 26.1:
-unit suite 1424 passed, 0 failed; native tests against ChemDraw 78 passed and 2 failed (both
-explained); a clean install, an update, the setup flow and a scripted assistant session passed.
-Not yet tested on a second machine or with a real Claude Desktop or Codex restart.
+unit suite 1460 passed, 0 failed; native tests against ChemDraw 81 passed and 3 failed (two known
+cases, and one background-job test that refuses by design while an untitled document is open);
+a clean install and an update from win.7, including Claude Code connecting to the installed server,
+passed. Not yet tested on a second machine or with a real Claude Desktop or Codex restart.
 
 Not available on Windows, because ChemDraw's Windows automation does not offer them:
 PDF export and the align/distribute commands. Other remaining gaps are listed in
