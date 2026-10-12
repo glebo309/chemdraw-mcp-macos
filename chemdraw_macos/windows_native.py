@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import gc
 import hashlib
+import math
 import os
 from pathlib import Path
 import queue
@@ -377,14 +378,31 @@ def _points(root, ids=None):
 
 
 def rigid_offset(native_points, supplied_points, tolerance=0.05):
-    """Translation that maps supplied points onto the native ones, or None if not rigid."""
+    """Translation that maps supplied points onto the native ones, or None if not rigid.
+
+    Points are paired by proximity, each supplied point at most once. A sorted comparison is not
+    used: rounding can swap two points with nearly equal x (observed for captions in one column).
+    """
     if not supplied_points or len(native_points) != len(supplied_points):
         return None
     dx = min(p[1] for p in native_points) - min(p[1] for p in supplied_points)
     dy = min(p[2] for p in native_points) - min(p[2] for p in supplied_points)
-    a = sorted((t, round(x - dx, 2), round(y - dy, 2)) for t, x, y in native_points)
-    b = sorted((t, round(x, 2), round(y, 2)) for t, x, y in supplied_points)
-    if any(p[0] != q[0] or abs(p[1] - q[1]) > tolerance or abs(p[2] - q[2]) > tolerance for p, q in zip(a, b)):
+    cells = {}
+    for t, x, y in supplied_points:
+        cells.setdefault((t, math.floor(x / tolerance), math.floor(y / tolerance)), []).append((x, y))
+
+    def take(t, x, y):
+        cx, cy = math.floor(x / tolerance), math.floor(y / tolerance)
+        for i in (-1, 0, 1):
+            for j in (-1, 0, 1):
+                bucket = cells.get((t, cx + i, cy + j), [])
+                for k, (sx, sy) in enumerate(bucket):
+                    if abs(sx - x) <= tolerance and abs(sy - y) <= tolerance:
+                        del bucket[k]
+                        return True
+        return False
+
+    if not all(take(t, x - dx, y - dy) for t, x, y in native_points):
         return None
     return dx, dy
 

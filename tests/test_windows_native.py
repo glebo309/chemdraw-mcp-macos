@@ -288,6 +288,16 @@ def test_rigid_offset_accepts_translation_only():
     assert wn.rigid_offset(moved[:2], supplied) is None
 
 
+def test_rigid_offset_tolerates_rounding_ties_between_points_in_one_column():
+    # Observed live (eight-analogue table): two captions in one column at x ~ 85.345 rounded to
+    # 85.34 on one side and 85.35 on the other, which swapped them in a sorted comparison.
+    supplied = [('n', 10, 10), ('t', 85.346, 258.43), ('t', 85.344, 389.85)]
+    native = [('n', 10, 10), ('t', 85.344, 258.43), ('t', 85.346, 389.85)]
+    assert wn.rigid_offset(native, supplied) == pytest.approx((0, 0))
+    swapped = [('n', 10, 10), ('t', 85.344, 389.85), ('t', 85.346, 389.85)]
+    assert wn.rigid_offset(swapped, supplied) is None  # each supplied point is matched once
+
+
 def test_insert_exact_restores_supplied_coordinates_and_keeps_old_content(app):
     doc = app.active
     before = [(e.get('id'), e.get('p')) for e in doc.root.iter('n')]
