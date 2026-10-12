@@ -329,6 +329,10 @@ def run_api_drawing(bridge,plan,out,document_id=None):
     except ValueError as exc:
         raise ValueError('Existing content cannot be verified before insertion: '+str(exc)+
             '. Earlier chemically interpreted captions must be corrected or removed in ChemDraw first; no new objects were added.') from exc
+    page_layout=None
+    if hasattr(bridge,'fit_single_page'):
+        fitted=bridge.fit_single_page(did,initial,backend,plan.get('page_policy','add_pages')=='add_pages')
+        if fitted is not initial:initial,page_layout=fitted,fitted['page_layout']
     payload,planning=plan_addition(initial['cdxml'],plan['structures'],preset=plan.get('preset','house'),
         columns=plan.get('columns'),scaffold_smiles=plan.get('scaffold_smiles'),allow_page_expansion=plan.get('page_policy','add_pages')=='add_pages')
     if hasattr(bridge,'initialize_empty_style') and not len(ET.fromstring(initial['cdxml']).find('page')):
@@ -336,6 +340,7 @@ def run_api_drawing(bridge,plan,out,document_id=None):
         payload,planning=plan_addition(initial['cdxml'],plan['structures'],preset=plan.get('preset','house'),
             columns=plan.get('columns'),scaffold_smiles=plan.get('scaffold_smiles'),allow_page_expansion=plan.get('page_policy','add_pages')=='add_pages')
         planning['editing_defaults']='initialized on empty canvas'
+    if page_layout:planning['page_layout']=page_layout
     timer.mark('layout')
     expected_centres=None
     if len(plan['structures'])>1:
@@ -409,6 +414,10 @@ def run_api_drawing(bridge,plan,out,document_id=None):
         presentation={'mode':'shared','intermediates':'one hidden native measuring copy' if expected_centres else 'none'},planning=planning,
         audit={'status':'checks_passed','checks':result['checks'],'timings':timings},
         note='Appended once to the existing working document. CDXML artifact contains the whole current canvas.')
+    if page_layout:
+        result['page_layout']=page_layout
+        result['note']+=(f" The document was set from {page_layout['before']} to a single page first;"
+                         ' nothing on it moved.')
     _write_json(out/'audit.json',result['audit']);_write_json(out/'result.json',result)
     return result
 

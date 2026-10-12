@@ -234,6 +234,32 @@ class Bridge:
         except Exception as exc:
             raise NativeUncertain('Blank-canvas defaults may have changed; no molecules appended. Inspect the document before retrying: '+str(exc)) from exc
 
+    def fit_single_page(self,document_id,initial,backend,allow_page_expansion=True):
+        """Set a multi-page document to one page when nothing lies outside its first page."""
+        from .batch import NativeUncertain
+        from .page_layout import MANUAL_FIX,content_record,describe,first_page_fit
+        from .polish import numbers
+        fit=first_page_fit(initial['cdxml'],allow_page_expansion)
+        if fit is None:return initial
+        if not WINDOWS:raise ValueError(describe(fit['pages'])+'; drawing needs a single page. '+MANUAL_FIX)
+        before=validate_cdxml(initial['cdxml']).find('page')
+        try:
+            with self.lock:
+                self._run('single_page',self._id(document_id),*fit['pages'])
+                after=backend.read(document_id)
+            page=validate_cdxml(after['cdxml']).find('page')
+            if (page.get('WidthPages','1'),page.get('HeightPages','1'))!=('1','1'):
+                raise ValueError('document still has several pages')
+            if any(abs(a-b)>.01 for a,b in zip(numbers(page.get('BoundingBox'),4),fit['first_page'])):
+                raise ValueError('page size differs from the first page')
+            if content_record(page)!=content_record(before):raise ValueError('existing content changed')
+            if after.get('document',{}).get('file')!=initial.get('document',{}).get('file'):
+                raise ValueError('document file binding changed')
+        except Exception as exc:
+            raise NativeUncertain('Page layout may have changed; nothing was drawn. Inspect the document before retrying: '+str(exc)) from exc
+        wide,high=fit['pages']
+        return {**after,'page_layout':{'before':f'{wide} x {high} pages','after':'1 x 1 page'}}
+
     def _new_path(self,suffix,category='scratch'):
         folder=self.workspace/category;folder.mkdir(parents=True,exist_ok=True)
         return folder/(str(uuid.uuid4())+suffix)

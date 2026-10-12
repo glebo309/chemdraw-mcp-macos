@@ -152,6 +152,7 @@ class FakeDoc:
         self.Modified = False
         self.moves, self.cleaned, self.activated = [], [], 0
         self.NumPagesHigh = 1
+        self.NumPagesWide = 1
         self.Settings = FakeSettings()
 
     @property
@@ -557,6 +558,23 @@ def test_owned_scope_clear_refuses_an_inactive_or_rebound_document(app, monkeypa
     app.active = owned
     with pytest.raises(wn.NativeError, match='file changed'):
         wn._op_clear_owned_scope(app, did(owned), r'C:\elsewhere\scope.cdxml')
+
+
+def test_single_page_sets_one_page_on_the_explicit_document(app):
+    template = FakeDoc(app, 'Untitled template-1')
+    app.windows.append(template)
+    template.NumPagesWide, template.NumPagesHigh = 2, 3
+    assert wn._op_single_page(app, did(template), 2, 3) == [1, 1]
+    assert (template.NumPagesWide, template.NumPagesHigh) == (1, 1)
+    assert (app.active.NumPagesWide, app.active.NumPagesHigh) == (1, 1)  # the active document is not touched
+
+
+def test_single_page_refuses_a_layout_changed_since_the_read(app):
+    doc = app.active
+    doc.NumPagesWide, doc.NumPagesHigh = 2, 2
+    with pytest.raises(wn.NativeError, match='changed'):
+        wn._op_single_page(app, did(doc), 2, 3)
+    assert (doc.NumPagesWide, doc.NumPagesHigh) == (2, 2)
 
 
 def test_select_without_an_active_document_refuses_hidden_targets_cleanly(app, monkeypatch, tmp_path):

@@ -677,6 +677,16 @@ def _op_empty_document_style(app, did, bond, line, bold, label, caption, font, s
     return True
 
 
+def _op_single_page(app, did, wide, high):
+    """Set an explicit document to one physical page; the caller re-reads and verifies its content."""
+    doc = _find(app, int(did))
+    if (doc.NumPagesWide, doc.NumPagesHigh) != (int(wide), int(high)):
+        raise NativeError('Page layout changed since it was read; nothing changed')
+    doc.NumPagesWide = 1
+    doc.NumPagesHigh = 1
+    return [doc.NumPagesWide, doc.NumPagesHigh]
+
+
 def _op_addin_available(app, *_):
     return False
 
