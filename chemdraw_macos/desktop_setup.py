@@ -221,6 +221,17 @@ class SetupSession:
                 else:
                     os.environ['CHEMDRAW_APP'] = previous
             return present_diagnostic(self.last_diagnostic)
+        if action == 'choose_style':
+            # Only the validated numbers, the file name and its hash are kept; never the path or the file.
+            from .styles import inspect_style_file, require_style_fonts
+            report = inspect_style_file(request['path'])
+            require_style_fonts(report['preset'])
+            chosen = {'name': Path(report['source']).name, 'sha256': report['sha256'], 'preset': report['preset']}
+            self.settings['default_style'] = chosen
+            return {'status': 'style_selected', 'style': {'name': chosen['name'], 'sha256': chosen['sha256']}}
+        if action == 'clear_style':
+            self.settings.pop('default_style', None)
+            return {'status': 'style_cleared'}
         if action == 'prepare' and WINDOWS:
             # Windows ChemDraw is controlled through COM automation; no add-in or connection key.
             self.last_diagnostic = {}
@@ -324,6 +335,8 @@ def runtime_main(argv=None):
         if settings.get('chemdraw_app'):
             os.environ['CHEMDRAW_APP'] = str(validate_app(settings['chemdraw_app']))
         os.environ.pop('CHEMDRAW_DESKTOP_EXTENSION', None)
+        from .core import use_default_style
+        use_default_style(settings.get('default_style'))
         from .cli import main
         return main(args[1:])
     if args == ['--setup-gui'] and WINDOWS:
@@ -340,6 +353,8 @@ def runtime_main(argv=None):
         if settings.get('chemdraw_app'):
             os.environ['CHEMDRAW_APP'] = str(validate_app(settings['chemdraw_app']))
         os.environ['CHEMDRAW_DESKTOP_EXTENSION'] = '1'
+        from .core import use_default_style
+        use_default_style(settings.get('default_style'))
         from .server import main
         main(['--profile', 'full'])
         return 0

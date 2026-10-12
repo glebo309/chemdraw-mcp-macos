@@ -30,6 +30,7 @@ PALETTE = {
 }
 _BRAILLE = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (0, 3), (1, 3)]
 CYCLE, SWEEP, FPS = 1.4, 0.476, 25
+STYLE_STATUSES = ('style_selected', 'style_cleared')
 
 
 def color(name, opacity=1.0, over='panel'):
@@ -69,6 +70,8 @@ class Flow:
 
     def receive(self, value):
         status = value.get('status')
+        if status in STYLE_STATUSES:  # a style choice leaves the tested connection as it is
+            return None
         self.connected = status == 'ready' and value.get('ready') is True
         self.show_diagnostics = False
         if status == 'selected':
@@ -195,7 +198,8 @@ class SetupWindow:
         self.claude = tk.BooleanVar(value=(appdata / 'Claude').is_dir())
         self.claude_code = tk.BooleanVar(value=bool(shutil.which('claude')))
         self.codex = tk.BooleanVar(value=(Path.home() / '.codex').is_dir())
-        self.gemini = tk.BooleanVar(value=bool(shutil.which('gemini')) or (Path.home() / '.gemini').is_dir())
+        # Other Google tools (Antigravity) create ~/.gemini too; only Gemini CLI or its settings file counts.
+        self.gemini = tk.BooleanVar(value=bool(shutil.which('gemini')) or (Path.home() / '.gemini/settings.json').is_file())
         self.build()
         self.refresh()
         self.root.protocol('WM_DELETE_WINDOW', self.close)
@@ -385,6 +389,7 @@ class SetupWindow:
             self.line(box, 'Connect: ' + (', '.join(chosen) if chosen else 'terminal only')).pack(fill='x', **pad)
             self.line(box, 'Existing assistant settings are kept and backed up. Your ChemDraw stays as it is.',
                       color('white', .55), 'small').pack(fill='x', padx=self.px(12), pady=(self.px(4), self.px(8)))
+            self.style_section(box)
             self.draw_primary('Finish setup')
         self.draw_primary(self.primary_text)
         for child in self.diagnostic_row.winfo_children():
@@ -425,6 +430,37 @@ class SetupWindow:
             self.root.clipboard_clear()
             self.root.clipboard_append(command)
         self.link(row, 'Copy', copy).pack(side='left', padx=(self.px(8), 0))
+
+    def style_section(self, box):
+        """Default drawing style: the built-in house style, or the numbers of a ChemDraw style file."""
+        chosen = getattr(self.session, 'settings', {}).get('default_style')
+        self.tracked(box, 'DRAWING STYLE', 'mono', color('lavender'), self.px(2)).pack(
+            anchor='w', padx=self.px(12), pady=(0, self.px(4)))
+        if chosen:
+            try:
+                p = chosen['preset']
+                summary = f"{p['font']}, {float(p['LabelSize']):g} pt labels, {float(p['LineWidth']):.2f} pt bonds"
+            except (KeyError, TypeError, ValueError):
+                summary = 'The saved style could not be read; choose it again.'
+            self.line(box, str(chosen.get('name', '')), color('gold'), 'small').pack(fill='x', padx=self.px(12))
+            self.line(box, summary, color('white', .55), 'small').pack(fill='x', padx=self.px(12))
+        else:
+            self.line(box, 'Built-in house style', color('gold'), 'small').pack(fill='x', padx=self.px(12))
+        row = self.tk.Frame(box, bg=box['bg'])
+        row.pack(anchor='w', padx=self.px(12), pady=(self.px(2), self.px(8)))
+        self.link(row, 'Choose a ChemDraw style (.cds, .cdxml)…', self.choose_style).pack(side='left')
+        if chosen:
+            self.link(row, 'Use built-in', self.use_builtin_style).pack(side='left', padx=(self.px(12), 0))
+
+    def choose_style(self):
+        from tkinter import filedialog
+        path = filedialog.askopenfilename(title='Choose a ChemDraw style for new drawings',
+                                          filetypes=[('ChemDraw style', '*.cds *.cdxml *.cdx')])
+        if path:
+            self.run_action({'action': 'choose_style', 'path': path})
+
+    def use_builtin_style(self):
+        self.run_action({'action': 'clear_style'})
 
     def choose_app(self):
         from tkinter import filedialog
@@ -474,6 +510,9 @@ class SetupWindow:
             self.save_failed = True
         if request['action'] == 'choose_app' and status == 'selected':
             self.app = (Path(value['app']), '')
+        if status in STYLE_STATUSES:  # the choice lives in the session settings; keep title and step
+            self.refresh()
+            return
         self.flow.receive(value)
         if self.flow.finished:
             self.title, self.message = 'Setup complete', 'ChemDraw MCP is ready.'

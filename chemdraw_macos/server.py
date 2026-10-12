@@ -472,8 +472,9 @@ def chemdraw_close_working_document(document_id:int)->dict:
 
 @mcp.tool(annotations=READ)
 def chemdraw_list_styles()->dict:
-    """List numeric style presets. These are defaults plus explicit text/bond overrides, not chemistry or automatic layout engines."""
-    return {'presets':PRESETS}
+    """List numeric style presets. These are defaults plus explicit text/bond overrides, not chemistry or automatic layout engines. default_style tells whether 'house' is the style the user chose in setup."""
+    from .core import DEFAULT_STYLE
+    return {'presets':PRESETS,'default_style':dict(DEFAULT_STYLE)}
 
 @mcp.tool(annotations=READ)
 def chemdraw_doctor()->dict:

@@ -34,6 +34,14 @@ def test_flow_has_no_addin_step_on_windows():
     assert flow.step == 0 and not flow.connected
 
 
+def test_choosing_a_drawing_style_keeps_the_connection():
+    flow = gui.Flow()
+    flow.receive({'status': 'ready', 'ready': True})
+    for status in ('style_selected', 'style_cleared'):
+        assert flow.receive({'status': status}) is None
+        assert flow.step == 2 and flow.connected and not flow.show_diagnostics
+
+
 def test_diagnostics_autosave_is_private_and_free_of_raw_errors(tmp_path):
     record = gui.Diagnostics(session='abc-123')
     record.record('test', 'unavailable', {'failure': {'kind': 'chemdraw_not_running'}})
@@ -133,6 +141,50 @@ def test_finish_sends_every_ticked_assistant_including_terminal_clis(tmp_path):
         app.flow.step = 2
         app.primary_action()
         assert sent == [{'action': 'finish', 'clients': ['claude', 'claude-code', 'codex', 'gemini']}]
+    finally:
+        app.root.destroy()
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason='Tk window on the Windows desktop')
+def test_gemini_is_not_preselected_by_another_google_tool_folder(tmp_path, monkeypatch):
+    # Antigravity creates ~/.gemini too; only Gemini CLI itself or its settings file counts.
+    monkeypatch.setenv('USERPROFILE', str(tmp_path / 'home'))
+    monkeypatch.setenv('HOME', str(tmp_path / 'home'))
+    (tmp_path / 'home' / '.gemini' / 'antigravity').mkdir(parents=True)
+    monkeypatch.setattr(gui.shutil, 'which', lambda name: None)
+    app = _window(tmp_path, FakeSession())
+    try:
+        assert app.gemini.get() is False
+    finally:
+        app.root.destroy()
+    (tmp_path / 'home' / '.gemini' / 'settings.json').write_text('{}', encoding='utf-8')
+    app = _window(tmp_path, FakeSession())
+    try:
+        assert app.gemini.get() is True
+    finally:
+        app.root.destroy()
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason='Tk window on the Windows desktop')
+def test_connected_step_offers_a_default_drawing_style(tmp_path):
+    session = FakeSession()
+    app = _window(tmp_path, session)
+    try:
+        app.flow.step = 2
+        app.refresh()
+        text = ' | '.join(_texts(app.content))
+        assert 'Built-in house style' in text and 'Choose a ChemDraw style' in text
+        session.settings['default_style'] = {'name': 'chemdraw template_Lab.cds', 'sha256': 'ab' * 32, 'preset': {
+            'BondLength': '18', 'LineWidth': '1.587387085', 'BoldWidth': '2', 'LabelSize': '14', 'CaptionSize': '14',
+            'font': '@MS Gothic'}}
+        app.handle({'action': 'choose_style', 'path': 'x'}, {'status': 'style_selected'})
+        text = ' | '.join(_texts(app.content))
+        assert 'chemdraw template_Lab.cds' in text and '@MS Gothic, 14 pt labels, 1.59 pt bonds' in text
+        assert 'Use built-in' in text and app.flow.step == 2
+        sent = []
+        app.run_action = sent.append
+        app.use_builtin_style()
+        assert sent == [{'action': 'clear_style'}]
     finally:
         app.root.destroy()
 

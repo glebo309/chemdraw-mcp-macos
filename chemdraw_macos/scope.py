@@ -88,7 +88,8 @@ def prepare_scope(text,cells,preset='house'):
         x,y=bounds(f).center
         t=ET.SubElement(page,'t',{'id':cell['metadata_id'],'p':f'{x} {y+60}',
                                 'Justification':'Center','CaptionJustification':'Center'})
-        face=root.get('CaptionFace','0') if isinstance(preset,dict) else '1'
+        custom=isinstance(preset,dict) or 'CaptionFace' in PRESETS[preset]  # incl. a style chosen in setup
+        face=root.get('CaptionFace','0') if custom else '1'
         ET.SubElement(t,'s',{'font':root.get('CaptionFont'),'size':root.get('CaptionSize'),'face':face}).text=_metadata(cell)
     return ET.tostring(root,encoding='unicode'),{'cells':prepared,'normalization':normalization}
 

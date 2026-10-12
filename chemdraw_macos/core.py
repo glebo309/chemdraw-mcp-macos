@@ -32,6 +32,28 @@ PRESETS={
     'acs-1996':{'BondLength':'14.4','LineWidth':'0.6','BoldWidth':'2',
                 'LabelSize':'10','CaptionSize':'10','font':'Arial'},
 }
+BUILTIN_HOUSE=dict(PRESETS['house'])
+DEFAULT_STYLE={'status':'built-in'}
+
+def use_default_style(choice):
+    """Let 'house' mean the drawing style chosen in setup: its validated numbers, never the file.
+
+    No choice, a damaged one or a font missing on this computer keeps the built-in house style;
+    the reason is reported by chemdraw_list_styles instead of failing every drawing.
+    """
+    from .styles import validate_style,require_style_fonts
+    PRESETS['house']=dict(BUILTIN_HOUSE)
+    if choice is None:report={'status':'built-in'}
+    else:
+        try:
+            if not isinstance(choice,dict):raise ValueError('Saved drawing style is unreadable')
+            spec=validate_style(choice.get('preset'));require_style_fonts(spec)
+        except ValueError as exc:report={'status':'not_applied','reason':str(exc)}
+        else:
+            PRESETS['house']=spec
+            report={'status':'applied','name':str(choice.get('name','')),'sha256':str(choice.get('sha256',''))}
+    DEFAULT_STYLE.clear();DEFAULT_STYLE.update(report)
+    return dict(report)
 
 def validate_cdxml(text: str):
     if len(text.encode('utf-8'))>10_000_000:raise ValueError('CDXML exceeds 10 MB limit')
