@@ -71,7 +71,7 @@ def set_paper(text, name):
     return ET.tostring(root,encoding='unicode')
 
 
-def _components(prepared,preset):
+def _components(prepared,preset,base=None):
     from rdkit import Chem
     from .api_drawing import plan_addition
     from .reaction_series import _alkali_seed
@@ -84,7 +84,7 @@ def _components(prepared,preset):
                 if smi in result:continue
                 mol=Chem.MolFromSmiles(smi)
                 if mol.GetNumAtoms()>1:
-                    text,_=plan_addition(style_cdxml(EMPTY,preset),[
+                    text,_=plan_addition(base or style_cdxml(EMPTY,preset),[
                         {'compound_id':'component','label':'Component','smiles':smi}],preset=preset)
                     root=ET.fromstring(text);page=root.find('page')
                     for t in list(page.findall('t')):page.remove(t)

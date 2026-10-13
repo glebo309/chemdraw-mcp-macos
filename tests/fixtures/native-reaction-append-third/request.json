@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "step_id": "reaction",
+      "reactants": [
+        {
+          "compound_id": "1",
+          "label": "4-Bromoanisole",
+          "smiles": "COc1ccc(Br)cc1"
+        },
+        {
+          "compound_id": "2",
+          "label": "Phenylboronic acid",
+          "smiles": "OB(O)c1ccccc1"
+        }
+      ],
+      "products": [
+        {
+          "compound_id": "3",
+          "label": "4-Methoxybiphenyl",
+          "smiles": "COc1ccc(-c2ccccc2)cc1"
+        }
+      ],
+      "conditions_above": "Pd(dppf)Cl2, K2CO3",
+      "conditions_below": "dioxane/H2O, 80 °C"
+    }
+  ],
+  "preset": "house",
+  "document_id": -1683435136
+}

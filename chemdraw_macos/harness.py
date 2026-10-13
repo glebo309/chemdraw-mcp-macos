@@ -207,6 +207,15 @@ def _run_drawing(bridge,request,output_dir,allow_network,presentation,document_i
             result=draw_structures(bridge,plan['structures'],str(out),presentation=presentation,**options)
             result['plan']=plan
             return result
+        from .core import Bridge as _Bridge
+        if plan['workflow']=='reaction' and presentation in ('auto','interactive') and document_id is None and isinstance(bridge,_Bridge):
+            # One working document, one API append. The hidden measuring/final-copy
+            # batch path stays available only as an explicit presentation='background' job.
+            from .shared import run_shared
+            stage='shared_reaction'
+            result=run_shared(bridge,plan,out,document_id)
+            result['plan']=plan
+            return result
         if plan['workflow']=='reaction' and presentation!='shared' and document_id is None:
             from .reaction_batch import run_reaction_batch
             stage='reaction_batch'

@@ -1,5 +1,29 @@
 # Complete reaction batching
 
+## Default: reactions in the open document
+
+`chemdraw_draw` (and CLI `produce`) with explicit products and the default
+presentation now append the reaction to the open ChemDraw document through the
+[desktop API](DESKTOP_ADDIN.md): one append, no hidden measuring copy, no final copy,
+no close. With no document open, one canvas is created on a paper size chosen before
+anything exists (A4 landscape, then A3 landscape). A second reaction goes into the
+same document below the first. A document too narrow for the row is refused with
+`reaction_needs_space` and nothing is drawn.
+
+Layout is computed offline. Text widths come from font metrics and fragment ink boxes
+from `chemdraw_macos/ink.py`, which reproduces ChemDraw's label placement (anchor
+glyph, Left/Right alignment from bond direction, stacked labels) and was calibrated
+against native snapshots. Residual error is about 1 pt, so centring is checked to
+1.5 pt instead of the 0.75 pt used with a native measuring copy. Verification reads
+the live document back and requires every explicit role (reactants, products, arrow,
+supplied conditions) to match; ChemDraw's own inferred step associations are ignored
+and reported as `native_inferred_step_objects`. Labels outside the model fall back to
+a conservative envelope rather than a guess.
+
+The measured physical-paper batch described below remains available as an explicit
+`presentation="background"` job for publication exports. It opens one hidden
+measuring document and one hidden final document per reaction.
+
 Use `chemdraw_draw` or CLI `produce` for an explicit single-step reaction.
 Supply every reactant and product in the request. Products, balance, mechanism
 and experimental outcomes are not inferred.

@@ -44,10 +44,61 @@ def _page(text, *, vertical_pages=False):
                     or not e.get('BasisObjects') or not set(e.get('BasisObjects').split())<=ids):
                 raise ValueError('Unsupported linked caption chemical property')
             continue
-        if e.tag not in ('fragment','t'):
-            raise ValueError('Shared append currently supports molecules and captions only')
+        if e.tag=='scheme':
+            # Reaction-step metadata: roles by object id, no geometry of its own.
+            if any(c.tag!='step' for c in e):raise ValueError('Unsupported scheme content')
+            continue
+        if e.tag=='graphic' and not e.get('SupersededBy'):
+            raise ValueError('Shared append supports molecules, captions and reaction arrows only')
+        if e.tag not in ('fragment','t','arrow','graphic'):
+            raise ValueError('Shared append supports molecules, captions and reaction arrows only')
         if not e.get('BoundingBox'):raise ValueError('Shared append requires native measured object bounds')
     return root,page
+
+
+def geometric(page):
+    """Objects that occupy page space. Linked metadata, scheme steps and an arrow's
+    legacy companion graphic (same line, SupersededBy the arrow) do not."""
+    return [e for e in page if e.tag not in ('chemicalproperty','scheme')
+            and not (e.tag=='graphic' and e.get('SupersededBy'))]
+
+
+def drop_foreign_step_objects(page):
+    """Remove step-condition ids that point outside `page`; returns what was dropped.
+
+    ChemDraw may attach a nearby pre-existing caption to a new step (or a new text to
+    an old step) as its own inferred association. Our explicit roles (reactants,
+    products, arrow, supplied conditions) must still match exactly; this only lets the
+    comparison ignore objects the check is not about.
+    """
+    present={e.get('id') for e in page.iter() if e.get('id')}
+    dropped=[]
+    for step in page.iter('step'):
+        for key in ('ReactionStepObjectsAboveArrow','ReactionStepObjectsBelowArrow'):
+            if not step.get(key):continue
+            values=step.get(key).split()
+            dropped+=[v for v in values if v not in present]
+            keep=[v for v in values if v in present]
+            if keep:step.set(key,' '.join(keep))
+            else:step.attrib.pop(key)
+    return dropped
+
+
+def preexisting_reaction_records(new_page,kept_ids):
+    """Scheme/companion records already present before an append.
+
+    ChemDraw keeps molecule ids but renumbers arrows, schemes and steps, so these
+    records are claimed by content: a scheme whose reactants/products are all
+    pre-existing molecules, and a companion line superseded by a pre-existing arrow.
+    """
+    ids=set()
+    for scheme in new_page.findall('scheme'):
+        refs=[v for step in scheme.findall('step') for key in ('ReactionStepReactants','ReactionStepProducts')
+              for v in step.get(key,'').split()]
+        if refs and all(r in kept_ids for r in refs):ids.add(scheme.get('id'))
+    for graphic in new_page.findall('graphic'):
+        if graphic.get('SupersededBy') in kept_ids:ids.add(graphic.get('id'))
+    return ids
 
 
 def _union(boxes):
@@ -58,8 +109,8 @@ def _union(boxes):
 def plan_append(before,addition):
     _,page=_page(before);_,incoming=_page(addition)
     if not len(incoming):raise ValueError('Nothing to append')
-    extent=bounds(page);ink=_union([bounds(e) for e in incoming])
-    obstacles=[bounds(e) for e in page if e.tag!='chemicalproperty'];margin=24.;gap=24.
+    extent=bounds(page);ink=_union([bounds(e) for e in geometric(incoming)])
+    obstacles=[bounds(e) for e in geometric(page)];margin=24.;gap=24.
     xs=sorted({extent.left+margin,*[b.right+gap for b in obstacles]})
     ys=sorted({extent.top+margin,*[b.bottom+gap for b in obstacles]})
     for y in ys:
@@ -92,31 +143,37 @@ def verify_append(before,after,addition,placement=None,*,exact_coordinates=False
     try:mapping=remap_ids(before,after) if len(op) else {}
     except ValueError as exc:raise ValueError('Existing content changed during append: '+str(exc)) from exc
     old_ids=set(mapping.values())
+    old_ids|=preexisting_reaction_records(np,set(mapping.values()))
     existing=copy.deepcopy(new);ep=existing.find('page')
     for e in list(ep):
         if e.get('id') not in old_ids:ep.remove(e)
+    inferred=drop_foreign_step_objects(ep)
     try:
         if len(op):_verify(before,ET.tostring(existing,encoding='unicode'))
     except ValueError as exc:raise ValueError('Existing content changed during append: '+str(exc)) from exc
     added=copy.deepcopy(new);ap=added.find('page')
     for e in list(ap):
         if e.get('id') in old_ids:ap.remove(e)
-    if len(ap)!=len(sp):raise ValueError('Unexpected appended object count')
+    # ChemDraw adds a legacy companion line to every new arrow; it is not an extra object
+    # (the scheme comparison still needs it to resolve the arrow reference).
+    if len(geometric(ap))+len(ap.findall('scheme'))!=len(geometric(sp))+len(sp.findall('scheme')):
+        raise ValueError('Unexpected appended object count')
+    inferred+=drop_foreign_step_objects(ap)
     if chemical_signature(ET.tostring(added,encoding='unicode'))!=chemical_signature(addition):
         raise ValueError('Appended chemical identity differs from native output')
-    actual=_union([bounds(e) for e in ap]);expected=_union([bounds(e) for e in sp])
+    actual=_union([bounds(e) for e in geometric(ap)]);expected=_union([bounds(e) for e in geometric(sp)])
     if placement is not None and (abs(actual.left-placement['left'])>1 or abs(actual.top-placement['top'])>1):
         raise ValueError('Native position differs from planned placement')
     if not exact_coordinates:
         for e in sp:transform(e,dx=actual.left-expected.left,dy=actual.top-expected.top)
     _verify(ET.tostring(supplied,encoding='unicode'),ET.tostring(added,encoding='unicode'))
     if exact_coordinates:
-        measured=[bounds(e) for e in ap]
+        measured=[bounds(e) for e in geometric(ap)]
         for i,a in enumerate(measured):
             if any(not(a.right+2<=b.left or b.right+2<=a.left or a.bottom+2<=b.top or b.bottom+2<=a.top) for b in measured[:i]):
                 raise ValueError('Native measured appended objects overlap')
     if any(not(actual.right+2<=bounds(e).left or bounds(e).right+2<=actual.left or
-               actual.bottom+2<=bounds(e).top or bounds(e).bottom+2<=actual.top) for e in ep):
+               actual.bottom+2<=bounds(e).top or bounds(e).bottom+2<=actual.top) for e in geometric(ep)):
         raise ValueError('New drawing overlaps existing content')
     extent=bounds(np)
     if actual.left<extent.left or actual.top<extent.top or actual.right>extent.right or actual.bottom>extent.bottom:
@@ -124,6 +181,7 @@ def verify_append(before,after,addition,placement=None,*,exact_coordinates=False
     result={'existing_content_preserved':True,'added_chemistry_and_geometry_verified':True,
             'page_unchanged':bounds(op)==bounds(np),'nonoverlapping_placement':True}
     if allow_page_expansion:result['page_expansion_verified']=True
+    if inferred:result['native_inferred_step_objects']=sorted(set(inferred))
     return result
 
 

@@ -161,7 +161,8 @@ def test_generated_final_is_closed_before_shared_paste_can_fail(tmp_path,monkeyp
     monkeypatch.setattr(shared,'clipboard',clipboard)
     with pytest.raises(NativeUncertain):shared.run_shared_legacy(Backend(),{},tmp_path/'out',42)
     assert calls==['export','close_generated','paste']
-@pytest.mark.parametrize('plan',[{'workflow':'reaction'}, {'workflow':'molecules','groups':[{'label':'EWG','compound_ids':['1']}]}])
+# Reactions are supported on the shared path (tests/test_shared_reaction.py); decorated groups are not.
+@pytest.mark.parametrize('plan',[{'workflow':'molecules','groups':[{'label':'EWG','compound_ids':['1']}]}])
 def test_unsupported_shared_request_stops_before_native_generation(plan,tmp_path):
     from contextlib import nullcontext
     from chemdraw_macos.shared import run_shared

@@ -134,7 +134,7 @@ def _region(page,margin):
     return x+margin,y+margin,r-margin,b-margin
 
 
-def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None,*,text_width_factor=1.):
+def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None,*,text_width_factor=1.,text_width=None):
     """Combine checked connected native components with explicit salt ownership."""
     options=_layout_options(layout);spec=preset_settings(preset);all_parts=[c for s in prepared_steps for side in ('reactants','products') for p in s[side] for c in p['components']]
     normalized={}
@@ -211,7 +211,15 @@ def compose_series(native_by_smiles,prepared_steps,preset='house',layout=None,*,
         raise ValueError('Invalid staging text-width estimate')
     # Staging estimates are not native measurements. The batch path measures the
     # entire document once and recomputes the final paper/layout from actual ink.
-    if text_width_factor!=1:
+    if text_width is not None:
+        # Offline per-string estimate (shared canvas): no native measuring copy is made.
+        for t in styled.findall('page/t'):
+            x,y,r,b=numbers(t.get('BoundingBox'),4);cx=(x+r)/2
+            runs=list(t.iter('s'))
+            half=text_width(''.join(s.text or '' for s in runs),max(float(s.get('size','10')) for s in runs))/2
+            t.set('BoundingBox',f'{cx-half} {y} {cx+half} {b}')
+        text=ET.tostring(styled,encoding='unicode')
+    elif text_width_factor!=1:
         for t in styled.findall('page/t'):
             x,y,r,b=numbers(t.get('BoundingBox'),4);cx=(x+r)/2
             half=(r-x)*text_width_factor/2
@@ -291,7 +299,7 @@ def arrange_series(text,recipe,require_measured=True):
     return ET.tostring(root,encoding='unicode'),plan
 
 
-def verify_series(expected,native,plan):
+def verify_series(expected,native,plan,centre_tolerance=.75):
     _verify(expected,native);mapped=remap_series(plan,remap_ids(expected,native));root=supported_root(native);page=root.find('page');objects={e.get('id'):e for e in page}
     spec=preset_settings(plan['preset']);parents={child:parent for parent in root.iter() for child in parent}
     def inherited(element,key):
@@ -311,7 +319,7 @@ def verify_series(expected,native,plan):
         for side in ('reactants','products'):
             for p in step[side]:
                 fs=[objects[f] for f in p['fragment_ids']];bb=_union(fs);cap=objects[p['caption_id']]
-                if ''.join(cap.itertext()).strip()!=p['label'] or abs(bounds(cap).center[0]-bb.center[0])>.75:raise ValueError('Native participant caption binding or centring changed')
+                if ''.join(cap.itertext()).strip()!=p['label'] or abs(bounds(cap).center[0]-bb.center[0])>centre_tolerance:raise ValueError('Native participant caption binding or centring changed')
                 if abs(numbers(cap.get('p'),2)[1]-step['caption_baseline_pt'])>.05:raise ValueError('Native caption baseline changed')
                 if (side=='reactants' and bb.right>=tail[0]) or (side=='products' and bb.left<=head[0]):raise ValueError('Native participant moved to wrong reaction side')
                 if p['coefficient_id']:
@@ -330,7 +338,7 @@ def verify_series(expected,native,plan):
                         if not math.isfinite(size) or abs(size-float(spec['LabelSize']))>.050001:raise ValueError('Native coefficient size changed')
         for tid,side in step['condition_sides'].items():
             b=bounds(objects[tid])
-            if abs(b.center[0]-cx)>.75 or (side=='above' and b.bottom>=head[1]) or (side=='below' and b.top<=head[1]):raise ValueError('Native arrow condition placement changed')
+            if abs(b.center[0]-cx)>centre_tolerance or (side=='above' and b.bottom>=head[1]) or (side=='below' and b.top<=head[1]):raise ValueError('Native arrow condition placement changed')
     medians=[statistics.median(bond_lengths(f)) for f in page.findall('fragment') if bond_lengths(f)]
     if any(abs(m-float(preset_settings(plan['preset'])['BondLength']))>.03 for m in medians):raise ValueError('Native molecular bond scale changed')
     return {'checks':{'mapped_chemistry_and_stereo':True,'explicit_step_roles':True,'salt_component_ownership':True,'coefficient_values_and_placement':True,'coefficient_font_and_size':True,

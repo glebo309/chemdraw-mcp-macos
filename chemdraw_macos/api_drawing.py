@@ -308,8 +308,11 @@ def run_api_drawing(bridge,plan,out,document_id=None):
     if export_mode=='auto':export_mode='canvas'
     if export_mode not in ('preview','full','canvas'):
         raise ValueError('exports must be preview, full or canvas')
+    if plan.get('workflow')=='reaction':
+        from .shared_reaction import run_shared_reaction
+        return run_shared_reaction(bridge,plan,out,document_id)
     if plan.get('workflow','molecules')!='molecules' or plan.get('groups') is not None:
-        raise NeedsInput('unsupported_shared_objects','Direct API insertion currently supports plain molecule batches, not decorated groups or reactions. Those require an explicitly requested separate workflow. No drawing was changed.')
+        raise NeedsInput('unsupported_shared_objects','Direct API insertion currently supports plain molecule batches and explicit reactions, not decorated groups. Those require an explicitly requested separate workflow. No drawing was changed.')
     if plan.get('charge_style','plain')!='plain' or plan.get('layout') is not None or isinstance(plan.get('preset'),dict):
         raise NeedsInput('unsupported_shared_options','Direct API batches currently support plain charges, automatic grid placement, and house or ACS presets. Custom layout/style and circled charges require a separate explicit workflow. No drawing was changed.')
     docs=bridge.documents()['documents']

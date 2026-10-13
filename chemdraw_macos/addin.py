@@ -19,12 +19,18 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from .core import validate_cdxml, document_row
-from .shared import _page, fingerprint
+from .shared import _page, fingerprint, geometric
 from .polish import bounds, chemical_signature
 
 
 def source_token(text):
     return hashlib.sha256(json.dumps(fingerprint(text)).encode()).hexdigest()
+
+
+# Reaction-step attributes that list object ids; remapped with the objects they name.
+REFERENCE_LISTS=('ReactionStepReactants','ReactionStepProducts','ReactionStepArrows',
+                 'ReactionStepObjectsAboveArrow','ReactionStepObjectsBelowArrow','ReactionStepPlusses',
+                 'ReactionStepAtomMap','ReactionStepAtomMapManual','ReactionStepAtomMapAuto')
 
 
 def prepare_payload(before, addition, *, allow_page_expansion=False):
@@ -52,7 +58,7 @@ def prepare_payload(before, addition, *, allow_page_expansion=False):
         if a is not None and (b is None or ET.tostring(a)!=ET.tostring(b)):
             raise ValueError('Addition must use working-document '+table)
     extent=bounds(added if allow_page_expansion else page)
-    boxes=[bounds(e) for e in added]
+    boxes=[bounds(e) for e in geometric(added)]
     def overlaps(a,b):
         return not (a.right+2<=b.left or b.right+2<=a.left or a.bottom+2<=b.top or b.bottom+2<=a.top)
     for i,box in enumerate(boxes):
@@ -60,9 +66,9 @@ def prepare_payload(before, addition, *, allow_page_expansion=False):
             raise ValueError('Invalid supplied bounds')
         if box.left<extent.left or box.top<extent.top or box.right>extent.right or box.bottom>extent.bottom:
             raise ValueError('Addition exceeds page')
-        if any(overlaps(box,bounds(e)) for e in page) or any(overlaps(box,b) for b in boxes[:i]):
+        if any(overlaps(box,bounds(e)) for e in geometric(page)) or any(overlaps(box,b) for b in boxes[:i]):
             raise ValueError('Addition would overlap existing or supplied objects')
-    for obj in added:
+    for obj in geometric(added):
         box=bounds(obj)
         for e in obj.iter():
             if e.get('p'):
@@ -88,8 +94,10 @@ def prepare_payload(before, addition, *, allow_page_expansion=False):
     for child in added:
         child=copy.deepcopy(child)
         for e in child.iter():
-            for key in ('id','B','E'):
+            for key in ('id','B','E','SupersededBy'):
                 if e.get(key) in mapping:e.set(key,mapping[e.get(key)])
+            for key in REFERENCE_LISTS:
+                if e.get(key):e.set(key,' '.join(mapping.get(v,v) for v in e.get(key).split()))
             if e.get('CrossingBonds'):
                 e.set('CrossingBonds',' '.join(mapping[v] for v in e.get('CrossingBonds').split()))
         dest.append(child)
