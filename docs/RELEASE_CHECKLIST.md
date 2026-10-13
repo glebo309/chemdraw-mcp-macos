@@ -8,7 +8,7 @@ compatibility with other macOS or ChemDraw versions.
 
 ## Required release gates
 
-- [ ] Retain the AGPL-3.0-only LICENSE, NOTICE and all applicable dependency notices.
+- [ ] Retain the MIT LICENSE, NOTICE and all applicable dependency notices.
 - [ ] Complete installation and native acceptance on another Mac with its own licensed ChemDraw installation. Record exact macOS, processor architecture, ChemDraw build, Python and installed dependency versions. Do not describe untested combinations as supported.
 - [ ] Sign and notarize the Mac application before a stable release.
 - [ ] Reconcile package version, README, compatibility documentation, release notes and built artifact metadata for the exact candidate being handed off. Development source may contain features newer than the current package version.

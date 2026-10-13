@@ -478,7 +478,7 @@ Offline identifiers are documented in [the identifier contract](docs/IDENTIFIERS
 
 ## License and collaboration
 
-Original project code is available under [GNU AGPL version 3 only](LICENSE), with [copyright and warranty notices](NOTICE). Commercial and noncommercial use are allowed. Covered redistribution and modified network-served versions carry source-sharing obligations; the licence text governs. This does not automatically license users' drawings or research, nor every independent client that connects over MCP.
+Original project code is available under the [MIT License](LICENSE), with [copyright and warranty notices](NOTICE). Commercial and noncommercial use are allowed; keep the copyright and permission notice with copies. This does not automatically license users' drawings or research, nor every independent client that connects over MCP.
 
 Contributions are welcome: test another Mac/ChemDraw version, report a reproducible drawing problem, share a redistributable example, or send a focused pull request. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Do not upload confidential structures or proprietary assets. Marco DeCorti's visual guidance and upstream authors' contributions remain credited.
 

@@ -62,4 +62,4 @@ listed separately in [release history](../PROJECT_PROGRESS.md).
 - Connected mechanism layouts and a sourced biocatalysis reference library.
 - Remaining crowded-charge cases and broader native-object coverage.
 
-See the [roadmap](ROADMAP.md) and [compatibility](COMPATIBILITY.md). Experimental builds are distributed through [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases), not a package index. Original project code is AGPL-3.0-only.
+See the [roadmap](ROADMAP.md) and [compatibility](COMPATIBILITY.md). Experimental builds are distributed through [GitHub Releases](https://github.com/glebo309/chemdraw-mcp-macos/releases), not a package index. Original project code is MIT.

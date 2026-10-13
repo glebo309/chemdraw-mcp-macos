@@ -252,7 +252,7 @@ def extension_manifest(version, architecture):
             'display_name': 'ChemDraw MCP', 'version': version,
             'description': f'Native, same-document ChemDraw drawing on {machine} Macs. Includes graphical setup.',
             'long_description': 'Requires your own licensed ChemDraw. Reads unsaved edits and draws editable molecules in the same canvas. Bundled Python and chemistry tools; no terminal setup. Experimental: ChemDraw 23.0.1 is the tested build. On first launch the setup window guides add-in installation. Drawing stays local; explicitly approved name resolution uses PubChem. Your assistant has its own data policies.',
-            'author': {'name': 'Glenn Bojanov'}, 'license': 'AGPL-3.0-only', 'icon': 'icon.png',
+            'author': {'name': 'Glenn Bojanov'}, 'license': 'MIT', 'icon': 'icon.png',
             'server': {'type': 'binary', 'entry_point': executable,
                        'mcp_config': {'command': '${__dirname}/'+executable,
                                       'args': ['--desktop-serve']}},

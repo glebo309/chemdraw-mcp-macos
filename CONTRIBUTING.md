@@ -1,10 +1,10 @@
 # Contributing
 
-Contributions are welcome. This is an open-source experimental project under [AGPL-3.0-only](LICENSE), not yet a stable release. These instructions do not authorize publishing private files or proprietary ChemDraw assets.
+Contributions are welcome. This is an open-source experimental project under [MIT](LICENSE), not yet a stable release. These instructions do not authorize publishing private files or proprietary ChemDraw assets.
 
 Useful first contributions include another-Mac compatibility reports, minimal reproducible drawing bugs, redistributable native fixtures and focused CLI/MCP improvements. Open an issue to discuss larger changes before building them. You do not need to be a programmer to help check chemical correctness or visual quality.
 
-Unless explicitly agreed otherwise, contributions of original code are submitted under AGPL-3.0-only. You retain your copyright; no copyright assignment is requested. Only submit work you have the right to contribute, and retain applicable upstream notices when adapting existing code.
+Unless explicitly agreed otherwise, contributions of original code are submitted under the MIT License. You retain your copyright; no copyright assignment is requested. Only submit work you have the right to contribute, and retain applicable upstream notices when adapting existing code.
 
 ## Build a bounded, visible result
 
@@ -56,7 +56,7 @@ A graph match proves supported input preservation, not independent correctness o
 
 Read [third-party notices](THIRD_PARTY_NOTICES.md) and [upstream research](docs/UPSTREAM_RESEARCH.md). Record repository, immutable commit, copied source/symbols, local destination and license in `upstream-sources.json`. Retain full applicable copyright/license text and mark adaptations accurately.
 
-Do not call copied code mere inspiration; do not claim an entire project is copied when only an idea was used. Preserve original authorship through forks. Added code and dependencies must be compatible with the project's AGPL-3.0-only distribution and retain their own applicable notices.
+Do not call copied code mere inspiration; do not claim an entire project is copied when only an idea was used. Preserve original authorship through forks. Added code and dependencies must be compatible with the project's MIT distribution (no GPL/AGPL code) and retain their own applicable notices.
 
 Use redistributable synthetic fixtures with expected identities. Do not commit confidential chemistry, licensed application binaries, proprietary templates/fonts or paper artwork without appropriate rights.
 

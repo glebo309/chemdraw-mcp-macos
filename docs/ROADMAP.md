@@ -133,7 +133,7 @@ Version 0.8 also implements optional scope framing and group dividers as a separ
 
 ## Repository quality gates before publication
 
-- Retain the project's AGPL-3.0-only licence and all upstream notices; audit each copied file and packaged dependency. Do not redistribute proprietary ChemDraw software, fonts, templates or third-party paper artwork without appropriate rights.
+- Retain the project's MIT licence and all upstream notices; audit each copied file and packaged dependency. Do not redistribute proprietary ChemDraw software, fonts, templates or third-party paper artwork without appropriate rights.
 - Install from a clean supported Mac account with documented ChemDraw activation and Automation permission prerequisites.
 - Publish a compatibility matrix separating tested macOS/ChemDraw combinations from untested ones.
 - Provide CLI help, structured JSON examples, client-independent MCP setup and actionable diagnostics. Do not edit unrelated client configuration.

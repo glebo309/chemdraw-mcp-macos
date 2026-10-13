@@ -1,6 +1,6 @@
 # Third-party notices and provenance
 
-This file distinguishes source incorporated into this project from projects only evaluated. Original project code is licensed under AGPL-3.0-only; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Third-party components retain their applicable licences and notices below. No endorsement by upstream maintainers or ChemDraw's vendor is implied.
+This file distinguishes source incorporated into this project from projects only evaluated. Original project code is licensed under the MIT License; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Third-party components retain their applicable licences and notices below. No endorsement by upstream maintainers or ChemDraw's vendor is implied.
 
 ## Incorporated source
 
