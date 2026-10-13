@@ -1,0 +1,474 @@
+{
+ "suzuki_coupling": {
+  "description": "Suzuki coupling: aryl halide + boronic acid to biaryl",
+  "smarts": "[c:1][Br,I].[#6:2][B]([OH])[OH]>>[c:1]-[#6:2]",
+  "n_reactants": 2,
+  "substrate_hint": "aryl bromide or iodide",
+  "reagent_hint": "boronic acid",
+  "conditions": [
+   "Pd(dppf)Cl2",
+   "K2CO3",
+   "dioxane/H2O",
+   "80 °C"
+  ],
+  "category": "coupling"
+ },
+ "buchwald_amination": {
+  "description": "Buchwald-Hartwig amination: aryl halide + amine to aryl amine",
+  "smarts": "[c:1][Cl,Br,I].[NX3;H2,H1:2]>>[c:1]-[N:2]",
+  "n_reactants": 2,
+  "substrate_hint": "aryl halide",
+  "reagent_hint": "primary or secondary amine",
+  "conditions": [
+   "Pd2(dba)3",
+   "XPhos",
+   "Cs2CO3",
+   "toluene",
+   "100 °C"
+  ],
+  "category": "coupling"
+ },
+ "snar": {
+  "description": "Nucleophilic aromatic substitution: activated aryl halide + nucleophile",
+  "smarts": "[c:1][F,Cl].[NX3;H2,H1:2]>>[c:1]-[N:2]",
+  "n_reactants": 2,
+  "substrate_hint": "electron-poor aryl fluoride or chloride",
+  "reagent_hint": "amine nucleophile",
+  "conditions": [
+   "DIPEA",
+   "DMSO or NMP",
+   "80-120 °C"
+  ],
+  "category": "coupling"
+ },
+ "amide_coupling": {
+  "description": "Amide bond formation: carboxylic acid + amine",
+  "smarts": "[C:1](=[O:2])[OH].[NX3;H2,H1:3]>>[C:1](=[O:2])-[N:3]",
+  "n_reactants": 2,
+  "substrate_hint": "carboxylic acid",
+  "reagent_hint": "primary or secondary amine",
+  "conditions": [
+   "HATU",
+   "DIPEA",
+   "DMF",
+   "rt"
+  ],
+  "category": "coupling"
+ },
+ "reductive_amination": {
+  "description": "Reductive amination: aldehyde or ketone + amine to amine",
+  "smarts": "[C:1](=[O:2]).[NX3;H2,H1:3]>>[C:1]-[N:3]",
+  "n_reactants": 2,
+  "substrate_hint": "aldehyde or ketone",
+  "reagent_hint": "primary or secondary amine",
+  "conditions": [
+   "NaBH(OAc)3",
+   "AcOH",
+   "DCE",
+   "rt"
+  ],
+  "category": "functional_group"
+ },
+ "nitro_reduction": {
+  "description": "Nitro group reduction to amine (ArNO2 to ArNH2)",
+  "smarts": "[c:1][N+](=[O])[O-]>>[c:1]N",
+  "n_reactants": 1,
+  "substrate_hint": "aromatic nitro compound",
+  "reagent_hint": null,
+  "conditions": [
+   "SnCl2·2H2O",
+   "EtOH",
+   "80 °C"
+  ],
+  "category": "functional_group"
+ },
+ "ester_hydrolysis": {
+  "description": "Ester hydrolysis to carboxylic acid",
+  "smarts": "[C:1](=[O:2])[O:3][C:4]>>[C:1](=[O:2])[OH]",
+  "n_reactants": 1,
+  "substrate_hint": "ester",
+  "reagent_hint": null,
+  "conditions": [
+   "LiOH",
+   "THF/H2O",
+   "rt"
+  ],
+  "category": "functional_group"
+ },
+ "n_alkylation": {
+  "description": "N-Alkylation: amine + alkyl halide",
+  "smarts": "[NX3;H2,H1:1].[C:2][Cl,Br,I]>>[N:1]-[C:2]",
+  "n_reactants": 2,
+  "substrate_hint": "amine",
+  "reagent_hint": "alkyl halide",
+  "conditions": [
+   "K2CO3",
+   "DMF",
+   "60 °C"
+  ],
+  "category": "coupling"
+ },
+ "sonogashira_coupling": {
+  "description": "Sonogashira coupling: aryl halide + terminal alkyne",
+  "smarts": "[c:1][Br,I].[CH:2]#[C:3]>>[c:1]-[C:2]#[C:3]",
+  "n_reactants": 2,
+  "substrate_hint": "aryl bromide or iodide",
+  "reagent_hint": "terminal alkyne",
+  "conditions": [
+   "PdCl2(PPh3)2",
+   "CuI",
+   "Et3N",
+   "THF",
+   "rt"
+  ],
+  "category": "coupling"
+ },
+ "heck_reaction": {
+  "description": "Heck reaction: aryl halide + alkene to substituted alkene",
+  "smarts": "[c:1][Br,I].[CH:2]=[CH2:3]>>[c:1]/[CH:2]=[CH2:3]",
+  "n_reactants": 2,
+  "substrate_hint": "aryl halide",
+  "reagent_hint": "terminal alkene",
+  "conditions": [
+   "Pd(OAc)2",
+   "P(o-tol)3",
+   "Et3N",
+   "DMF",
+   "100 °C"
+  ],
+  "category": "coupling"
+ },
+ "alcohol_oxidation": {
+  "description": "Alcohol oxidation to aldehyde or ketone",
+  "smarts": "[C:1][OH:2]>>[C:1]=[O:2]",
+  "n_reactants": 1,
+  "substrate_hint": "primary or secondary alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "Dess-Martin periodinane",
+   "DCM",
+   "rt"
+  ],
+  "category": "functional_group"
+ },
+ "grignard_addition": {
+  "description": "Grignard / organometallic addition to aldehyde or ketone",
+  "smarts": "[C:1](=[O:2])[#6:4].[#6:3][Mg]>>[C:1]([OH:2])([#6:4])-[#6:3]",
+  "n_reactants": 2,
+  "substrate_hint": "aldehyde or ketone",
+  "reagent_hint": "Grignard reagent (RMgBr SMILES)",
+  "conditions": [
+   "THF",
+   "-78 °C to rt"
+  ],
+  "category": "functional_group"
+ },
+ "amide_hydrolysis": {
+  "description": "Amide hydrolysis to carboxylic acid (RCONHR' → RCOOH)",
+  "smarts": "[C:1](=[O:2])[NX3:3]>>[C:1](=[O:2])[OH]",
+  "n_reactants": 1,
+  "substrate_hint": "amide (primary, secondary, or tertiary)",
+  "reagent_hint": null,
+  "conditions": [
+   "6M HCl or 2M NaOH",
+   "reflux"
+  ],
+  "category": "functional_group"
+ },
+ "wittig": {
+  "description": "Wittig olefination: aldehyde/ketone + alkyl halide to alkene",
+  "smarts": "[#6:3]-[C;H1,$([CH0](-[#6])[#6]);!$(CC=O):1]=[OD1].[Cl,Br,I][C;H2;$(C-[#6]);!$(CC[I,Br]);!$(CCO[CH3]):2]>>[C:3][C:1]=[C:2]",
+  "n_reactants": 2,
+  "substrate_hint": "aldehyde or ketone",
+  "reagent_hint": "alkyl halide (ylide precursor)",
+  "conditions": [
+   "PPh3",
+   "n-BuLi",
+   "THF",
+   "0 °C to rt"
+  ],
+  "category": "functional_group"
+ },
+ "niementowski_quinazoline": {
+  "description": "Niementowski quinazoline: anthranilic acid + amide → 4-quinazolinone",
+  "smarts": "[c:1](-[C;$(C-c1ccccc1):2](=[OD1:3])-[OH1]):[c:4](-[NH2:5]).[N;!H0;!$(N-N);!$(N-C=N);!$(N(-C=O)-C=O):6]-[C;H1,$(C-[#6]):7]=[OD1]>>[c:4]2:[c:1]-[C:2](=[O:3])-[N:6]-[C:7]=[N:5]-2",
+  "n_reactants": 2,
+  "substrate_hint": "anthranilic acid derivative",
+  "reagent_hint": "amide or formamide",
+  "conditions": [
+   "neat or AcOH",
+   "120–150 °C"
+  ],
+  "category": "heterocycle_formation"
+ },
+ "grignard_carbonyl": {
+  "description": "Grignard on nitrile: nitrile + aryl/alkyl halide → ketone",
+  "smarts": "[#6:1][C:2]#[#7;D1].[Cl,Br,I][#6;$([#6]~[#6]);!$([#6]([Cl,Br,I])[Cl,Br,I]);!$([#6]=O):3]>>[#6:1][C:2](=O)[#6:3]",
+  "n_reactants": 2,
+  "substrate_hint": "nitrile (R−C≡N)",
+  "reagent_hint": "aryl or alkyl halide (Grignard precursor)",
+  "conditions": [
+   "Mg",
+   "THF",
+   "then H3O+"
+  ],
+  "category": "functional_group"
+ },
+ "cbz_deprotection": {
+  "description": "Remove Cbz (carbobenzyloxy) from amine",
+  "smarts": "[NX3;H0,H1:1][C;R0](=O)[O;R0][C;R0]c1[c;H1][c;H1][c;H1][c;H1][c;H1]1>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Cbz-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "H2",
+   "Pd/C",
+   "MeOH",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "fmoc_deprotection": {
+  "description": "Remove Fmoc (9-fluorenylmethyloxycarbonyl) from amine",
+  "smarts": "[NX3;H0,H1:1][#6](=O)-[#8]-[#6]-[#6]-1-c2ccccc2-c2ccccc-12>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Fmoc-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "piperidine",
+   "DMF",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "tbs_deprotection": {
+  "description": "Remove TBS (tert-butyldimethylsilyl) from alcohol",
+  "smarts": "CC(C)([Si](C)(C)[O;H0:1])C>>[O;H1:1]",
+  "n_reactants": 1,
+  "substrate_hint": "TBS-protected alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "TBAF",
+   "THF",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "bn_deprotection_o": {
+  "description": "Remove benzyl (Bn) from alcohol",
+  "smarts": "[O;!$(*C(=O)):1][CH2]c1[c;H1][c;H1][c;H1][c;H1][c;H1]1>>[O;H1:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Bn-protected alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "H2",
+   "Pd/C",
+   "EtOAc",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "bn_deprotection_n": {
+  "description": "Remove benzyl (Bn) from amine",
+  "smarts": "[NX3;H0,H1;!$(NC=O):1][C;H2]c1[c;H1][c;H1][c;H1][c;H1][c;H1]1>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Bn-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "H2",
+   "Pd/C",
+   "MeOH",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "ac_deprotection_o": {
+  "description": "Remove acetyl (Ac) from alcohol",
+  "smarts": "[O;R0:1][C;R0](=O)[C;H3]>>[O:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Ac-protected alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "K2CO3",
+   "MeOH",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "ac_deprotection_n": {
+  "description": "Remove acetyl (Ac) from amine",
+  "smarts": "[NX3;H0,H1:1][C;R0](=O)[C;H3]>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Ac-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "6M HCl",
+   "reflux"
+  ],
+  "category": "deprotection"
+ },
+ "pmb_deprotection": {
+  "description": "Remove PMB (para-methoxybenzyl) from alcohol",
+  "smarts": "[c;H1]1[c;H1]c(O[C;H3])[c;H1][c;H1]c1[C;H2][O;D2&R0:1]>>[O;H1:1]",
+  "n_reactants": 1,
+  "substrate_hint": "PMB-protected alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "DDQ",
+   "DCM/H2O",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "ts_deprotection": {
+  "description": "Remove tosyl (Ts) from amine",
+  "smarts": "[C;H3]c1[c;H1][c;H1]c(S(=O)(=O)[NX3;H0,H1;!$(NC=O):1])[c;H1][c;H1]1>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "Ts-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "Mg",
+   "MeOH",
+   "sonication"
+  ],
+  "category": "deprotection"
+ },
+ "tfa_deprotection": {
+  "description": "Remove trifluoroacetyl (TFA) from amine",
+  "smarts": "[N;H0,H1:1]C(=O)C(F)(F)F>>[N:1]",
+  "n_reactants": 1,
+  "substrate_hint": "TFA-protected amine",
+  "reagent_hint": null,
+  "conditions": [
+   "K2CO3",
+   "MeOH/H2O",
+   "rt"
+  ],
+  "category": "deprotection"
+ },
+ "cbz_protection": {
+  "description": "Add Cbz (carbobenzyloxy) to amine",
+  "smarts": "[NX3;H1,H2:1]>>[N:1]C(=O)OCc1ccccc1",
+  "n_reactants": 1,
+  "substrate_hint": "free amine",
+  "reagent_hint": null,
+  "conditions": [
+   "CbzCl",
+   "NaOH",
+   "dioxane/H2O",
+   "0 °C"
+  ],
+  "category": "protection"
+ },
+ "fmoc_protection": {
+  "description": "Add Fmoc (9-fluorenylmethyloxycarbonyl) to amine",
+  "smarts": "[NX3;H1,H2:1]>>[N:1]C(=O)OCC1c2ccccc2-c2ccccc21",
+  "n_reactants": 1,
+  "substrate_hint": "free amine",
+  "reagent_hint": null,
+  "conditions": [
+   "Fmoc-OSu",
+   "NaHCO3",
+   "dioxane/H2O",
+   "rt"
+  ],
+  "category": "protection"
+ },
+ "tbs_protection": {
+  "description": "Add TBS (tert-butyldimethylsilyl) to alcohol",
+  "smarts": "[O;H1:1]>>[O:1][Si](C)(C)C(C)(C)C",
+  "n_reactants": 1,
+  "substrate_hint": "free alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "TBSCl",
+   "imidazole",
+   "DMF",
+   "rt"
+  ],
+  "category": "protection"
+ },
+ "bn_protection_o": {
+  "description": "Add benzyl (Bn) to alcohol",
+  "smarts": "[O;H1:1]>>[O:1]Cc1ccccc1",
+  "n_reactants": 1,
+  "substrate_hint": "free alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "BnBr",
+   "NaH",
+   "DMF",
+   "0 °C"
+  ],
+  "category": "protection"
+ },
+ "bn_protection_n": {
+  "description": "Add benzyl (Bn) to amine",
+  "smarts": "[NX3;H1,H2;!$(NC=O):1]>>[N:1]Cc1ccccc1",
+  "n_reactants": 1,
+  "substrate_hint": "free amine",
+  "reagent_hint": null,
+  "conditions": [
+   "BnBr",
+   "K2CO3",
+   "DMF",
+   "60 °C"
+  ],
+  "category": "protection"
+ },
+ "ac_protection_o": {
+  "description": "Add acetyl (Ac) to alcohol",
+  "smarts": "[O;H1:1]>>[O:1]C(C)=O",
+  "n_reactants": 1,
+  "substrate_hint": "free alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "Ac2O",
+   "pyridine",
+   "rt"
+  ],
+  "category": "protection"
+ },
+ "ac_protection_n": {
+  "description": "Add acetyl (Ac) to amine",
+  "smarts": "[NX3;H1,H2:1]>>[N:1]C(C)=O",
+  "n_reactants": 1,
+  "substrate_hint": "free amine",
+  "reagent_hint": null,
+  "conditions": [
+   "Ac2O",
+   "Et3N",
+   "DCM",
+   "rt"
+  ],
+  "category": "protection"
+ },
+ "pmb_protection": {
+  "description": "Add PMB (para-methoxybenzyl) to alcohol",
+  "smarts": "[O;H1:1]>>[O:1]Cc1ccc(OC)cc1",
+  "n_reactants": 1,
+  "substrate_hint": "free alcohol",
+  "reagent_hint": null,
+  "conditions": [
+   "PMBCl",
+   "NaH",
+   "DMF",
+   "0 °C"
+  ],
+  "category": "protection"
+ },
+ "ts_protection": {
+  "description": "Add tosyl (Ts) to amine",
+  "smarts": "[NX3;H1,H2;!$(NC=O):1]>>[N:1]S(=O)(=O)c1ccc(C)cc1",
+  "n_reactants": 1,
+  "substrate_hint": "free amine",
+  "reagent_hint": null,
+  "conditions": [
+   "TsCl",
+   "Et3N",
+   "DCM",
+   "0 °C"
+  ],
+  "category": "protection"
+ }
+}

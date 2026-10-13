@@ -213,6 +213,35 @@ def chemdraw_draw_name(name:str,output_dir:str,allow_network:bool=False,preset:L
 def chemdraw_draw_complex(recipe:dict,output_dir:str,preset:Literal['house','acs-1996']='house',pixels:int=2400)->dict:
     """Experimental explicit coordination drawing in a NEW native copy. V1 recipe: schema_version=1, label, atoms [{id,element,charge,hydrogens,position:[x,y,z]}], bonds [{begin,end,order:'1'|'2'|'3'|'dative'}]. V2 adds attachments=[] and overall_charge=null|nonzero integer, requires each bond's display, permits order='coordination' with Solid/WedgeEnd/WedgedHashEnd, and optional atom color='#RRGGBB'. Default atoms are BLACK; colouring is opt-in. Whole-complex charge is a checked corner annotation, not an atom-charge assignment. V2 multicentre/haptic planning is experimental; the ferrocene fixture currently FAILS native aromatic-order preservation, so do not promise ferrocene output. Positions are CDXML points, not angstroms; x/y are supplied projection, z retained metadata. No cleanup, geometry/stereo/oxidation-state inference, chemical plausibility certification or 3D renderer. Native warnings are reported, not suppressed. New absolute output directory, native CDXML/SVG/PNG/audit/review; existing documents unchanged. Human chemical and visual review required. See docs/METAL_COMPLEXES.md and examples/coordination-ruthenium-chelate.json."""
     return draw_complex(bridge(),recipe,output_dir,preset,pixels)
+@mcp.tool(annotations=READ)
+def chemdraw_list_reactions(category:Literal['coupling','functional_group','heterocycle_formation','protection','deprotection']|None=None,query:str|None=None)->dict:
+    """List reviewed named-reaction templates (162: couplings, heterocycles, FG transforms, protection/deprotection) with substrate/partner hints and typical conditions. Offline, read-only. Use before chemdraw_propose_products. query filters by name/description text."""
+    from .named_reactions import list_reactions
+    rows=list_reactions(category,query)
+    return {'count':len(rows),'reactions':rows}
+
+@mcp.tool(annotations=READ)
+def chemdraw_propose_products(reaction:str,substrate:str,partner:str|None=None)->dict:
+    """PROPOSE product graphs for one named reaction on explicit SMILES (offline, RDKit). Returns every distinct product with formula, delta vs reactants and MW; never draws or picks one. Ambiguous or by-product-bearing outcomes are flagged for review. Then pass the CHOSEN product SMILES to chemdraw_draw as an explicit reaction. Names/CAS must be resolved to SMILES first (chemdraw_resolve). partner is required for two-component reactions."""
+    from .named_reactions import propose_products
+    return propose_products(reaction,substrate,partner)
+
+@mcp.tool(annotations=READ)
+def chemdraw_lookup_reagent(name:str|None=None,role:str|None=None)->dict:
+    """Offline lookup of ~190 curated reagents, bases, ligands, catalysts and solvents: canonical display label, role, SMILES, aliases. Pass name for one entry (e.g. Cs2CO3, Pd(dppf)Cl2, HATU) or role (base, solvent, catalyst, ligand, coupling_reagent...) to list. Use the display label for reaction conditions text."""
+    from .reagents import lookup_reagent,list_reagents
+    if name:
+        entry=lookup_reagent(name)
+        return {'found':entry is not None,'reagent':entry}
+    rows=list_reagents(role)
+    return {'count':len(rows),'reagents':rows}
+
+@mcp.tool(annotations=READ)
+def chemdraw_read_reaction(cdxml:str|None=None,path:str|None=None)->dict:
+    """Read an EXISTING reaction scheme (CDXML text from chemdraw_addin_read_document, or a .cdxml path) into reactants, reagents/solvents/catalysts, products, reaction SMILES and condition text. Offline, read-only, nothing is written or drawn. Roles are heuristic (fingerprint + curated reagent table); abbreviations/superatoms outside the curated table may be missed. Supply exactly one of cdxml or path. Review every role before reuse."""
+    from .scheme_reader import read_reaction
+    return read_reaction(cdxml=cdxml,path=path)
+
 EDIT=ToolAnnotations(readOnlyHint=False,destructiveHint=True,openWorldHint=False)
 
 @mcp.tool(annotations=READ)

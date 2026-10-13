@@ -344,7 +344,7 @@ uv run --extra chemistry chemdraw-mac reaction \
 uv run chemdraw-mac import-style --input /absolute/path/my-style.cds
 ```
 
-The reaction example explicitly supplies ethanol, ethanal and the label `oxidation`; it supplies no experimental conditions or yields. The builder accepts one through three compounds on each side, draws the native arrow, plus signs and owned labels, then checks measured spacing and page fit. It does not predict or balance reactions. [Reaction contract](docs/REACTION_BUILDER.md)
+The reaction example explicitly supplies ethanol, ethanal and the label `oxidation`; it supplies no experimental conditions or yields. The builder accepts one through three compounds on each side, draws the native arrow, plus signs and owned labels, then checks measured spacing and page fit. The builder itself does not predict or balance reactions; `chemdraw_propose_products` offers reviewable product proposals from named-reaction templates, and you pass the chosen product in explicitly. [Reaction contract](docs/REACTION_BUILDER.md)
 
 Style inspection extracts supported typography/bond settings from local `.cds`, `.cdx` or `.cdxml`, reports defaults and unapplied properties, and leaves the source untouched. Add `--style /absolute/path/my-style.cds` to `draw` or `reaction` to override the manifest preset. Required label/caption font families are checked on the rendering Mac. Template artwork, page geometry, colour palettes and font files are not imported or redistributed. [Style contract](docs/STYLE_IMPORT.md)
 
@@ -433,6 +433,10 @@ style extraction and scope proposals are offline; only explicit resolver calls u
 | `chemdraw_annotate_document` | Adds explicit full or fishhook cubic curves to a new copy; checks native curve geometry, supported existing charge-symbol associations and source preservation |
 | `chemdraw_identify` | Strict offline SMILES/Standard InChI inspection with graph summaries, conversion availability and normalization warnings |
 | `chemdraw_resolve` | Explicitly opted-in PubChem name/CAS candidate lookup with provenance and validation; no automatic selection |
+| `chemdraw_list_reactions` | Offline list of 162 reviewed named-reaction templates with substrate/partner hints and typical conditions |
+| `chemdraw_propose_products` | Offline product proposals for one named reaction on explicit SMILES: every distinct product with formula/mass deltas; never draws or chooses one |
+| `chemdraw_lookup_reagent` | Offline lookup of ~190 curated reagents, bases, ligands, catalysts and solvents: display label, role, SMILES, aliases |
+| `chemdraw_read_reaction` | Reads an existing CDXML reaction scheme (text or path) into reactants, reagents, products, reaction SMILES and condition text; heuristic roles for review |
 | `chemdraw_import_style` | Read-only local style extraction with validated preset, source hash, defaults and unapplied-property report |
 | `chemdraw_scan_scope` | Explicit mapped-site scans on supported pre-substituted and heteroaromatic parents using curated groups |
 | `chemdraw_build_reaction` | Creates a native one-step row from explicit reactants/products and supplied conditions, with measured ownership/layout checks |

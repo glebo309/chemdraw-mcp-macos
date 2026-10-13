@@ -18,6 +18,18 @@ The crossing-bond and explicit coordination modules use documented CDXML format 
 
 Keep this record and the full license with redistributed copies that contain the adapted code. Changes to the adaptation and additional upstream reuse must be recorded in [upstream-sources.json](upstream-sources.json).
 
+### cdxml-toolkit (named reactions and reagent data)
+
+- Author/copyright: **Copyright (c) 2026 Hiu Fung Kevin Lee**; repository <https://github.com/leehiufung911/cdxml-toolkit>, pinned revision `c84eb10083975be3ed335890d866378da28a084d`.
+- Adapted: the hand-written named-reaction templates and reaction-runner logic (`chemdraw_macos/named_reactions.py`, `data/reactions_classic.json`), the curated reagent table (`data/reagents.json`, 192 entries; one typo corrected) and name normalisation (`chemdraw_macos/reagents.py`).
+- License: MIT. Full text retained in [licenses/cdxml-toolkit.txt](licenses/cdxml-toolkit.txt).
+- Also vendored (chemdraw_macos/_cdxml_toolkit/): CDXML reaction-scheme perception (`reaction_parser`, `reactant_heuristic`, `cdxml_utils`, `constants`, `rdkit_utils`, `condensed_formula`, `superatom_table`, `reagent_db`), repointed at the shared reagent table. Network name lookup, ChemScript and OPSIN paths are absent and degrade to no result.
+- Deliberately not adopted: its ChemScanner-derived abbreviation and superatom tables, whose upstream licence is AGPL-3.0, and all Windows-only (ChemScript/COM/OLE) code.
+
+### datamol reaction templates
+
+- `chemdraw_macos/data/reactions_datamol.json` (127 SMARTS templates) came through cdxml-toolkit, which identifies them as datamol data under **Apache-2.0**. Licence text: [licenses/datamol.txt](licenses/datamol.txt). Original curation provenance was not independently audited.
+
 ## Evaluated projects, no source copied in this increment
 
 These are acknowledgments and license observations from the pinned revisions, not notices claiming those projects are bundled. Runtime dependencies retain their own licensing and must be included in a release dependency audit.

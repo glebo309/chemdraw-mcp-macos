@@ -113,8 +113,12 @@
       "license_spdx_observed": "MIT",
       "license_path": "LICENSE",
       "copyright": "Copyright (c) 2026 Hiu Fung Kevin Lee",
-      "disposition": "evaluated",
-      "scope": "Original toolkit provenance retained separately from its community fork"
+      "disposition": "data_and_logic_adapted",
+      "upstream_files": ["cdxml_toolkit/naming/reactions_datamol.json", "cdxml_toolkit/naming/mol_builder.py (_CLASSIC_TEMPLATES, apply_reaction)", "cdxml_toolkit/resolve/reagent_abbreviations.json", "cdxml_toolkit/resolve/reagent_db.py (name normalisation)", "cdxml_toolkit/perception/reaction_parser.py", "cdxml_toolkit/perception/reactant_heuristic.py", "cdxml_toolkit/cdxml_utils.py", "cdxml_toolkit/constants.py", "cdxml_toolkit/rdkit_utils.py", "cdxml_toolkit/resolve/condensed_formula.py", "cdxml_toolkit/resolve/superatom_table.py", "samples/KL-CC-002/scheme.cdxml (test fixture)"],
+      "local_files": ["chemdraw_macos/named_reactions.py", "chemdraw_macos/reagents.py", "chemdraw_macos/data/reactions_classic.json", "chemdraw_macos/data/reactions_datamol.json", "chemdraw_macos/data/reagents.json", "chemdraw_macos/_cdxml_toolkit/", "chemdraw_macos/scheme_reader.py", "tests/fixtures/cdxml-toolkit-KL-CC-002-scheme.cdxml"],
+      "retained_license": "licenses/cdxml-toolkit.txt",
+      "modifications": ["Reaction runner rewritten as read-only product proposals validated through inspect_identifier; no ChemScript/network naming", "reagents.json: display 'CuL' corrected to 'CuI'", "ChemScanner-derived tier-2 abbreviation data and superatom_data.json deliberately NOT adopted (AGPL-3.0 provenance)", "Vendored scheme-perception modules unchanged except reagent_db.py reads the shared data/reagents.json", "cas_resolver, chemscript_bridge, jre_manager, chemscanner and superatom data not vendored; every optional lookup path is guarded and degrades to None", "scheme_reader.py adds a scaffold-overlap reclassification because upstream filed a drawn electrophile (tosylate) as a reagent"],
+      "scope": "Template-driven product proposals, curated reagent lookup and offline CDXML reaction-scheme reading. No Windows COM/ChemScript, OLE, DECIMER, LCMS/NMR or ELN code adopted"
     },
     {
       "id": "jurimaxam-chemdraw-mcp",
@@ -187,6 +191,17 @@
       "copyright": "Copyright (c) 2019 Mark A. Maskeri (mmaskeri)",
       "disposition": "ideas_only",
       "scope": "Future editable Keynote handoff; no clipboard or keystroke implementation copied"
+    },
+    {
+      "id": "datamol-reactions",
+      "repository": "https://github.com/datamol-io/datamol",
+      "license_spdx_observed": "Apache-2.0",
+      "license_path": "LICENSE",
+      "copyright": "datamol contributors",
+      "disposition": "data_adapted_via_cdxml-toolkit",
+      "local_files": ["chemdraw_macos/data/reactions_datamol.json"],
+      "retained_license": "licenses/datamol.txt",
+      "scope": "127 reaction SMARTS templates, received through cdxml-toolkit, which labels them Apache-2.0 datamol data. Upstream provenance of the original curation not independently audited here."
     }
   ]
 }
