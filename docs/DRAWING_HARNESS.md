@@ -43,7 +43,19 @@ chemdraw-mac produce --request /absolute/request.json --output /absolute/new-fol
 Each molecule needs `value` and `format` (`name`, `cas`, `smiles` or `inchi`).
 Labels are optional; explicit graph inputs without labels display compact compound
 numbers, not formulas or guessed names. Explicit labels are retained as text.
-Names/CAS require `allow_network=true` (CLI: `--allow-network`) to query PubChem.
+Reviewed bundled name references resolve locally before any provider request.
+Currently `caffeine` and `caffein` (case-insensitive exact aliases) use the pinned
+caffeine graph already used in the native setup test. The plan records its source
+record, review date, identity validation and `network_used=false`. This also works
+offline. Salts, derivatives and partial/fuzzy names are not matched to this record.
+An explicit different `selected_cid` is never overridden. Set
+`refresh_identifiers=true` to require a fresh provider lookup instead.
+MCP `chemdraw_draw` defaults to `allow_network=true`: asking to draw a supplied
+name/CAS includes its PubChem lookup, without a separate confirmation turn.
+Only the supplied query is sent, not document contents. Explicit offline,
+no-network or confidential requests must use `allow_network=false`.
+SMILES/InChI drawing stays local. The CLI retains its explicit `--allow-network`
+flag, and the standalone resolver retains its opt-in default.
 A sole locally validated match is recorded as the selected source; ambiguous or
 truncated results require an explicit `selected_cid` or a more specific input.
 PubChem matching is not authoritative CAS Registry validation. Unspecified stereo
@@ -90,8 +102,9 @@ operation on a user's pre-existing canvas.
 Repeated name/CAS lookups reuse locally validated results for up to five minutes
 in the same process. The cache has at most 128 entries, never writes queries to
 disk, retains retrieval provenance and never removes ambiguity or truncation.
-Set `refresh_identifiers: true` to bypass it. Every name/CAS request still needs
-explicit network permission, including cache hits. Separate CLI invocations do
+Set `refresh_identifiers: true` to bypass it and bundled references.
+`allow_network=false` blocks provider resolution, including its cache hits;
+bundled references do not require network permission. Separate CLI invocations do
 not share memory; repeated inputs within one request can benefit.
 
 Results include `timings.total_seconds` and `timings.stages_seconds` for input

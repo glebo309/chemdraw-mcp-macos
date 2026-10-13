@@ -115,9 +115,13 @@ def plan_addition(before, structures, *, preset='house', columns=None, scaffold_
             mol=Chem.MolFromMolBlock(block,removeHs=False)
             orientation={'policy':'reference_preserved','rotation_degrees':0.0}
         else:
-            mol=parse(record['canonical_smiles']);rdDepictor.Compute2DCoords(mol)
-            from .drawing_orientation import orient_new_molecule
-            orientation=orient_new_molecule(mol)
+            mol=parse(record['canonical_smiles'])
+            from .peptide_layout import layout_linear_peptide
+            orientation=layout_linear_peptide(mol)
+            if orientation is None:
+                rdDepictor.Compute2DCoords(mol)
+                from .drawing_orientation import orient_new_molecule
+                orientation=orient_new_molecule(mol)
         orientations.append({'compound_id':record['compound_id'],**orientation})
         seed=ET.fromstring(Chem.MolToCDXMLBlock(mol));fragment=seed.find('page/fragment')
         start=max([int(e.get('id')) for e in root.iter() if e.get('id')]+[1])+1

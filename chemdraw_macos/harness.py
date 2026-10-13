@@ -8,6 +8,7 @@ from .draw import draw_structures, prepare_structures
 from .reaction import build_reaction
 from .identifiers import inspect_identifier
 from .resolver import resolve_identifier
+from .named_references import resolve_bundled_name
 from .drawing_defaults import plan_drawing_defaults
 from .batch import NativeUncertain
 from .presentation import production_job
@@ -33,7 +34,7 @@ class DrawingRequest(BaseModel):
     heading: str = Field(default='Substrate scope',min_length=1,max_length=120,description='Heading for panel=framed.')
     page_policy: Literal['add_pages','keep'] = Field(default='add_pages',description='For shared molecule tables, append identical physical pages inside the same document when needed; keep refuses overflow. Never shrink molecules.')
     exports: Literal['auto','preview','full','canvas'] = Field(default='auto',description='Auto draws shared molecules and framed panels without image export. Canvas retains editable CDXML and native checks; review in ChemDraw. Preview explicitly requests a white review image. Full requests SVG/transparent PNG. Reactions and legacy background workflows export by default. Use export_figure later for publication files, without redrawing.')
-    refresh_identifiers: bool = Field(default=False,description='Bypass the five-minute in-memory validated name/CAS cache. Network permission is still required on every name/CAS request.')
+    refresh_identifiers: bool = Field(default=False,description='Require fresh PubChem resolution, bypassing bundled name references and the five-minute in-memory cache. Requires allow_network=true.')
     reaction_paper: Literal['auto','A4 portrait','A4 landscape','A3 landscape'] = Field(default='auto',description='Separate reaction output only: bounded staging preflight followed by the smallest paper fitting native measurements, at unchanged bond scale. Explicit paper refuses estimated overflow before native production and rechecks actual ink.')
 
 
@@ -45,7 +46,11 @@ class NeedsInput(ValueError):
 def _resolve(items,allow_network,start=1,*,refresh_identifiers=False):
     records=[]; provenance=[]
     for number,item in enumerate(items,start):
-        if item.format in ('smiles','inchi'):
+        bundled=(resolve_bundled_name(item.value,item.selected_cid)
+                 if item.format=='name' and not refresh_identifiers else None)
+        if bundled is not None:
+            identity,source=bundled
+        elif item.format in ('smiles','inchi'):
             if item.selected_cid is not None:raise ValueError('selected_cid applies only to names or CAS')
             identity=inspect_identifier(item.value,item.format)
             source={'kind':item.format,'value':item.value,'identity':identity}

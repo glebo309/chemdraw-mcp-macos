@@ -69,6 +69,13 @@ the native connection at a time. [Compatibility](docs/COMPATIBILITY.md) ·
 
 > Draw caffeine in my current ChemDraw document.
 
+Reviewed bundled names (currently caffeine/caffein) resolve locally, without
+depending on PubChem availability. Other supplied names/CAS through
+`chemdraw_draw` include PubChem lookup without another confirmation.
+Say "offline" or "no network" to disable provider lookup;
+the assistant must then pass `allow_network=false`. Only the supplied query is
+sent, not the drawing. Explicit SMILES/InChI inputs remain local.
+
 > Read my edited parent structure. Make an eight-member scope, align the common
 > scaffold, center the structures and captions, and add pages in this document
 > if needed. Do not invent yields.
@@ -104,7 +111,7 @@ Control desktop ChemDraw from a terminal or an MCP-connected assistant. Create n
 
 **Native ChemDraw rendering.** The desktop JavaScript API reads and appends supported molecule batches; bounded AppleScript handles other native commands and exports. RDKit supplies validated graphs and coordinates through its ChemDraw CDXML writer, not images. ChemDraw renders SVG; offline `resvg` rasterizes its unchanged artwork for transparent PNG. Ordinary explicit reactions use whole-document batching; advanced legacy workflows retain native import/cleanup. Natural-language interpretation comes from your MCP client, not an embedded LLM.
 
-Independent, open-source experimental project under [AGPLv3](LICENSE). Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. Name/CAS resolution sends the supplied query to PubChem only with explicit opt-in. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
+Independent, open-source experimental project under [MIT](LICENSE). Native workflows require your own licensed ChemDraw installation; identifier inspection, style extraction and scope proposals are offline. MCP named drawings include PubChem lookup of the supplied query by default, with an explicit offline override. Standalone resolution and CLI lookup retain their opt-in flags. Only ChemDraw 23.0.1 has been live-tested here; individual feature evidence remains separate. [Compatibility and limits](docs/COMPATIBILITY.md)
 
 **Experimental, not a stable release:** native support is limited to the tested ChemDraw build and supported drawing subset. Cross-process coordination and opt-in circled charges have regression coverage; crowded charge positions fail explicitly rather than risking a changed molecular graph. See [current development status](docs/DEVELOPMENT_STATUS.md) for exact checks and pending acceptance on another Mac.
 

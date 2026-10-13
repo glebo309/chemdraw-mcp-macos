@@ -76,7 +76,9 @@ mcp=FastMCP('ChemDraw macOS',instructions=INSTRUCTIONS +
     'For NEW molecule drawings, panels and explicit reactions, start with chemdraw_draw. '
     'Its harness enforces validation, native rendering, layout and delivery checks. '
     'Do not manually assemble lower-level tools or silently drop a failed requirement. '
-    'Names/CAS stay typed identifiers, not model-invented SMILES. Follow needs_input, '
+    'Names/CAS stay typed identifiers, not model-invented SMILES. An explicit request to draw a supplied '
+    'name/CAS authorizes its PubChem lookup through chemdraw_draw; do not ask for a separate confirmation. '
+    'For offline, no-network or confidential requests, set allow_network=false; never send document contents. Follow needs_input, '
     'rejected and uncertain states; only completed indicates passed mandatory gates. '
     'Full profile: direct native operations plus optional deterministic drawing, layout '
     'and validation workflows. Prefer an appropriate workflow when its documented '
@@ -143,11 +145,16 @@ def chemdraw_addin_append_cdxml(document_id:int,cdxml:str,expected_source_token:
     return addin_backend().append(document_id,cdxml,expected_source_token)
 
 @mcp.tool(annotations=NAME_WRITE)
-def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=False,presentation:Literal['auto','background','interactive','shared']='auto',document_id:int|None=None)->dict:
+def chemdraw_draw(request:DrawingRequest,output_dir:str,allow_network:bool=True,presentation:Literal['auto','background','interactive','shared']='auto',document_id:int|None=None)->dict:
     """START HERE for new molecule drawings, panels and explicit reactions.
     Supply molecules [{value,format:name|cas|smiles|inchi,label?}]; products only
-    for an explicit reaction. Names/CAS require network opt-in; ambiguous matches
-    return needs_input. The enforced pipeline owns native rendering, house style,
+    for an explicit reaction. Reviewed bundled names (currently caffeine/caffein) resolve
+    locally with recorded provenance, including offline. Other user-supplied names/CAS
+    include PubChem lookup by default; do not ask for a separate confirmation.
+    Only the supplied query is sent.
+    For offline, no-network or confidential requests set allow_network=false.
+    SMILES/InChI stay local. Ambiguous matches return needs_input.
+    The enforced pipeline owns native rendering, house style,
     measured layout, graph checks and exports. No yield/product prediction.
     Auto and interactive reuse the active working document for supported flat
     molecules/captions, including untitled documents. Supply document_id to bind a
@@ -504,7 +511,9 @@ def get_server(profile: str = 'full') -> FastMCP:
     if profile == 'drawing':
         drawing=FastMCP('ChemDraw drawing',instructions=
             'For every new molecule, panel or explicit reaction use chemdraw_draw. '
-            'Send names/CAS as supplied rather than inventing SMILES. Ask for network opt-in when needed. '
+            'Send names/CAS as supplied rather than inventing SMILES. A request to draw a supplied name/CAS '
+            'includes PubChem lookup; do not ask for a separate confirmation. Set allow_network=false '
+            'for offline, no-network or confidential requests. Never send document contents. '
             'The server owns styling, layout, validation and export. Follow needs_input or rejected results; '
             'never claim success without status completed. Do not retry uncertain native writes. '
             'Use chemdraw_doctor only for installation diagnostics.')
