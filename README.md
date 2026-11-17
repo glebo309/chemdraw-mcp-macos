@@ -4,6 +4,8 @@ Native, editable chemical drawings from your assistant or terminal.
 
 **On Windows?** Marco DeCorti maintains a Windows port: [marcodecorti11/chemdraw-mcp-win](https://github.com/marcodecorti11/chemdraw-mcp-win).
 
+**Not the same as [jurimaxam-dotcom/chemdraw-mcp](https://github.com/jurimaxam-dotcom/chemdraw-mcp).** That project is a separate, unaffiliated MCP server that draws molecules with RDKit and does not use ChemDraw. This one drives your own licensed desktop ChemDraw.
+
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
