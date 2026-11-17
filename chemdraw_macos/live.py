@@ -52,6 +52,8 @@ def read_live_document(bridge, document_id):
             raise RuntimeError('Document binding changed while reading; no edit dispatched')
     if method in ('export','desktop_addin') and before['selection'] != after['selection']:
         raise RuntimeError('Selection changed while reading; no edit dispatched')
+    from .changes import remember
+    remember(did, snapshot.read_text())
     root, content = _content(snapshot.read_text())
     if method in ('clipboard','desktop_addin'):
         from .shared import fingerprint

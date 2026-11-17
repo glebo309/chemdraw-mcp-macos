@@ -190,6 +190,25 @@ def main(argv=None):
     route=commands.add_parser('apply-route',help='Render an explicitly selected, snapshot-bound route in a native copy')
     route.add_argument('--input',type=Path,required=True);route.add_argument('--report',type=Path,required=True)
     route.add_argument('--candidate',required=True);route.add_argument('--output',required=True)
+    lc=commands.add_parser('commands',help="List ChemDraw's named commands and whether run-command accepts them")
+    lc.add_argument('--pattern');lc.add_argument('--enabled-only',action='store_true');lc.add_argument('--limit',type=int,default=100)
+    rc=commands.add_parser('command',help="Run one of ChemDraw's named commands (undo, mapReactionAtoms...) on an open document")
+    rc.add_argument('--document-id',type=int,required=True);rc.add_argument('--name',required=True)
+    rc.add_argument('--selection',choices=('current','all'),default='current');rc.add_argument('--wait',type=float,default=15.0)
+    dg=commands.add_parser('dialog',help='List open ChemDraw dialogs, or press a button in one')
+    dg.add_argument('--button');dg.add_argument('--field',action='append',default=[],metavar='N=VALUE')
+    dg.add_argument('--choose');dg.add_argument('--dialog',type=int,default=0)
+    nm=commands.add_parser('nmr',help="Predict 1H or 13C NMR with ChemDraw's ChemNMR")
+    nm.add_argument('--document-id',type=int);nm.add_argument('--smiles');nm.add_argument('--nucleus',choices=('1H','13C'),default='1H')
+    nm.add_argument('--selection',choices=('current','all'),default='all');nm.add_argument('--close',action='store_true');nm.add_argument('--output')
+    ck=commands.add_parser('check',help="Report ChemDraw's chemical warnings for an open document")
+    ck.add_argument('--document-id',type=int,required=True)
+    st=commands.add_parser('settings',help='Read or change document drawing settings (points, degrees, percent, fonts)')
+    st.add_argument('--document-id',type=int,required=True);st.add_argument('--set',action='append',default=[],metavar='KEY=VALUE')
+    pv=commands.add_parser('preview',help='Write a PNG of an open document as ChemDraw renders it')
+    pv.add_argument('--document-id',type=int,required=True);pv.add_argument('--output',type=Path,required=True);pv.add_argument('--pixels',type=int,default=1200)
+    ch=commands.add_parser('changes',help='Report what changed in an open document since the previous read')
+    ch.add_argument('--document-id',type=int,required=True)
     serve_parser=commands.add_parser('serve',help='Run the MCP stdio server')
     serve_parser.add_argument('--profile',choices=('core','full','drawing'),default='full',
                               help='Direct native tools only, or core plus drawing workflows (default: full)')
@@ -197,6 +216,42 @@ def main(argv=None):
     from contextlib import ExitStack, nullcontext
     transactions=ExitStack()
     try:
+        if args.command in ('commands','command','dialog','nmr','check','settings','preview','changes'):
+            b=Bridge()
+            if args.command=='commands':
+                from .commands import list_commands
+                result=list_commands(b,args.pattern,args.enabled_only,args.limit)
+            elif args.command=='command':
+                from . import commands as command_module
+                result=command_module.run_command(b,args.document_id,args.name,selection=args.selection,wait_seconds=args.wait)
+            elif args.command=='dialog':
+                from .dialogs import respond_dialog
+                fields=dict(item.split('=',1) for item in args.field)
+                result=respond_dialog(b,button=args.button,fields=fields or None,choose=args.choose,dialog=args.dialog)
+            elif args.command=='nmr':
+                from .nmr import predict_nmr
+                result=predict_nmr(b,document_id=args.document_id,smiles=args.smiles,nucleus=args.nucleus,
+                                   selection=args.selection,keep_open=not args.close,output_dir=args.output)
+            elif args.command=='check':
+                from .checks import check_structure
+                result=check_structure(b,args.document_id)
+            elif args.command=='settings':
+                from .settings import document_settings
+                changes={}
+                for item in args.set:
+                    key,value=item.split('=',1)
+                    changes[key]=value if key.endswith('_font') else float(value)
+                result=document_settings(b,args.document_id,changes or None)
+            elif args.command=='preview':
+                from .physical_export import preview_png
+                if args.output.exists():raise FileExistsError(f'Will not overwrite {args.output}')
+                args.output.write_bytes(preview_png(b,args.document_id,args.pixels))
+                result={'path':str(args.output)}
+            else:
+                from .changes import document_changes
+                result=document_changes(b,args.document_id)
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+            return 0 if result.get('status') in (None,'completed') else 1
         if args.command == 'export-figure':
             from .physical_export import export_figure
             result=export_figure(Bridge(),args.document_id,args.output,args.dpi,**({'include_pdf':True} if args.pdf else {}))

@@ -148,3 +148,17 @@ def export_figure(bridge, document_id, output_dir, dpi=600, include_pdf=False):
     if len(pages)==1:result['artifacts']['png']=str(out/'figure.png')
     (out/'export.json').write_text(json.dumps(result, indent=2)+'\n')
     return result
+
+
+def preview_png(bridge, document_id, pixels=1200) -> bytes:
+    """White-background PNG of the live document from ChemDraw's own SVG export."""
+    from .raster import rasterize_svg
+    if isinstance(pixels, bool) or not isinstance(pixels, int) or not 256 <= pixels <= 4096:
+        raise ValueError('pixels must be 256 through 4096')
+    did = bridge._id(document_id)
+    svg = bridge._new_path('.svg', 'previews')
+    bridge.export(did, str(svg), 'svg')
+    try:
+        return rasterize_svg(svg.read_text(), pixels, background='white')
+    finally:
+        svg.unlink(missing_ok=True)

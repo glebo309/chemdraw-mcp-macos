@@ -75,6 +75,12 @@ choosing a profile are separate actions.
 | `chemdraw_export` | Export CDXML, CDX, SVG, PDF or PNG derived from native SVG |
 | `chemdraw_close_working_document` | Back up and close only a document owned by this server session |
 | `chemdraw_doctor` | Diagnose the installation and connection |
+| `chemdraw_list_commands`, `chemdraw_run_command` | ChemDraw's own named commands (undo, redo, map reaction atoms, autonumber, flip, kekulize, stoichiometry, ...) on an open document, with a refusal policy |
+| `chemdraw_dialog` | Read and answer the dialog or alert a command opened |
+| `chemdraw_predict_nmr` | ChemDraw's ChemNMR 1H/13C prediction, parsed into shifts |
+| `chemdraw_check_structure`, `chemdraw_document_settings`, `chemdraw_preview`, `chemdraw_document_changes` | Chemical warnings, drawing settings in place, a rendered look, and what changed since the last read |
+
+See [native commands and dialogs](NATIVE_COMMANDS.md).
 
 For example, a client can import a supplied MOL, inspect the returned document ID,
 request cleanup, and export SVG. It does not need the scope builder, molecule

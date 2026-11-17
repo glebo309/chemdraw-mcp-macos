@@ -69,6 +69,9 @@ INSTRUCTIONS = (
     'explaining that limitation. Refresh live state after manual changes; no continuous '
     'subscription is implemented. render_cdxml supports hidden-window native exports '
     'inside a logged-in desktop, not display-free operation. '
+    'Other ChemDraw menu commands (undo, redo, map reaction atoms, autonumber, flip, kekulize, stoichiometry) '
+    'run through chemdraw_run_command; when a result reports dialog_open, answer it with chemdraw_dialog. '
+    'Use chemdraw_preview to look at the result. '
     'Native cleanup changes depiction; inspect its result. Core calls do not certify '
     'chemical identity or layout. No RDKit renderer is used. '
 )
@@ -290,6 +293,55 @@ def chemdraw_native_action(document_id:int,action:NativeAction,selection:Literal
     """Call an EXISTING ChemDraw native command, not a custom layout implementation: structure/reaction cleanup, six alignments, horizontal/vertical distribution, expand/contract labels. Modifies only a session-owned working document; import a copy first. Document must be frontmost within ChemDraw. selection=current uses its existing selection; all explicitly selects all objects, including captions. Backup before action. Disabled commands return unavailable_for_selection, not success. align_horizontal_centers shares x centres; align_vertical_centers shares y centres. No automatic grouping/owned-caption behavior, chemical preservation certificate, retry or GUI clicks. Export/inspect afterward. Not every toolbar drawing mode is a parameterized command."""
     return bridge().native_action(document_id,action,selection=selection)
 
+@mcp.tool(annotations=READ)
+def chemdraw_list_commands(pattern:str|None=None,enabled_only:bool=False,limit:int=100)->dict:
+    """List ChemDraw's ~1,600 named commands (regex pattern on the name, e.g. 'reaction|number', 'flip|rotate') with enabled state for the front document and whether chemdraw_run_command accepts them."""
+    from .commands import list_commands
+    return list_commands(bridge(),pattern,enabled_only,limit)
+
+@mcp.tool(annotations=EDIT)
+def chemdraw_run_command(document_id:int,command:str,selection:Literal['current','all']='current',wait_seconds:float=15)->dict:
+    """Run one of ChemDraw's own named commands on an open document (user documents included), e.g. undo, redo, mapReactionAtoms, autoNumberReaction, clearReactionMap, flipObjectsHorizontal, rotateObjects180Horizontal, toggleKekulization, toggleShowingAtomNumber, analyzeStoichiometry, insertChemicalName, insertCompleteAnalysis, group, bringToFront, centerObjectOnPage, zoomToFit, showScaleDialog. Brings that document to the front inside ChemDraw (no app activation); selection=all selects everything first. Returns object counts before/after, any new document and any dialog the command opened (status dialog_open: answer it with chemdraw_dialog). Refuses file, clipboard, quit, preference and network commands. Undo with command=undo. Never repeat a command whose status is still_running."""
+    from .commands import run_command
+    return run_command(bridge(),document_id,command,selection=selection,wait_seconds=wait_seconds)
+
+@mcp.tool(annotations=WRITE)
+def chemdraw_dialog(button:str|None=None,fields:dict[str,str]|None=None,choose:str|None=None,check:dict[str,bool]|None=None,dialog:int=0)->dict:
+    """Read or answer ChemDraw's open dialogs and alert sheets. Without button: list each dialog's text, numbered fields, radio buttons, checkboxes and buttons. With button: optionally set fields {"1":"1.2 cm"}, pick a radio button by name, set checkboxes {name:true}, then press the button. ChemDraw only, through macOS Accessibility; no keystrokes or mouse."""
+    from .dialogs import respond_dialog
+    return respond_dialog(bridge(),button=button,fields=fields,choose=choose,check=check,dialog=dialog)
+
+@mcp.tool(annotations=WRITE)
+def chemdraw_predict_nmr(document_id:int|None=None,smiles:str|None=None,nucleus:Literal['1H','13C']='1H',selection:Literal['current','all']='all',keep_open:bool=True,output_dir:str|None=None)->dict:
+    """Predict a 1H or 13C NMR spectrum with ChemDraw's own ChemNMR, for a structure in an open document or for a SMILES (temporary document, closed afterwards). Returns conditions, each shift with group and increments, and 1H coupling text. The spectrum opens as a new ChemDraw document (keep_open=false closes it). output_dir (new, absolute) also saves spectrum CDXML/SVG/PNG. Estimates, not measured data."""
+    from .nmr import predict_nmr
+    return predict_nmr(bridge(),document_id=document_id,smiles=smiles,nucleus=nucleus,selection=selection,keep_open=keep_open,output_dir=output_dir)
+
+@mcp.tool(annotations=READ)
+def chemdraw_check_structure(document_id:int)->dict:
+    """ChemDraw's own chemical warnings (valence, unusual bonds, unrecognized labels) for every atom, bond and text in an open document, including unsaved edits. Read-only, no Check Structure alert."""
+    from .checks import check_structure
+    return check_structure(bridge(),document_id)
+
+@mcp.tool(annotations=WRITE)
+def chemdraw_document_settings(document_id:int,settings:dict|None=None)->dict:
+    """Read, or change in place, a document's drawing settings: bond_length_pt, line_width_pt, bold_width_pt, margin_width_pt, hash_spacing_pt, label_size_pt, caption_size_pt, bond_spacing_percent, chain_angle_deg, magnification_percent, label_font, caption_font. Changes apply to what is drawn or cleaned next, not existing geometry; not_applied lists values ChemDraw did not accept."""
+    from .settings import document_settings
+    return document_settings(bridge(),document_id,settings)
+
+@mcp.tool(annotations=READ)
+def chemdraw_preview(document_id:int,pixels:int=1200):
+    """Look at an open document as ChemDraw renders it: a white-background PNG from ChemDraw's native SVG, returned as an image. Nothing is saved or changed. Use after edits to check the result."""
+    from mcp.server.fastmcp import Image
+    from .physical_export import preview_png
+    return Image(data=preview_png(bridge(),document_id,pixels),format='png')
+
+@mcp.tool(annotations=READ)
+def chemdraw_document_changes(document_id:int)->dict:
+    """What changed in an open document since this server last read it (read_live_document or this tool): molecules added/removed by SMILES, captions added/removed, object count changes. The first call sets the baseline."""
+    from .changes import document_changes
+    return document_changes(bridge(),document_id)
+
 @mcp.tool(annotations=WRITE)
 def chemdraw_first_run(output_dir:str|None=None)->dict:
     """Explicit setup smoke test: check dependencies, then append caffeine and aspirin once to the active ChemDraw canvas through the desktop API with house layout and validation. Open a blank document for an isolated test. Returns editable CDXML, SVG, PNG and JSON report, no HTML or browser. The canvas stays open; existing objects are preserved. Default output is a unique workspace folder; supplied path must be new and absolute. No permission or client configuration changes. No retry or extra close after uncertainty. Inspect the visible drawing; this is not full compatibility certification."""
@@ -497,8 +549,12 @@ def chemdraw_close_working_document(document_id:int)->dict:
 
 @mcp.tool(annotations=READ)
 def chemdraw_list_styles()->dict:
-    """List numeric style presets. These are defaults plus explicit text/bond overrides, not chemistry or automatic layout engines."""
-    return {'presets':PRESETS}
+    """List numeric style presets, plus ChemDraw's bundled journal stationery (ACS, Nature, RSC, Wiley, Synthesis...). Pass a stationery path to chemdraw_import_style to get its preset."""
+    from .styles import stationery_styles
+    from .core import app_location
+    try:stationery=stationery_styles(app_location())
+    except RuntimeError:stationery=[]
+    return {'presets':PRESETS,'stationery':stationery}
 
 @mcp.tool(annotations=READ)
 def chemdraw_doctor()->dict:
@@ -577,6 +633,14 @@ def get_server(profile: str = 'full') -> FastMCP:
         (chemdraw_live_action, EDIT),
         (chemdraw_set_visibility, WRITE),
         (chemdraw_render_cdxml, WRITE),
+        (chemdraw_list_commands, READ),
+        (chemdraw_run_command, EDIT),
+        (chemdraw_dialog, WRITE),
+        (chemdraw_predict_nmr, WRITE),
+        (chemdraw_check_structure, READ),
+        (chemdraw_document_settings, WRITE),
+        (chemdraw_preview, READ),
+        (chemdraw_document_changes, READ),
     ):
         core.add_tool(fn, annotations=annotations)
     return core

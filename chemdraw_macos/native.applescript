@@ -31,6 +31,55 @@ on documentRow(d)
     end tell
 end documentRow
 
+on commandState(wantedID)
+    -- Bounded: a long command or a blocking alert must not hang the caller.
+    tell application __APP__
+        try
+            with timeout of 2 seconds
+                set targetDoc to missing value
+                set docIDs to {}
+                set allIDs to id of every document
+                repeat with i from 1 to count of allIDs
+                    set candidateID to (item i of allIDs) as integer
+                    set end of docIDs to candidateID
+                    if candidateID is wantedID then set targetDoc to document i
+                end repeat
+                if targetDoc is missing value then error "Document closed during command; inspect ChemDraw"
+                set diskPath to ""
+                try
+                    set diskPath to POSIX path of (file of targetDoc)
+                end try
+                set stateRow to {(id of targetDoc) as integer, name of targetDoc, diskPath, modified of targetDoc, count of molecules of targetDoc}
+                set countsRow to {count of atoms of targetDoc, count of bonds of targetDoc, count of molecules of targetDoc, count of captions of targetDoc, count of arrows of targetDoc}
+                set windowNames to name of every window
+            end timeout
+        on error msg number num
+            if num is -1712 then return "busy"
+            error msg number num
+        end try
+    end tell
+    return {stateRow, countsRow, docIDs, windowNames}
+end commandState
+
+on dialogCount(processName)
+    -- Open ChemDraw dialogs and sheets, or -1 without Accessibility permission.
+    -- Bulk queries: one event per property instead of one per window.
+    try
+        tell application "System Events"
+            tell process processName
+                set subroles to subrole of every window
+                set n to count of (sheets of every window)
+            end tell
+        end tell
+        repeat with r in subroles
+            if (contents of r) is in {"AXDialog", "AXSystemDialog"} then set n to n + 1
+        end repeat
+        return n
+    on error
+        return -1
+    end try
+end dialogCount
+
 on run argv
     set operation to item 1 of argv
     tell application __APP__
@@ -69,6 +118,15 @@ on run argv
                 set end of rows to my documentRow(d)
             end repeat
             return my jsonText(rows)
+        end if
+        if operation is "command_state" then
+            return my jsonText({my commandState((item 2 of argv) as integer), my dialogCount(item 3 of argv)})
+        end if
+        if operation is "dialog_count" then
+            return my jsonText({my dialogCount(item 2 of argv)})
+        end if
+        if operation is "list_commands" then
+            return my jsonText({name of every command, enabled of every command, short description of every command})
         end if
         if operation is "open" then
             set targetPath to item 2 of argv
@@ -151,14 +209,81 @@ on run argv
             if (id of document 1) is not wantedID then error "Native action requires the owned front document; no command dispatched"
             set nativeCommand to item 3 of argv
             set selectionMode to item 4 of argv
-            set supportedCommands to {"cleanStructure", "cleanReaction", "alignLeftEdges", "alignRightEdges", "alignTopEdges", "alignBottomEdges", "alignLeftRightCenters", "alignTopBottomCenters", "distributeObjectsHorizontally", "distributeObjectsVertically", "expandLabel", "contractLabel"}
+            set supportedCommands to {"cleanStructure", "cleanReaction", "alignLeftEdges", "alignRightEdges", "alignTopEdges", "alignBottomEdges", "alignLeftRightCenters", "alignTopBottomCenters", "distributeObjectsHorizontally", "distributeObjectsVertically", "expandLabel", "contractLabel", "undo", "redo"}
             if nativeCommand is not in supportedCommands then error "Unsupported native command"
             if selectionMode is not in {"current", "all"} then error "Unsupported native selection mode"
-            if selectionMode is "all" then do command "selectAll"
+            -- selectAll is disabled when everything is already selected.
+            if selectionMode is "all" then
+                if enabled of command "selectAll" then do command "selectAll"
+            end if
             if not (enabled of command nativeCommand) then return my jsonText({my documentRow(targetDoc), false})
             do command nativeCommand
             if (id of document 1) is not wantedID then error "Front document changed during native action; inspect ChemDraw"
             return my jsonText({my documentRow(targetDoc), true})
+        else if operation is "dispatch_command" then
+            set nativeCommand to item 3 of argv
+            set selectionMode to item 4 of argv
+            if selectionMode is not in {"current", "all"} then error "Unsupported native selection mode"
+            try
+                set commandEnabled to enabled of command nativeCommand
+            on error
+                error "Unknown ChemDraw command: " & nativeCommand
+            end try
+            set index of window of targetDoc to 1
+            if ((id of document 1) as integer) is not wantedID then error "Could not bring the document to the front; no command dispatched"
+            if selectionMode is "all" then
+                if enabled of command "selectAll" then do command "selectAll"
+            end if
+            set countsRow to {count of atoms of targetDoc, count of bonds of targetDoc, count of molecules of targetDoc, count of captions of targetDoc, count of arrows of targetDoc}
+            set docIDs to {}
+            repeat with candidate in documents
+                set end of docIDs to ((id of candidate) as integer)
+            end repeat
+            set windowNames to name of every window
+            if not (enabled of command nativeCommand) then return my jsonText({my documentRow(targetDoc), false, countsRow, docIDs, windowNames})
+            -- Do not wait: an app-modal alert would block this reply. The
+            -- caller polls command_state and reads any dialog separately.
+            ignoring application responses
+                do command nativeCommand
+            end ignoring
+            -- Events are handled in order, so this state follows the command.
+            set stateResult to my commandState(wantedID)
+            return my jsonText({my documentRow(targetDoc), true, countsRow, docIDs, windowNames, stateResult, my dialogCount(item 5 of argv)})
+        else if operation is "get_settings" then
+            return my jsonText({my documentRow(targetDoc), {fixed length of targetDoc, line width of targetDoc, bold width of targetDoc, label size of targetDoc, caption size of targetDoc, label font of targetDoc, caption font of targetDoc, bond spacing of targetDoc, chain angle of targetDoc, margin width of targetDoc, hash spacing of targetDoc, magnification of targetDoc}})
+        else if operation is "set_settings" then
+            repeat with i from 3 to (count of argv) by 2
+                set settingName to item i of argv
+                set settingValue to item (i + 1) of argv
+                if settingName is "fixed length" then
+                    set fixed length of targetDoc to settingValue as integer
+                else if settingName is "line width" then
+                    set line width of targetDoc to settingValue as integer
+                else if settingName is "bold width" then
+                    set bold width of targetDoc to settingValue as integer
+                else if settingName is "margin width" then
+                    set margin width of targetDoc to settingValue as integer
+                else if settingName is "hash spacing" then
+                    set hash spacing of targetDoc to settingValue as integer
+                else if settingName is "label size" then
+                    set label size of targetDoc to settingValue as integer
+                else if settingName is "caption size" then
+                    set caption size of targetDoc to settingValue as integer
+                else if settingName is "bond spacing" then
+                    set bond spacing of targetDoc to settingValue as integer
+                else if settingName is "chain angle" then
+                    set chain angle of targetDoc to settingValue as integer
+                else if settingName is "magnification" then
+                    set magnification of targetDoc to settingValue as integer
+                else if settingName is "label font" then
+                    set label font of targetDoc to settingValue
+                else if settingName is "caption font" then
+                    set caption font of targetDoc to settingValue
+                else
+                    error "Unsupported document setting"
+                end if
+            end repeat
+            return my jsonText({my documentRow(targetDoc), {fixed length of targetDoc, line width of targetDoc, bold width of targetDoc, label size of targetDoc, caption size of targetDoc, label font of targetDoc, caption font of targetDoc, bond spacing of targetDoc, chain angle of targetDoc, margin width of targetDoc, hash spacing of targetDoc, magnification of targetDoc}})
         else if operation is "convert_name" then
             if (id of document 1) is not wantedID then error "Name conversion requires the owned front document; no command dispatched"
             if (count of molecules of targetDoc) is not 0 then error "Name conversion requires a caption-only document"
