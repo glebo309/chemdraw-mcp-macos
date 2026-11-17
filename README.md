@@ -1,6 +1,9 @@
 # ChemDraw MCP for macOS
 
 Native, editable chemical drawings from your assistant or terminal.
+
+**On Windows?** Marco DeCorti maintains a Windows port: [marcodecorti11/chemdraw-mcp-win](https://github.com/marcodecorti11/chemdraw-mcp-win).
+
 Read your unsaved ChemDraw edits, build aligned molecule tables in the same
 document, and export figures at a consistent chemical scale.
 
@@ -156,7 +159,7 @@ requires a logged-in licensed Mac desktop; it is not a display-free server mode.
 
 ## Acknowledgments
 
-Special thanks to **Marco DeCorti** for showing what makes a chemical drawing clear and visually polished, providing reference examples, and carefully checking the generated output. His input helped shape the project's molecular drawing style and visual quality standards.
+Special thanks to **Marco DeCorti** for showing what makes a chemical drawing clear and visually polished, providing reference examples, and carefully checking the generated output. His input helped shape the project's molecular drawing style and visual quality standards. He also maintains the Windows port, [chemdraw-mcp-win](https://github.com/marcodecorti11/chemdraw-mcp-win).
 
 ## Native before and after
 
