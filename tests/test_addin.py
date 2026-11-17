@@ -21,6 +21,39 @@ def http(channel, path, data=None, token=True, origin='null', host=None):
     with urlopen(req,timeout=2) as response:return json.load(response)
 
 
+@pytest.fixture(autouse=True)
+def short_long_poll(monkeypatch):
+    # Empty polls answer after the hold time; keep it short in these tests.
+    monkeypatch.setattr(AddinChannel,'LONG_POLL',.05)
+
+
+def test_waiting_panel_request_receives_a_new_job_at_once(monkeypatch):
+    import time
+    monkeypatch.setattr(AddinChannel,'LONG_POLL',3)
+    with AddinChannel() as c:
+        polled=[]
+        def panel():
+            start=time.perf_counter();job=http(c,'/job')
+            polled.append((job,time.perf_counter()-start))
+            http(c,'/result',{'id':job['id'],'cdxml':EMPTY})
+        waiter=threading.Thread(target=panel);waiter.start()
+        time.sleep(.2)  # the panel's request is already waiting when the job is queued
+        start=time.perf_counter()
+        assert c.request('read',timeout=2)['cdxml']==EMPTY
+        assert time.perf_counter()-start<.15
+        waiter.join(2)
+        assert polled[0][0]['operation']=='read' and polled[0][1]<1
+
+
+def test_closing_releases_a_waiting_panel_request(monkeypatch):
+    import time
+    monkeypatch.setattr(AddinChannel,'LONG_POLL',3)
+    c=AddinChannel();answers=[]
+    waiter=threading.Thread(target=lambda:answers.append(http(c,'/job')));waiter.start()
+    time.sleep(.2);start=time.perf_counter();c.close();waiter.join(3)
+    assert answers==[{}] and time.perf_counter()-start<2
+
+
 def test_only_authenticated_local_file_origin_can_claim_jobs():
     with AddinChannel() as c:
         for options in ({'token':False},{'origin':'https://evil.example'},{'host':'evil.example'}):

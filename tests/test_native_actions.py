@@ -73,6 +73,6 @@ def test_native_action_is_exposed_to_both_profiles_and_cli(tmp_path,monkeypatch)
 def test_native_action_script_checks_front_and_allowlist():
     script=(Path(__file__).parents[1]/'chemdraw_macos/native.applescript').read_text()
     branch=script.split('else if operation is "native_action" then',1)[1].split('else if operation',1)[0]
-    assert branch.index('id of document 1') < branch.index('do command')
+    assert branch.index('frontSettled(wantedID)') < branch.index('do command')
     assert 'supportedCommands' in branch and 'not in supportedCommands' in branch
     assert 'enabled of command nativeCommand' in branch

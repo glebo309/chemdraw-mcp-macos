@@ -6,17 +6,18 @@ ChemDraw feature. All are in the `core` and `full` profiles.
 
 | Tool | What it does | Typical time* |
 | --- | --- | --- |
-| `chemdraw_list_commands` | Lists ChemDraw's named commands (about 1,600), whether each is enabled for the front document, and whether `run_command` accepts it | 0.6 s |
-| `chemdraw_run_command` | Runs one named command on a document and reports object counts before and after, new documents, and any dialog it opened | 0.6 to 1.0 s |
+| `chemdraw_list_commands` | Lists ChemDraw's named commands (about 1,600), whether each is enabled for the front document, and whether `run_command` accepts it | 0.2 s |
+| `chemdraw_run_command` | Runs one named command on a document and reports object counts before and after, new documents, and any dialog it opened | 0.4 s |
 | `chemdraw_dialog` | Lists open ChemDraw dialogs (text, numbered fields, radio buttons, checkboxes, buttons), or fills one and presses a button | 0.3 to 1.5 s |
 | `chemdraw_predict_nmr` | ChemNMR 1H or 13C prediction for a structure in a document or a SMILES, parsed into shifts with increments and 1H coupling text | 3 to 4 s |
-| `chemdraw_check_structure` | ChemDraw's chemical warnings (valence, unusual bonds, unrecognized labels) for every object, without the Check Structure alert | 1 s |
-| `chemdraw_document_settings` | Reads or changes bond length, line widths, label and caption fonts and sizes, bond spacing, chain angle and magnification in place | 0.5 s |
-| `chemdraw_preview` | Returns a PNG of the document as ChemDraw renders it, so the assistant can look at the result | 0.4 s |
+| `chemdraw_check_structure` | ChemDraw's chemical warnings (valence, unusual bonds, unrecognized labels) for every object, without the Check Structure alert | 0.14 s |
+| `chemdraw_document_settings` | Reads or changes bond length, line widths, label and caption fonts and sizes, bond spacing, chain angle and magnification in place | 0.19 s |
+| `chemdraw_preview` | Returns a PNG of the document as ChemDraw renders it, so the assistant can look at the result | 0.18 s |
 | `chemdraw_document_changes` | Molecules (as SMILES), captions and object counts added or removed since the previous read | 1 s |
 
-\*Measured on Apple Silicon with ChemDraw 26.1 and a small document. Every
-native call has a fixed cost of about 0.26 s for starting `osascript`.
+\*Median of four runs on Apple Silicon with ChemDraw 26.1 and a small
+document. Native calls go through one persistent `osascript` helper that keeps
+the script compiled; see [performance](DRAWING_PERFORMANCE.md#native-helper-and-add-in-long-poll).
 
 `chemdraw_list_styles` also lists ChemDraw's bundled journal stationery (ACS
 1996, Nature Research, RSC 1 and 2 column, Wiley, Synthesis/Synlett, Adv. Synth.
@@ -47,6 +48,11 @@ Catal., Helv. Chim. Acta and others). Pass a stationery path to
 ChemDraw unless `keep_open=false`; `output_dir` also saves CDXML, SVG and PNG.
 
 ## How commands are run
+
+`undo` and `redo` bring ChemDraw to the front first (the reply says
+`activated_chemdraw: true`). Measured on ChemDraw 26.1: while another
+application is active they are used up without reverting anything. Every other
+command runs without activating ChemDraw.
 
 `run_command` brings the target document to the front inside ChemDraw (the
 application is not activated), optionally selects everything, and dispatches

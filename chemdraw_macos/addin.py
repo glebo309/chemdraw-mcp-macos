@@ -106,10 +106,14 @@ def prepare_payload(before, addition, *, allow_page_expansion=False):
 
 class AddinChannel:
     MAX_BYTES=10_000_000
+    # A panel request for work is held open this long, so a new job is delivered
+    # at once instead of at the panel's next poll.
+    LONG_POLL=5.0
 
     def __init__(self,secret=None,port=0):
         self.secret=secret or secrets.token_urlsafe(32)
         self._lock=threading.Lock();self._event=threading.Event()
+        self._waiting=threading.Condition(self._lock);self._closing=False
         self._job=None;self._claimed=False;self._result=None;self._poisoned=False
         owner=self
         class Handler(BaseHTTPRequestHandler):
@@ -138,8 +142,10 @@ class AddinChannel:
                 if not self.authorized():return self.reply(403,{})
                 if self.path!='/job':return self.reply(404,{})
                 with owner._lock:
+                    available=lambda:owner._closing or (owner._job is not None and not owner._claimed and not owner._poisoned)
+                    owner._waiting.wait_for(available,owner.LONG_POLL)
                     job={}
-                    if owner._job is not None and not owner._claimed and not owner._poisoned:
+                    if not owner._closing and owner._job is not None and not owner._claimed and not owner._poisoned:
                         job=owner._job;owner._claimed=True
                 self.reply(200,job)
             def do_POST(self):
@@ -176,6 +182,7 @@ class AddinChannel:
             if self._job is not None:raise RuntimeError('Add-in request already in progress')
             self._event.clear();self._result=None;self._claimed=False
             self._job={'id':secrets.token_hex(16),'operation':operation,**data}
+            self._waiting.notify_all()
         if not self._event.wait(timeout):
             with self._lock:self._poisoned=True;self._job=None
             raise RuntimeError('Add-in response timed out; native state uncertain; no retry')
@@ -184,6 +191,7 @@ class AddinChannel:
         return result
 
     def close(self):
+        with self._lock:self._closing=True;self._waiting.notify_all()
         self.server.shutdown();self.server.server_close();self.thread.join(timeout=2)
 
     def __enter__(self):return self

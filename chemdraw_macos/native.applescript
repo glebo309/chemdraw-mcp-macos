@@ -61,6 +61,20 @@ on commandState(wantedID)
     return {stateRow, countsRow, docIDs, windowNames}
 end commandState
 
+on frontSettled(wantedID)
+    -- ChemDraw reorders its document list shortly after opening or raising a
+    -- window. Read (never act) for up to 1 s until the wanted document is front.
+    tell application __APP__
+        repeat 20 times
+            if (count of documents) > 0 then
+                if ((id of document 1) as integer) is wantedID then return true
+            end if
+            delay 0.05
+        end repeat
+    end tell
+    return false
+end frontSettled
+
 on dialogCount(processName)
     -- Open ChemDraw dialogs and sheets, or -1 without Accessibility permission.
     -- Bulk queries: one event per property instead of one per window.
@@ -138,9 +152,14 @@ on run argv
                 end try
             end repeat
             if (count of matches) is not 1 then error "Could not identify the imported document uniquely"
+            set openedVisible to true
             if (count of argv) > 2 then
-                if item 3 of argv is "false" then set visible of window of (item 1 of matches) to false
+                if item 3 of argv is "false" then
+                    set visible of window of (item 1 of matches) to false
+                    set openedVisible to false
+                end if
             end if
+            if openedVisible then my frontSettled((id of (item 1 of matches)) as integer)
             return my jsonText(my documentRow(item 1 of matches))
         end if
         set wantedID to (item 2 of argv) as integer
@@ -206,8 +225,9 @@ on run argv
             save targetDoc in (my fileReference(targetPath)) as targetFormat
             return my jsonText(my documentRow(targetDoc))
         else if operation is "native_action" then
-            if (id of document 1) is not wantedID then error "Native action requires the owned front document; no command dispatched"
+            if not my frontSettled(wantedID) then error "Native action requires the owned front document; no command dispatched"
             set nativeCommand to item 3 of argv
+            if nativeCommand is in {"undo", "redo"} then activate
             set selectionMode to item 4 of argv
             set supportedCommands to {"cleanStructure", "cleanReaction", "alignLeftEdges", "alignRightEdges", "alignTopEdges", "alignBottomEdges", "alignLeftRightCenters", "alignTopBottomCenters", "distributeObjectsHorizontally", "distributeObjectsVertically", "expandLabel", "contractLabel", "undo", "redo"}
             if nativeCommand is not in supportedCommands then error "Unsupported native command"
@@ -229,8 +249,11 @@ on run argv
             on error
                 error "Unknown ChemDraw command: " & nativeCommand
             end try
+            -- Undo and redo follow macOS's key window, which exists only while ChemDraw is
+            -- the active application; otherwise they are used up without reverting anything.
+            if nativeCommand is in {"undo", "redo"} then activate
             set index of window of targetDoc to 1
-            if ((id of document 1) as integer) is not wantedID then error "Could not bring the document to the front; no command dispatched"
+            if not my frontSettled(wantedID) then error "Could not bring the document to the front; no command dispatched"
             if selectionMode is "all" then
                 if enabled of command "selectAll" then do command "selectAll"
             end if
@@ -240,7 +263,15 @@ on run argv
                 set end of docIDs to ((id of candidate) as integer)
             end repeat
             set windowNames to name of every window
-            if not (enabled of command nativeCommand) then return my jsonText({my documentRow(targetDoc), false, countsRow, docIDs, windowNames})
+            -- ChemDraw updates enabled states shortly after a selection or front-document
+            -- change. Re-read (never re-dispatch) for up to 0.3 s before reporting disabled.
+            set commandEnabled to enabled of command nativeCommand
+            repeat 6 times
+                if commandEnabled then exit repeat
+                delay 0.05
+                set commandEnabled to enabled of command nativeCommand
+            end repeat
+            if not commandEnabled then return my jsonText({my documentRow(targetDoc), false, countsRow, docIDs, windowNames})
             -- Do not wait: an app-modal alert would block this reply. The
             -- caller polls command_state and reads any dialog separately.
             ignoring application responses
@@ -285,7 +316,7 @@ on run argv
             end repeat
             return my jsonText({my documentRow(targetDoc), {fixed length of targetDoc, line width of targetDoc, bold width of targetDoc, label size of targetDoc, caption size of targetDoc, label font of targetDoc, caption font of targetDoc, bond spacing of targetDoc, chain angle of targetDoc, margin width of targetDoc, hash spacing of targetDoc, magnification of targetDoc}})
         else if operation is "convert_name" then
-            if (id of document 1) is not wantedID then error "Name conversion requires the owned front document; no command dispatched"
+            if not my frontSettled(wantedID) then error "Name conversion requires the owned front document; no command dispatched"
             if (count of molecules of targetDoc) is not 0 then error "Name conversion requires a caption-only document"
             if (count of captions of targetDoc) is not 1 then error "Name conversion requires exactly one caption"
             do command "selectAll"

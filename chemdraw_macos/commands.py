@@ -141,5 +141,7 @@ def run_command(bridge, document_id, command: str, selection: str = 'current', w
     if selection not in ('current', 'all'):
         raise ValueError('selection must be current or all')
     result = execute(bridge, document_id, command, selection, wait_seconds)
+    if command in ('undo', 'redo'):
+        result['activated_chemdraw'] = True  # undo/redo need ChemDraw to be the active application
     result['undo'] = 'chemdraw_run_command(command="undo") reverts this in ChemDraw.'
     return result

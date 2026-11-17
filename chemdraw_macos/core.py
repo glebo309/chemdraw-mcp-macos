@@ -91,6 +91,16 @@ def app_location()->Path:
     if len(candidates)!=1:raise RuntimeError('Set CHEMDRAW_APP to the installed ChemDraw .app path')
     return candidates[0]
 
+_SCRIPTS={}
+def _native_script(app):
+    """The bundled native script bound to one ChemDraw path, read once per process."""
+    key=str(app)
+    if key not in _SCRIPTS:
+        template=Path(__file__).with_name('native.applescript').read_text()
+        quoted='"'+key.replace('\\','\\\\').replace('"','\\"')+'"'
+        _SCRIPTS[key]=template.replace('__APP__',quoted)
+    return _SCRIPTS[key]
+
 def document_row(row):
     return dict(zip(('document_id','name','file','modified','molecule_count'),row))
 
@@ -120,9 +130,12 @@ class Bridge:
 
     def _run(self,operation,*args):
         if not self.app.is_dir():raise RuntimeError(f'ChemDraw not found: {self.app}')
-        template=Path(__file__).with_name('native.applescript').read_text()
-        quoted='"'+str(self.app).replace('\\','\\\\').replace('"','\\"')+'"'
-        script=template.replace('__APP__',quoted)
+        script=_native_script(self.app)
+        if os.environ.get('CHEMDRAW_MCP_NATIVE_HELPER','1')!='0':
+            # One persistent osascript keeps the script compiled (about 0.25 s saved per call).
+            from .native_helper import helper_for
+            with self.lock:
+                return helper_for(script).call([operation,*args],self.timeout)
         with self.lock:
             try:
                 p=subprocess.run(['/usr/bin/osascript','-']+[operation]+[str(a) for a in args],

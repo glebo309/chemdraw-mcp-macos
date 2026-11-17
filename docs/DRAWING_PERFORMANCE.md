@@ -144,3 +144,37 @@ The test prints the path to `benchmark.json`, with environment records, each
 run's timings, native operation counts and artifact locations. Native previews
 still require visual inspection. Use [delivery choices](DRAWING_HARNESS.md#drawing-speed-and-export-choices)
 for the matching MCP and CLI request fields.
+
+
+## Native helper and add-in long poll
+
+Measured 2026-11-17 on Apple Silicon, ChemDraw 26.1.0.6801, one small
+document; medians of four runs.
+
+| Operation | One `osascript` per call, 250 ms panel poll | Persistent helper and long poll |
+| --- | --- | --- |
+| List documents | 0.34 s | 0.10 s |
+| Read live document | 1.52 s | 0.39 s |
+| Check structure | 1.01 s | 0.14 s |
+| Run a command (flip) | 0.67 s | 0.44 s |
+| Document settings | 0.44 s | 0.19 s |
+| Preview | 0.40 s | 0.18 s |
+| Two-structure background drawing | 21.7 s | 10.1 s |
+
+Every native call used to start `osascript`, compile the 300-line script and
+load the Foundation framework (0.26 s). `native_helper.py` keeps one
+`osascript` process with the script compiled; a call now costs ChemDraw's own
+work, about 8 ms per question asked of ChemDraw. Arguments travel as an
+AppleEvent list, not as script text. A timeout still leaves the outcome
+uncertain, is never retried, and the next call starts a fresh helper.
+`CHEMDRAW_MCP_NATIVE_HELPER=0` restores the one-shot path.
+
+The add-in panel used to ask for work every 250 ms. The server now holds the
+panel's request open (up to 5 s) and answers the moment a job arrives, and the
+panel asks again at once after each answer.
+
+Faster calls exposed two ChemDraw timing effects, both handled by reading,
+never by repeating an action: a newly opened document reaches the front of
+ChemDraw's list a moment after it opens, and a command's enabled state settles
+a moment after a selection change. Native calls wait up to 1 s and 0.3 s for
+these.

@@ -15,7 +15,7 @@ def test_addin_read_failures_and_status(scenario):
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const scenario = process.argv[1];
-let posted, reads = 0, size;
+let posted, reads = 0, size, repolls = 0;
 const status = {textContent: ''};
 const doc = {getCDXML() { reads++; return '<CDXML/>'; },
     get selection() { if (scenario === 'selection') throw Error('PRIVATE selection error');
@@ -25,6 +25,7 @@ const api = {get version() { if (scenario === 'version') throw Error('PRIVATE ve
     window: {setDefaultSize(w,h) { size = [w,h]; }, onClose() {}, close() {}}};
 const ctx = vm.createContext({ChemDrawAPI: api, config: {url: 'local', secret: 'secret'},
     document: {getElementById() { return status; }}, setInterval() {}, clearInterval() {},
+    setTimeout(fn, ms) { assert.equal(ms, 0); repolls++; },
     async fetch(url, options) {
         if (url.endsWith('/job')) return {ok: true, async json() { return {id: 'job', operation: 'read'}; }};
         posted = JSON.parse(options.body);
@@ -41,7 +42,11 @@ vm.runInContext('poll()', ctx).then(() => {
         assert.equal(posted.selection_available, false);
         assert(!posted.error);
     }
-    if (scenario === 'post') assert(status.textContent.includes('disconnected'));
+    if (scenario === 'post') {
+        assert(status.textContent.includes('disconnected'));
+        assert.equal(repolls, 0, 'no tight loop after a failed exchange');
+    }
+    if (scenario !== 'post') assert.equal(repolls, 1, 'ask for the next job at once (long poll)');
     if (scenario === 'compact') {
         assert.deepEqual(size, [240, 64]);
         assert.equal(reads, 1);

@@ -33,7 +33,9 @@ def test_timeout_is_not_retried(monkeypatch,tmp_path):
     def fail(*a,**kw):
         calls.append(1);raise subprocess.TimeoutExpired('osascript',1)
     monkeypatch.setattr(subprocess,'run',fail)
-    b=Bridge(app_path=Path('/Applications/ChemDraw 23.0.1.app'),workspace=tmp_path)
+    monkeypatch.setenv('CHEMDRAW_MCP_NATIVE_HELPER','0')  # one-shot path; the helper has its own test
+    app=tmp_path/'ChemDraw.app';app.mkdir()
+    b=Bridge(app_path=app,workspace=tmp_path)
     with pytest.raises(RuntimeError,match='not retried'):b.documents()
     assert len(calls)==1
 

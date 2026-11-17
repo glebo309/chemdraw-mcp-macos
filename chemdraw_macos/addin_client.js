@@ -61,7 +61,12 @@ async function poll() {
     } catch (e) {
         document.getElementById('status').textContent = 'Local MCP disconnected: ' + String(e);
         if (++disconnected >= 120) ChemDrawAPI.window.close();
-    } finally { busy = false; }
+    } finally {
+        busy = false;
+        // The server holds this request open until a job arrives (long poll),
+        // so ask again at once; the interval below only restarts after errors.
+        if (disconnected === 0 && typeof setTimeout === 'function') setTimeout(poll, 0);
+    }
 }
 const timer = setInterval(poll, 250);
 // Optional window APIs must never interrupt the transport on another API version.

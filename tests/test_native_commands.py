@@ -154,10 +154,16 @@ def test_still_running_after_wait_is_uncertain_not_completed(tmp_path,monkeypatc
 def test_dispatch_script_guards_document_and_does_not_wait():
     body=branch('dispatch_command')
     assert 'set index of window of targetDoc to 1' in body
-    assert body.index('id of document 1') < body.index('ignoring application responses')
+    assert body.index('frontSettled(wantedID)') < body.index('ignoring application responses')
     assert 'enabled of command nativeCommand' in body
     assert 'if enabled of command "selectAll" then do command "selectAll"' in body
     assert 'Unknown ChemDraw command' in body
+    # Enabled state settles after selectAll or a document switch: re-read, never re-dispatch.
+    assert body.index('repeat 6 times') < body.index('ignoring application responses')
+    assert body.count('do command nativeCommand') == 1
+    # Undo/redo only revert while ChemDraw is active (measured on ChemDraw 26.1).
+    assert body.index('if nativeCommand is in {"undo", "redo"} then activate') < body.index('ignoring application responses')
+    assert 'if nativeCommand is in {"undo", "redo"} then activate' in branch('native_action')
     assert 'set stateResult to my commandState(wantedID)' in body and 'my dialogCount(' in body
     assert 'with timeout of 2 seconds' in SCRIPT.split('on commandState',1)[1].split('end commandState',1)[0]
 

@@ -116,7 +116,7 @@ def test_name_cli_and_mcp_use_the_same_workflow(tmp_path,monkeypatch):
 def test_native_command_checks_front_document_and_caption_before_execution():
     script=(Path(__file__).parents[1]/'chemdraw_macos/native.applescript').read_text()
     branch=script.split('else if operation is "convert_name" then',1)[1].split('else if operation',1)[0]
-    assert branch.index('id of document 1') < branch.index('do command "selectAll"')
+    assert branch.index('frontSettled(wantedID)') < branch.index('do command "selectAll"')
     assert branch.index('count of captions') < branch.index('do command "selectAll"')
     assert branch.index('enabled of command "convertNameToStructure"') < branch.index('do command "convertNameToStructure"')
     assert branch.count('do command "convertNameToStructure"') == 1
