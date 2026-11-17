@@ -14,12 +14,13 @@ Read README.md, docs/USAGE.md, docs/COMPATIBILITY.md and PROJECT_PROGRESS.md bef
 - Verify native saved chemistry and layout separately. Keep human visual review distinct from machine checks. Never set a check true when it was unavailable or not run.
 - Treat captions and arrow conditions as owned objects. Reject ambiguous ownership rather than guessing.
 - Keep changes bounded. No GUI fallback, raw AppleScript execution tool, external provider, publication or licence change without corresponding user scope.
+- ChemDraw's named commands run only through `commands.run_command` and its refusal policy (file, clipboard, quit, preference, network and add-in commands stay refused). ChemDraw dialogs are read and answered only through `dialogs.py`: the ChemDraw process, named buttons, numbered fields, radio buttons and checkboxes, never keystrokes, mouse movement or another application.
 - Update upstream-sources.json and THIRD_PARTY_NOTICES.md for borrowed source. Retain the full applicable notices in distributed artifacts.
 
 ## Verification
 
 Install with `uv sync --extra chemistry` and run `.venv/bin/pytest -q`.
-Native tests require a licensed, running supported ChemDraw: `CHEMDRAW_LIVE_TEST=1 .venv/bin/pytest tests/test_live.py tests/test_scope_live.py tests/test_batch_live.py tests/test_annotations_live.py tests/test_draw_live.py tests/test_batch_annotations_live.py tests/test_v08_live.py tests/test_symbols_live.py tests/test_scope_decoration_live.py -v -s`.
+Native tests require a licensed, running supported ChemDraw: `CHEMDRAW_LIVE_TEST=1 .venv/bin/pytest tests/test_live.py tests/test_scope_live.py tests/test_batch_live.py tests/test_annotations_live.py tests/test_draw_live.py tests/test_batch_annotations_live.py tests/test_v08_live.py tests/test_symbols_live.py tests/test_scope_decoration_live.py tests/test_native_commands_live.py -v -s`.
 Do not run separate native editing clients concurrently. Generated local reports remain in ignored local-validation/ directories.
 
 Original project code is AGPL-3.0-only. Retain LICENSE, NOTICE and all upstream notices. Keep private research, proprietary references, credentials and local validation bundles out of repository history. Public documentation describes the product, reproducible evidence and limitations, not conversations, personal approval records or internal task handoffs. Review release descriptions and embedded source documentation before publishing. External publication and repository administration require explicit maintainer direction.

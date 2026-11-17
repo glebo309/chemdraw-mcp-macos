@@ -16,6 +16,7 @@ ACTIONS = {
     'distribute_horizontal':'distributeObjectsHorizontally',
     'distribute_vertical':'distributeObjectsVertically',
     'expand_labels':'expandLabel', 'contract_labels':'contractLabel',
+    'undo':'undo', 'redo':'redo',
 }
 
 

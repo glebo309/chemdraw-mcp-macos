@@ -7,7 +7,7 @@ ALL_ACTIONS = (
     'clean_structure', 'clean_reaction', 'align_left', 'align_right',
     'align_top', 'align_bottom', 'align_horizontal_centers',
     'align_vertical_centers', 'distribute_horizontal', 'distribute_vertical',
-    'expand_labels', 'contract_labels',
+    'expand_labels', 'contract_labels', 'undo', 'redo',
 )
 # Alignment/distribution are submenu commands; Windows COM exposes no submenu items
 # (observed on ChemDraw 26.1). They are not offered there and never dispatched.
@@ -35,4 +35,5 @@ ACTIONS = {
     'distribute_horizontal': 'distributeObjectsHorizontally',
     'distribute_vertical': 'distributeObjectsVertically',
     'expand_labels': 'expandLabel', 'contract_labels': 'contractLabel',
+    'undo': 'undo', 'redo': 'redo',
 }

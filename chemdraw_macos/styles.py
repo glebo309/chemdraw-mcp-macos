@@ -282,3 +282,11 @@ def verify_custom_style(expected, native, preset):
     return {'verified':True,'scope':'supported numerical settings, font families, sizes and bold/italic faces',
             'numerical_tolerances':tolerances,'chemical_script_bits':'not independently verified',
             'glyphs_and_font_rendering':'visual review required'}
+
+
+def stationery_styles(app_path) -> list[dict]:
+    """ChemDraw's bundled journal and document stationery (.cds), for import_style."""
+    folder = Path(app_path)/'Contents/Resources/SpecialPurpose/Stationery'
+    if not folder.is_dir():
+        return []
+    return [{'name': p.stem, 'path': str(p)} for p in sorted(folder.glob('*.cds'))]

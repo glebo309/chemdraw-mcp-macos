@@ -22,6 +22,9 @@ CORE = {
     'chemdraw_native_action',
     'chemdraw_read_live_document', 'chemdraw_live_action',
     'chemdraw_set_visibility', 'chemdraw_render_cdxml',
+    'chemdraw_list_commands', 'chemdraw_run_command', 'chemdraw_dialog',
+    'chemdraw_predict_nmr', 'chemdraw_check_structure', 'chemdraw_document_settings',
+    'chemdraw_preview', 'chemdraw_document_changes',
 }
 
 
