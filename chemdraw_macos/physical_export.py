@@ -207,6 +207,6 @@ def preview_png(bridge, document_id, pixels=1200) -> bytes:
     svg = bridge._new_path('.svg', 'previews')
     bridge.export(did, str(svg), 'svg')
     try:
-        return rasterize_svg(svg.read_text(), pixels, background='white')
+        return rasterize_svg(svg.read_text(encoding='utf-8'), pixels, background='white')
     finally:
         svg.unlink(missing_ok=True)

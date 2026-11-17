@@ -45,6 +45,11 @@ def command_policy(name: str) -> tuple[bool, str | None]:
         return False, 'invalid command name'
     if name in _EXACT:
         return False, _EXACT[name]
+    if ' > ' in name:
+        # Windows names a menu item directly as 'Menu > Item' (windows_commands.py).
+        from .windows_commands import menu_policy, split_menu_name
+        reason = menu_policy(*split_menu_name(name))
+        return (reason is None), reason
     if '://' in name:
         return False, 'network add-in command'
     if '/' in name:

@@ -1,5 +1,8 @@
 """Read and answer ChemDraw's own dialogs and alert sheets.
 
+Windows: standard Win32 dialogs of the ChemDraw process through their controls
+(windows_commands.py, unverified on Windows). macOS: as below.
+
 Scoped to the ChemDraw process through macOS Accessibility: it lists the
 dialog's text, fields, radio buttons, checkboxes and buttons, and presses a
 named button. No keystrokes, mouse movement or focus change, and no other
@@ -10,7 +13,10 @@ from __future__ import annotations
 import json
 import plistlib
 import subprocess
+import sys
 import time
+
+WINDOWS = sys.platform == 'win32'
 
 _SCRIPT = r'''
 function run(argv) {
@@ -123,11 +129,25 @@ def _call(bridge, request: dict) -> dict:
 
 def read_dialogs(bridge) -> list[dict]:
     """Every open ChemDraw sheet or dialog, in a stable order."""
+    if WINDOWS:
+        from .windows_commands import read_dialogs as windows_read
+        return windows_read()
     return _call(bridge, {'mode': 'read'})['dialogs']
 
 
 def _act(bridge, request: dict) -> None:
+    if WINDOWS:
+        from .windows_commands import act_dialog
+        act_dialog(request)
+        return
     _call(bridge, {'mode': 'act', **request})
+
+
+def _count(bridge) -> int:
+    if WINDOWS:
+        from .windows_commands import dialog_count
+        return dialog_count()
+    return bridge._run('dialog_count', _process_name(bridge))[0]
 
 
 def respond_dialog(bridge, button: str | None = None, fields: dict | None = None,
@@ -162,5 +182,5 @@ def respond_dialog(bridge, button: str | None = None, fields: dict | None = None
     _act(bridge, {'dialog': dialog, 'kind': target['kind'], 'window': target['window'], 'button': button,
                   'fields': fields, 'choose': choose, 'check': check})
     time.sleep(.1)
-    remaining = bridge._run('dialog_count', _process_name(bridge))[0]
+    remaining = _count(bridge)
     return {'pressed': button, 'remaining_dialogs': read_dialogs(bridge) if remaining > 0 else []}

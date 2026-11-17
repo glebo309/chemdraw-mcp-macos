@@ -761,6 +761,93 @@ def _op_channel_append(app, expected, payload):
     return {'cdxml': after, 'write_attempted': True, 'version': 'COM ' + PROGID}
 
 
+# ---------------------------------------------------------------- named commands, dialogs, settings
+# UNVERIFIED ON WINDOWS: see windows_commands.py and docs/WINDOWS_NATIVE_COMMANDS_CHECKLIST.md.
+# Same reply shapes as the macOS native.applescript operations of the same names.
+
+def _command_state(app, did):
+    from . import windows_commands as wc
+    pid = _pid(app)
+    doc = _find(app, did, pid)
+    docs = _docs(app)
+    return [_row(app, doc, pid), wc.object_counts(parse(_data(doc.Objects, CDXML)), top_fragments),
+            [document_id(pid, _key(d)) for d in docs], [d.Name for d in docs]]
+
+
+def _op_list_commands(app):
+    from . import windows_commands as wc
+    return wc.list_menu_commands(app)
+
+
+def _op_dispatch_command(app, did, command, selection, process=''):
+    from . import windows_commands as wc
+    did = int(did)
+    if selection not in ('current', 'all'):
+        raise NativeError('Unsupported native selection mode')
+    try:
+        menu, pattern = wc.resolve(command)
+    except ValueError as exc:
+        raise NativeError(str(exc)) from None
+    if wc.pending_busy():
+        raise NativeError('A previous ChemDraw command is still running or waiting for its dialog; '
+                          'answer the dialog first. Nothing was dispatched.')
+    doc = _find(app, did)
+    if did in _hidden:
+        raise NativeError('Commands need a visible document; no command dispatched')
+    doc.Activate()
+    _require_active(app, did, 'Could not bring the document to the front; no command dispatched')
+    if selection == 'all':
+        doc.Objects.Select()
+    try:
+        enabled = bool(wc.find_menu_item(app, menu, pattern).Enabled)
+    except ValueError as exc:
+        raise NativeError(str(exc)) from None
+    row, counts, ids, names = _command_state(app, did)
+    if not enabled:
+        return [row, False, counts, ids, names]
+    # Executed on its own COM thread: a modal dialog blocks that thread, never this worker.
+    pending = wc.start_command(menu, pattern)
+    outcome = wc.wait_for(pending, 2.0)
+    if outcome == 'done':
+        if pending.error is not None:
+            error = pending.error
+            raise (_com_error(error) if type(error).__name__ == 'com_error' else NativeError(str(error)))
+        return [row, True, counts, ids, names, _command_state(app, did), wc.dialog_count()]
+    return [row, True, counts, ids, names, 'busy', wc.dialog_count()]
+
+
+def _op_command_state(app, did, process=''):
+    from . import windows_commands as wc
+    if wc.pending_busy():
+        return ['busy', wc.dialog_count()]
+    pending = wc._pending
+    if pending is not None and pending.error is not None:
+        wc._pending = None
+        raise NativeError('ChemDraw command failed: ' + str(pending.error))
+    return [_command_state(app, int(did)), wc.dialog_count()]
+
+
+def _op_dialog_count(app, process=''):
+    from . import windows_commands as wc
+    return [wc.dialog_count()]
+
+
+def _op_get_settings(app, did):
+    from . import windows_commands as wc
+    doc = _find(app, int(did))
+    return [_row(app, doc), wc.read_settings(doc.Settings)]
+
+
+def _op_set_settings(app, did, *pairs):
+    from . import windows_commands as wc
+    doc = _find(app, int(did))
+    try:
+        wc.write_settings(doc.Settings, list(zip(pairs[0::2], pairs[1::2])))
+    except RuntimeError as exc:
+        raise NativeError(str(exc)) from None
+    return [_row(app, doc), wc.read_settings(doc.Settings)]
+
+
 OPERATIONS = {name[4:]: fn for name, fn in globals().items() if name.startswith('_op_')}
 
 

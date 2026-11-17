@@ -1,5 +1,6 @@
 """Named ChemDraw commands, dialogs, NMR, checks and settings without a live app."""
 import asyncio
+import sys
 from pathlib import Path
 
 import pytest
@@ -180,7 +181,7 @@ def test_dialog_response_validates_before_pressing(tmp_path,monkeypatch):
     def act(bridge,request):
         pressed.append(request);state['open']=[]
     monkeypatch.setattr(dialogs,'_act',act)
-    monkeypatch.setattr(b,'_run',lambda op,*a:[len(state['open'])])
+    monkeypatch.setattr(dialogs,'_count',lambda bridge:len(state['open']))
     with pytest.raises(ValueError,match='button'):dialogs.respond_dialog(b,button='Delete')
     with pytest.raises(ValueError,match='field'):dialogs.respond_dialog(b,button='Scale',fields={'7':'x'})
     with pytest.raises(ValueError,match='radio'):dialogs.respond_dialog(b,button='Scale',choose='Nope')
@@ -199,6 +200,7 @@ def test_dialog_without_open_dialog_is_explicit(tmp_path,monkeypatch):
     with pytest.raises(ValueError,match='No ChemDraw dialog'):dialogs.respond_dialog(b,button='OK')
 
 
+@pytest.mark.skipif(sys.platform=='win32',reason='macOS Accessibility path')
 def test_accessibility_denial_is_named(tmp_path,monkeypatch):
     import subprocess
     from chemdraw_macos import dialogs

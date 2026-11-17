@@ -81,7 +81,7 @@ def predict_nmr(bridge, document_id=None, smiles=None, nucleus='1H', selection='
             from .draw import prepare_structures
             item = prepare_structures([{'compound_id': 'nmr', 'label': 'nmr', 'smiles': smiles}])[0]
             mol = bridge._new_path('.mol')
-            mol.write_text(item['molblock'])
+            mol.write_text(item['molblock'], encoding='utf-8')
             temporary = bridge.import_file(str(mol))['document']['document_id']
             document_id, selection = temporary, 'all'
         try:
@@ -107,10 +107,10 @@ def predict_nmr(bridge, document_id=None, smiles=None, nucleus='1H', selection='
         if out is not None:
             from .raster import rasterize_svg
             out.mkdir()
-            (out/'spectrum.cdxml').write_text(cdxml)
+            (out/'spectrum.cdxml').write_text(cdxml, encoding='utf-8')
             svg = out/'spectrum.svg'
             bridge.export(sid, str(svg), 'svg')
-            (out/'spectrum.png').write_bytes(rasterize_svg(svg.read_text(), 1600, background='white'))
+            (out/'spectrum.png').write_bytes(rasterize_svg(svg.read_text(encoding='utf-8'), 1600, background='white'))
             result['artifacts'] = {'cdxml': str(out/'spectrum.cdxml'), 'svg': str(svg), 'png': str(out/'spectrum.png')}
         if not keep_open:
             bridge._run('close', sid)

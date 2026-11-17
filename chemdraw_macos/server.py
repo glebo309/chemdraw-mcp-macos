@@ -78,7 +78,8 @@ INSTRUCTIONS = (
     'chemical identity or layout. No RDKit renderer is used. '
 ) + ('On Windows, ChemDraw is controlled through its COM automation instead of AppleScript and must be '
      'started by the user. Windows ChemDraw automation offers no PDF export and no native alignment and distribution '
-     'commands; they are not available on this platform. ' if sys.platform == 'win32' else '')
+     'commands; they are not available on this platform. Named ChemDraw commands are its menu items: list them with '
+     'chemdraw_list_commands and pass the macOS alias or "Menu > Item" exactly as listed. ' if sys.platform == 'win32' else '')
 mcp=FastMCP('ChemDraw macOS',instructions=INSTRUCTIONS +
     'For NEW molecule drawings, panels and explicit reactions, start with chemdraw_draw. '
     'Its harness enforces validation, native rendering, layout and delivery checks. '
